@@ -1,0 +1,10 @@
+{
+  "model": "qwen2.5-vl-7b",
+  "input_lang": "German",
+  "output_lang": "English",
+  "max_workers": 2,
+  "retries": 2,
+  "timeout": 180.0,
+  "proofread": false,
+  "last_input_file": "D:/Files/Software/Development/Python/Personal/Translate Books with AI/book.epub"
+}

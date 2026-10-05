@@ -7,14 +7,14 @@ import threading
 import tkinter as tk
 from collections import Counter
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 from tkinter import font as tkfont
 
 import settings_manager
 from extractors import load_book
 from lmstudio import LMStudioClient
 from settings_manager import Settings, load_settings, save_settings
-from translator import Job, TranslationEngine
+from translator import Job, TranslationEngine, parse_chunk_selection
 
 
 class TranslatorGUI:
@@ -215,7 +215,7 @@ class TranslatorGUI:
                    ("Pause", "Pause", self.pause, "TButton"),
                    ("Resume", "Resume", self.resume, "TButton"),
                    ("Cancel", "Cancel", self.cancel, "Danger.TButton"),
-                   ("Retranslate chunk", "Retranslate", self.retranslate, "TButton"),
+                   ("Retranslate chunk", "Retranslate selected", self.retranslate, "TButton"),
                    ("Export", "Export book", self.export, "TButton"))
         for name, label, command, style in actions:
             button = ttk.Button(toolbar, text=label, command=command, style=style)
@@ -238,11 +238,19 @@ class TranslatorGUI:
         panes = ttk.Panedwindow(parent, orient="vertical")
         panes.pack(fill="both", expand=True)
         list_card = ttk.Frame(panes, style="Card.TFrame", padding=12)
-        ttk.Label(list_card, text="Translation queue", style="Section.TLabel").pack(anchor="w", pady=(0, 10))
+        queue_header = ttk.Frame(list_card, style="Card.TFrame")
+        queue_header.pack(fill="x", pady=(0, 10))
+        ttk.Label(queue_header, text="Translation queue", style="Section.TLabel").pack(side="left")
+        self.buttons["Choose chunks"] = ttk.Button(queue_header, text="Select by number…",
+                                                   command=self.choose_chunks)
+        self.buttons["Choose chunks"].pack(side="right")
+        self.selection_label = ttk.Label(list_card, text="Ctrl/Cmd-click for multiple chunks; Shift-click for a range.",
+                                         style="Muted.TLabel")
+        self.selection_label.pack(anchor="w", pady=(0, 8))
         list_frame = ttk.Frame(list_card, style="Card.TFrame")
         list_frame.pack(fill="both", expand=True)
         self.tree = ttk.Treeview(list_frame, columns=("unit", "status", "check", "detail"),
-                                 show="tree headings", selectmode="browse", height=7)
+                                 show="tree headings", selectmode="extended", height=7)
         for column, title, width in (("#0", "#", 45), ("unit", "SOURCE", 210),
                                      ("status", "STATUS", 105), ("check", "REVIEW", 110),
                                      ("detail", "DETAILS", 180)):
@@ -261,7 +269,7 @@ class TranslatorGUI:
         horizontal.grid(row=1, column=0, sticky="ew")
         list_frame.columnconfigure(0, weight=1)
         list_frame.rowconfigure(0, weight=1)
-        self.tree.bind("<<TreeviewSelect>>", lambda event: self.preview())
+        self.tree.bind("<<TreeviewSelect>>", self.selection_changed)
         panes.add(list_card, weight=1)
         preview_frame = ttk.Frame(panes, padding=(0, 10, 0, 0))
         self.source_preview = self._text_panel(preview_frame, "Original text", 0)
@@ -417,15 +425,43 @@ class TranslatorGUI:
 
     def selected(self) -> int | None:
         selection = self.tree.selection()
-        return int(selection[0]) if selection else None
+        focused = self.tree.focus()
+        return int(focused if focused in selection else selection[0]) if selection else None
+
+    def selection_changed(self, event=None) -> None:
+        count = len(self.tree.selection())
+        self.selection_label.configure(text=f"{count} selected · Ctrl/Cmd-click to add chunks; Shift-click for a range.")
+        self.preview()
+
+    def choose_chunks(self) -> None:
+        if self.busy or self.job is None:
+            return
+        value = simpledialog.askstring("Select specific chunks",
+                                       f"Chunk IDs are zero-based (0–{len(self.job.chunks) - 1}).\n"
+                                       "Enter numbers or inclusive ranges, e.g. 3, 8, 12-16:",
+                                       parent=self.root)
+        if value is None:
+            return
+        try:
+            indices = parse_chunk_selection(value, len(self.job.chunks))
+        except ValueError as exc:
+            messagebox.showerror("Invalid chunk selection", str(exc), parent=self.root)
+            return
+        self.tree.selection_set([str(index) for index in indices])
+        self.tree.focus(str(indices[0]))
+        self.tree.see(str(indices[0]))
+        self.selection_changed()
 
     def retranslate(self) -> None:
-        index = self.selected()
-        if index is None or self.engine is None:
-            messagebox.showinfo("Select a chunk", "Select one chunk first.", parent=self.root)
+        if self.busy:
+            return
+        indices = [int(index) for index in self.tree.selection()]
+        if not indices or self.engine is None:
+            messagebox.showinfo("Select chunks", "Select chunks in the queue or use Select by number first.", parent=self.root)
             return
         engine = self.engine
-        self._background(lambda: engine.retranslate_single_chunk(index))
+        self.summary.set(f"Retranslating {len(indices)} selected chunks…")
+        self._background(lambda: engine.retranslate_chunks(indices))
 
     def export(self) -> None:
         if self.job is None:

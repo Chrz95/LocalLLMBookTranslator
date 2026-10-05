@@ -1,2 +1,762 @@
 2026-10-05 11:38:43,926 INFO translator: Starting job 82ffd3d35a439becbebf8e0282f331a5d9c0018733297be7238ce481c3ea7415 with 4258 chunks and 2 workers
 2026-10-05 14:30:08,627 WARNING gui: Model discovery failed: Cannot reach LM Studio: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>
+2026-10-05 14:33:10,445 INFO translator: Starting job 8c3434f688b5bba6ab8ea471180d2d7a0e83330a9a57851078997ce0fae089e1 with 4258 chunks and 3 workers
+2026-10-05 14:33:12,506 ERROR translator: Chunk 0 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:12,531 ERROR translator: Chunk 4 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:12,557 ERROR translator: Chunk 3 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:14,597 ERROR translator: Chunk 6 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:14,599 ERROR translator: Chunk 7 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:14,619 ERROR translator: Chunk 10 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:16,679 ERROR translator: Chunk 11 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:16,694 ERROR translator: Chunk 12 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:16,696 ERROR translator: Chunk 13 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:18,713 ERROR translator: Chunk 14 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:18,731 ERROR translator: Chunk 16 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:18,732 ERROR translator: Chunk 15 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:20,767 ERROR translator: Chunk 17 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:20,784 ERROR translator: Chunk 19 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:20,828 ERROR translator: Chunk 20 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:22,828 ERROR translator: Chunk 21 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:22,846 ERROR translator: Chunk 22 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:22,876 ERROR translator: Chunk 23 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 133, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 493, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 464, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python314\Lib\urllib\request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in _process
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 225, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 261, in <lambda>
+    translation = self._request(index, lambda: self.client.translate(chunk.text))
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 171, in translate
+    return self.complete(prompt, text)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 112, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 146, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-05 14:33:36,465 INFO translator: Job finished; cancelled=True
+2026-10-05 14:33:49,922 INFO translator: Starting job 8c3434f688b5bba6ab8ea471180d2d7a0e83330a9a57851078997ce0fae089e1 with 4258 chunks and 3 workers
+2026-10-05 16:53:40,405 INFO translator: Job finished; cancelled=False

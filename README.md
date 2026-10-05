@@ -45,7 +45,7 @@ The model and Python dependencies must already be downloaded for offline use.
    saving. **Resume** continues. **Cancel** retains previously saved chunks and
    discards responses from requests cancelled before their commit checkpoint.
 5. After cancellation, click **Start translation** with the same settings to resume.
-6. **Retranslate** forces a fresh request for the selected chunk and
+6. **Retranslate selected** forces fresh requests for the selected chunks and
    atomically replaces its file on success. A failed request keeps the old file.
 7. **Export book** writes the finished book. Incomplete/malformed chunk files prevent
    export. The source file cannot be overwritten.
@@ -69,6 +69,7 @@ literary_translator/
   requirements.txt        pypdf dependency (other runtime modules use stdlib)
   tests/test_application.py
   tests/test_updates.py
+  tests/test_selection.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
@@ -202,6 +203,25 @@ Headers, footers, footnotes/endnotes, comments, embedded objects and tracked
 revision semantics are not reconstructed; output is text, not a styled DOCX.
 TXT input must be UTF-8 (optional BOM); lines and their boundary whitespace are
 preserved. All exports should be reviewed before publication.
+
+## Retranslate specific chunks
+
+When the current run has finished or been cancelled, select one or more chunks
+in the queue. Ctrl/Cmd-click selects individual rows; Shift-click selects a
+continuous range. Alternatively, click **Select by number…** and enter zero-based
+IDs and inclusive ranges, such as `3, 8, 12-16`. Invalid or out-of-range lists
+are rejected; duplicates are removed. The queue shows the selected count, and
+the preview follows the focused selected row.
+
+Click **Retranslate selected** to force new translations for only those chunks.
+The batch uses the configured worker count and supports Pause, Resume and Cancel.
+Successful results overwrite their chunk files and refresh previews/checks;
+failed requests retain previous files. Unselected chunk files remain unchanged.
+Empty, single-character and punctuation-only chunks still produce empty text
+without contacting the model. Export the book again to include the new results.
+
+Programmatically, use `engine.retranslate_chunks([3, 8, 12, 13])` or the existing
+`engine.retranslate_single_chunk(3)` method. Both share the same worker logic.
 
 ## Headless operation
 

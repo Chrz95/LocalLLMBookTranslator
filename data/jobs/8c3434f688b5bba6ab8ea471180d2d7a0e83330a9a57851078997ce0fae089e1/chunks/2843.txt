@@ -1,0 +1,1 @@
+"Quite simple. Every breeze that passes through the pipe produces periodic vibrations with varying frequencies. This is how this eerie sound is created, whose volume is always proportional to the square of the sound amplitude."

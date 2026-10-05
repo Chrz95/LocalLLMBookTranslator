@@ -22,6 +22,21 @@ MAX_CHARS = 4000
 CHUNK_VERSION = "lossless-text-nodes-v1"
 
 
+def parse_chunk_selection(value: str, chunk_count: int) -> list[int]:
+    """Parse zero-based IDs and inclusive ranges, rejecting the entire invalid list."""
+    indices = set()
+    for token in value.replace("–", "-").replace("—", "-").split(","):
+        match = re.fullmatch(r"\s*([0-9]+)(?:\s*-\s*([0-9]+))?\s*", token)
+        if not match:
+            raise ValueError("Enter chunk numbers or ranges, for example: 3, 8, 12-16.")
+        start = int(match[1])
+        end = int(match[2]) if match[2] is not None else start
+        if start > end or end >= chunk_count:
+            raise ValueError(f"Use ascending ranges and chunk numbers from 0 to {chunk_count - 1}.")
+        indices.update(range(start, end + 1))
+    return sorted(indices)
+
+
 @dataclass(frozen=True)
 class Chunk:
     index: int
@@ -182,8 +197,8 @@ class TranslationEngine:
                 self.log.info("Job finished; cancelled=%s", self._cancel.is_set())
                 self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
 
-    def _parallel(self) -> None:
-        pending = iter(self.job.chunks)
+    def _parallel(self, chunks: list[Chunk] | None = None, force: bool = False) -> None:
+        pending = iter(self.job.chunks if chunks is None else chunks)
         futures = set()
         with ThreadPoolExecutor(max_workers=self.job.settings.max_workers,
                                 thread_name_prefix="translator") as pool:
@@ -196,7 +211,7 @@ class TranslationEngine:
                     if chunk is None:
                         exhausted = True
                     else:
-                        futures.add(pool.submit(self._process, chunk, False))
+                        futures.add(pool.submit(self._process, chunk, force))
                 if self._cancel.is_set():
                     for chunk in pending:
                         self.event(chunk.index, "Pending", "Cancelled before processing")
@@ -209,12 +224,20 @@ class TranslationEngine:
                     self._cancel.wait(0.1)
 
     def retranslate_single_chunk(self, index: int) -> None:
-        if not 0 <= index < len(self.job.chunks):
+        self.retranslate_chunks([index])
+
+    def retranslate_chunks(self, indices: list[int]) -> None:
+        """Force only selected chunks through the shared pause/cancel worker pool."""
+        if not indices:
+            raise ValueError("Select at least one chunk.")
+        if any(type(index) is not int or not 0 <= index < len(self.job.chunks)
+               for index in indices):
             raise IndexError("Chunk index is out of range.")
+        selected = [self.job.chunks[index] for index in sorted(set(indices))]
         with self.operation():
-            self.log.info("Retranslating chunk %s", index)
+            self.log.info("Retranslating %s selected chunks", len(selected))
             try:
-                self._process(self.job.chunks[index], True)
+                self._parallel(selected, force=True)
             finally:
                 self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
 

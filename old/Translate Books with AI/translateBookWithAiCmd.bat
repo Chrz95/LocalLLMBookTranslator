@@ -1,0 +1,1 @@
+python main.py book.epub book1.epub --file-type epub --input-lang de --output-lang en --model qwen2.5-7b-translator

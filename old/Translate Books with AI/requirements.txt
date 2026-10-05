@@ -1,0 +1,6 @@
+ebooklib
+beautifulsoup4
+PyPDF2
+python-docx
+langdetect
+tqdm

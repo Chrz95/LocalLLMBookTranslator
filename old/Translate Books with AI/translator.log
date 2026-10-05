@@ -1,0 +1,1289 @@
+2026-10-04 20:35:26,159 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 20:35:26,574 - INFO - Loaded progress for 81 chunks
+2026-10-04 20:35:26,574 - INFO - Starting parallel translation
+2026-10-04 20:35:26,575 - INFO - Translating chunk 12 (attempt 1)
+2026-10-04 20:35:26,576 - INFO - Translating chunk 15 (attempt 1)
+2026-10-04 20:35:26,576 - INFO - Translating chunk 25 (attempt 1)
+2026-10-04 20:35:26,576 - INFO - Translating chunk 27 (attempt 1)
+2026-10-04 20:48:45,803 - INFO - Starting translation pipeline
+2026-10-04 20:48:45,803 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 20:48:46,033 - INFO - Extracted 33 units
+2026-10-04 20:48:46,033 - INFO - Total chunks: 226
+2026-10-04 20:48:46,217 - INFO - Loaded progress for 81 chunks from resume_progress.json
+2026-10-04 20:48:46,217 - INFO - Starting parallel translation with max_workers=4
+2026-10-04 20:48:46,222 - INFO - Translating chunk 12 (attempt 1)
+2026-10-04 20:48:46,223 - INFO - Translating chunk 15 (attempt 1)
+2026-10-04 20:48:46,224 - INFO - Translating chunk 25 (attempt 1)
+2026-10-04 20:48:46,225 - INFO - Translating chunk 27 (attempt 1)
+2026-10-04 20:51:18,274 - INFO - Starting translation pipeline
+2026-10-04 20:51:18,274 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 20:51:18,505 - INFO - Extracted 33 units
+2026-10-04 20:51:18,506 - INFO - Total chunks: 226
+2026-10-04 20:51:18,599 - INFO - Background translation thread started
+2026-10-04 20:51:18,600 - INFO - Loaded progress for 81 chunks from resume_progress.json
+2026-10-04 20:51:18,600 - INFO - Starting parallel translation with max_workers=4
+2026-10-04 20:51:18,601 - INFO - Translating chunk 12 (attempt 1)
+2026-10-04 20:51:18,602 - INFO - Translating chunk 15 (attempt 1)
+2026-10-04 20:51:18,603 - INFO - Translating chunk 25 (attempt 1)
+2026-10-04 20:51:18,603 - INFO - Translating chunk 27 (attempt 1)
+2026-10-04 20:53:20,674 - ERROR - Chunk 25 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 20:53:20,674 - WARNING - Retrying chunk 25 in 60 seconds
+2026-10-04 20:53:20,674 - ERROR - Chunk 27 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 20:53:20,674 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-04 20:53:20,674 - ERROR - Chunk 12 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 20:53:20,674 - WARNING - Retrying chunk 12 in 60 seconds
+2026-10-04 20:53:20,703 - ERROR - Chunk 15 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 20:53:20,703 - WARNING - Retrying chunk 15 in 60 seconds
+2026-10-04 20:54:15,957 - INFO - Starting translation pipeline
+2026-10-04 20:54:15,957 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 20:54:16,186 - INFO - Extracted 33 units
+2026-10-04 20:54:16,186 - INFO - Total chunks: 226
+2026-10-04 20:54:16,270 - INFO - Background translation thread started
+2026-10-04 20:54:16,272 - INFO - Loaded progress for 81 chunks from resume_progress.json
+2026-10-04 20:54:16,272 - INFO - Starting parallel translation with max_workers=2
+2026-10-04 20:54:16,273 - INFO - Translating chunk 12 (attempt 1)
+2026-10-04 20:54:16,273 - INFO - Translating chunk 15 (attempt 1)
+2026-10-04 20:55:25,663 - INFO - Wrote full chunk to chunks\15.txt
+2026-10-04 20:55:25,666 - INFO - Saved progress for chunk 15 to resume_progress.json
+2026-10-04 20:55:25,667 - INFO - Chunk 15 completed
+2026-10-04 20:55:25,667 - INFO - Translating chunk 25 (attempt 1)
+2026-10-04 20:55:27,102 - INFO - Wrote full chunk to chunks\12.txt
+2026-10-04 20:55:27,115 - INFO - Saved progress for chunk 12 to resume_progress.json
+2026-10-04 20:55:27,115 - INFO - Chunk 12 completed
+2026-10-04 20:55:27,116 - INFO - Translating chunk 27 (attempt 1)
+2026-10-04 20:56:40,099 - INFO - Wrote full chunk to chunks\25.txt
+2026-10-04 20:56:40,115 - INFO - Saved progress for chunk 25 to resume_progress.json
+2026-10-04 20:56:40,115 - INFO - Chunk 25 completed
+2026-10-04 20:56:40,116 - INFO - Translating chunk 31 (attempt 1)
+2026-10-04 20:56:40,910 - INFO - Wrote full chunk to chunks\27.txt
+2026-10-04 20:56:40,923 - INFO - Saved progress for chunk 27 to resume_progress.json
+2026-10-04 20:56:40,923 - INFO - Chunk 27 completed
+2026-10-04 20:56:40,924 - INFO - Translating chunk 38 (attempt 1)
+2026-10-04 20:57:57,818 - INFO - Wrote full chunk to chunks\38.txt
+2026-10-04 20:57:57,835 - INFO - Saved progress for chunk 38 to resume_progress.json
+2026-10-04 20:57:57,836 - INFO - Chunk 38 completed
+2026-10-04 20:57:57,837 - INFO - Translating chunk 44 (attempt 1)
+2026-10-04 20:58:05,720 - INFO - Wrote full chunk to chunks\31.txt
+2026-10-04 20:58:05,739 - INFO - Saved progress for chunk 31 to resume_progress.json
+2026-10-04 20:58:05,739 - INFO - Chunk 31 completed
+2026-10-04 20:58:05,739 - INFO - Translating chunk 64 (attempt 1)
+2026-10-04 20:59:16,692 - INFO - Wrote full chunk to chunks\44.txt
+2026-10-04 20:59:16,710 - INFO - Saved progress for chunk 44 to resume_progress.json
+2026-10-04 20:59:16,710 - INFO - Chunk 44 completed
+2026-10-04 20:59:16,711 - INFO - Translating chunk 66 (attempt 1)
+2026-10-04 20:59:18,400 - INFO - Wrote full chunk to chunks\64.txt
+2026-10-04 20:59:18,411 - INFO - Saved progress for chunk 64 to resume_progress.json
+2026-10-04 20:59:18,411 - INFO - Chunk 64 completed
+2026-10-04 20:59:18,411 - INFO - Translating chunk 68 (attempt 1)
+2026-10-04 21:00:30,217 - INFO - Wrote full chunk to chunks\66.txt
+2026-10-04 21:00:30,233 - INFO - Saved progress for chunk 66 to resume_progress.json
+2026-10-04 21:00:30,233 - INFO - Chunk 66 completed
+2026-10-04 21:00:30,233 - INFO - Translating chunk 71 (attempt 1)
+2026-10-04 21:00:31,449 - INFO - Wrote full chunk to chunks\68.txt
+2026-10-04 21:00:31,461 - INFO - Saved progress for chunk 68 to resume_progress.json
+2026-10-04 21:00:31,461 - INFO - Chunk 68 completed
+2026-10-04 21:00:31,461 - INFO - Translating chunk 74 (attempt 1)
+2026-10-04 21:01:43,824 - INFO - Wrote full chunk to chunks\74.txt
+2026-10-04 21:01:43,844 - INFO - Saved progress for chunk 74 to resume_progress.json
+2026-10-04 21:01:43,844 - INFO - Chunk 74 completed
+2026-10-04 21:01:43,844 - INFO - Translating chunk 75 (attempt 1)
+2026-10-04 21:01:44,698 - INFO - Wrote full chunk to chunks\71.txt
+2026-10-04 21:01:44,712 - INFO - Saved progress for chunk 71 to resume_progress.json
+2026-10-04 21:01:44,712 - INFO - Chunk 71 completed
+2026-10-04 21:01:44,713 - INFO - Translating chunk 76 (attempt 1)
+2026-10-04 21:03:03,039 - INFO - Wrote full chunk to chunks\76.txt
+2026-10-04 21:03:03,044 - INFO - Saved progress for chunk 76 to resume_progress.json
+2026-10-04 21:03:03,044 - INFO - Chunk 76 completed
+2026-10-04 21:03:03,045 - INFO - Translating chunk 77 (attempt 1)
+2026-10-04 21:03:18,806 - INFO - Wrote full chunk to chunks\75.txt
+2026-10-04 21:03:18,825 - INFO - Saved progress for chunk 75 to resume_progress.json
+2026-10-04 21:03:18,826 - INFO - Chunk 75 completed
+2026-10-04 21:03:18,826 - INFO - Translating chunk 78 (attempt 1)
+2026-10-04 21:04:23,450 - INFO - Wrote full chunk to chunks\77.txt
+2026-10-04 21:04:23,465 - INFO - Saved progress for chunk 77 to resume_progress.json
+2026-10-04 21:04:23,465 - INFO - Chunk 77 completed
+2026-10-04 21:04:23,465 - INFO - Translating chunk 79 (attempt 1)
+2026-10-04 21:04:39,761 - INFO - Wrote full chunk to chunks\78.txt
+2026-10-04 21:04:39,778 - INFO - Saved progress for chunk 78 to resume_progress.json
+2026-10-04 21:04:39,778 - INFO - Chunk 78 completed
+2026-10-04 21:04:39,779 - INFO - Translating chunk 81 (attempt 1)
+2026-10-04 21:05:41,699 - INFO - Wrote full chunk to chunks\79.txt
+2026-10-04 21:05:41,713 - INFO - Saved progress for chunk 79 to resume_progress.json
+2026-10-04 21:05:41,714 - INFO - Chunk 79 completed
+2026-10-04 21:05:41,714 - INFO - Translating chunk 82 (attempt 1)
+2026-10-04 21:05:48,724 - INFO - Wrote full chunk to chunks\81.txt
+2026-10-04 21:05:48,744 - INFO - Saved progress for chunk 81 to resume_progress.json
+2026-10-04 21:05:48,744 - INFO - Chunk 81 completed
+2026-10-04 21:05:48,745 - INFO - Translating chunk 84 (attempt 1)
+2026-10-04 21:06:54,796 - INFO - Wrote full chunk to chunks\82.txt
+2026-10-04 21:06:54,816 - INFO - Saved progress for chunk 82 to resume_progress.json
+2026-10-04 21:06:54,816 - INFO - Chunk 82 completed
+2026-10-04 21:06:54,817 - INFO - Translating chunk 85 (attempt 1)
+2026-10-04 21:07:11,841 - INFO - Wrote full chunk to chunks\84.txt
+2026-10-04 21:07:11,862 - INFO - Saved progress for chunk 84 to resume_progress.json
+2026-10-04 21:07:11,862 - INFO - Chunk 84 completed
+2026-10-04 21:07:11,863 - INFO - Translating chunk 86 (attempt 1)
+2026-10-04 21:08:20,058 - INFO - Wrote full chunk to chunks\85.txt
+2026-10-04 21:08:20,064 - INFO - Saved progress for chunk 85 to resume_progress.json
+2026-10-04 21:08:20,064 - INFO - Chunk 85 completed
+2026-10-04 21:08:20,064 - INFO - Translating chunk 87 (attempt 1)
+2026-10-04 21:08:28,124 - INFO - Wrote full chunk to chunks\86.txt
+2026-10-04 21:08:28,145 - INFO - Saved progress for chunk 86 to resume_progress.json
+2026-10-04 21:08:28,145 - INFO - Chunk 86 completed
+2026-10-04 21:08:28,145 - INFO - Translating chunk 88 (attempt 1)
+2026-10-04 21:09:35,046 - INFO - Wrote full chunk to chunks\87.txt
+2026-10-04 21:09:35,060 - INFO - Saved progress for chunk 87 to resume_progress.json
+2026-10-04 21:09:35,060 - INFO - Chunk 87 completed
+2026-10-04 21:09:35,060 - INFO - Translating chunk 91 (attempt 1)
+2026-10-04 21:09:47,107 - INFO - Wrote full chunk to chunks\88.txt
+2026-10-04 21:09:47,127 - INFO - Saved progress for chunk 88 to resume_progress.json
+2026-10-04 21:09:47,128 - INFO - Chunk 88 completed
+2026-10-04 21:09:47,128 - INFO - Translating chunk 93 (attempt 1)
+2026-10-04 21:10:55,175 - INFO - Wrote full chunk to chunks\91.txt
+2026-10-04 21:10:55,194 - INFO - Saved progress for chunk 91 to resume_progress.json
+2026-10-04 21:10:55,194 - INFO - Chunk 91 completed
+2026-10-04 21:10:55,195 - INFO - Translating chunk 94 (attempt 1)
+2026-10-04 21:11:08,529 - INFO - Wrote full chunk to chunks\93.txt
+2026-10-04 21:11:08,548 - INFO - Saved progress for chunk 93 to resume_progress.json
+2026-10-04 21:11:08,548 - INFO - Chunk 93 completed
+2026-10-04 21:11:08,549 - INFO - Translating chunk 96 (attempt 1)
+2026-10-04 21:12:15,724 - INFO - Wrote full chunk to chunks\94.txt
+2026-10-04 21:12:15,746 - INFO - Saved progress for chunk 94 to resume_progress.json
+2026-10-04 21:12:15,746 - INFO - Chunk 94 completed
+2026-10-04 21:12:15,747 - INFO - Translating chunk 98 (attempt 1)
+2026-10-04 21:12:32,966 - INFO - Wrote full chunk to chunks\96.txt
+2026-10-04 21:12:32,971 - INFO - Saved progress for chunk 96 to resume_progress.json
+2026-10-04 21:12:32,971 - INFO - Chunk 96 completed
+2026-10-04 21:12:32,971 - INFO - Translating chunk 100 (attempt 1)
+2026-10-04 21:13:35,000 - INFO - Wrote full chunk to chunks\98.txt
+2026-10-04 21:13:35,023 - INFO - Saved progress for chunk 98 to resume_progress.json
+2026-10-04 21:13:35,023 - INFO - Chunk 98 completed
+2026-10-04 21:13:35,024 - INFO - Translating chunk 101 (attempt 1)
+2026-10-04 21:14:30,303 - INFO - Wrote full chunk to chunks\100.txt
+2026-10-04 21:14:30,320 - INFO - Saved progress for chunk 100 to resume_progress.json
+2026-10-04 21:14:30,320 - INFO - Chunk 100 completed
+2026-10-04 21:14:30,320 - INFO - Translating chunk 102 (attempt 1)
+2026-10-04 21:14:55,002 - INFO - Wrote full chunk to chunks\101.txt
+2026-10-04 21:14:55,008 - INFO - Saved progress for chunk 101 to resume_progress.json
+2026-10-04 21:14:55,008 - INFO - Chunk 101 completed
+2026-10-04 21:14:55,009 - INFO - Translating chunk 103 (attempt 1)
+2026-10-04 21:16:05,446 - INFO - Wrote full chunk to chunks\102.txt
+2026-10-04 21:16:05,466 - INFO - Saved progress for chunk 102 to resume_progress.json
+2026-10-04 21:16:05,467 - INFO - Chunk 102 completed
+2026-10-04 21:16:05,467 - INFO - Translating chunk 104 (attempt 1)
+2026-10-04 21:16:51,867 - INFO - Wrote full chunk to chunks\103.txt
+2026-10-04 21:16:51,891 - INFO - Saved progress for chunk 103 to resume_progress.json
+2026-10-04 21:16:51,891 - INFO - Chunk 103 completed
+2026-10-04 21:16:51,891 - INFO - Translating chunk 105 (attempt 1)
+2026-10-04 21:18:07,491 - ERROR - Chunk 104 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 21:18:07,491 - WARNING - Retrying chunk 104 in 60 seconds
+2026-10-04 21:18:17,688 - INFO - Wrote full chunk to chunks\105.txt
+2026-10-04 21:18:17,693 - INFO - Saved progress for chunk 105 to resume_progress.json
+2026-10-04 21:18:17,694 - INFO - Chunk 105 completed
+2026-10-04 21:18:17,694 - INFO - Translating chunk 106 (attempt 1)
+2026-10-04 21:19:07,492 - INFO - Translating chunk 104 (attempt 2)
+2026-10-04 21:19:41,612 - INFO - Wrote full chunk to chunks\106.txt
+2026-10-04 21:19:41,628 - INFO - Saved progress for chunk 106 to resume_progress.json
+2026-10-04 21:19:41,628 - INFO - Chunk 106 completed
+2026-10-04 21:19:41,628 - INFO - Translating chunk 107 (attempt 1)
+2026-10-04 21:21:03,167 - INFO - Wrote full chunk to chunks\104.txt
+2026-10-04 21:21:03,188 - INFO - Saved progress for chunk 104 to resume_progress.json
+2026-10-04 21:21:03,188 - INFO - Chunk 104 completed
+2026-10-04 21:21:03,188 - INFO - Translating chunk 108 (attempt 1)
+2026-10-04 21:21:06,590 - INFO - Wrote full chunk to chunks\107.txt
+2026-10-04 21:21:06,605 - INFO - Saved progress for chunk 107 to resume_progress.json
+2026-10-04 21:21:06,606 - INFO - Chunk 107 completed
+2026-10-04 21:21:06,606 - INFO - Translating chunk 109 (attempt 1)
+2026-10-04 21:22:12,608 - INFO - Wrote full chunk to chunks\108.txt
+2026-10-04 21:22:12,613 - INFO - Saved progress for chunk 108 to resume_progress.json
+2026-10-04 21:22:12,614 - INFO - Chunk 108 completed
+2026-10-04 21:22:12,614 - INFO - Translating chunk 110 (attempt 1)
+2026-10-04 21:22:31,828 - INFO - Wrote full chunk to chunks\109.txt
+2026-10-04 21:22:31,847 - INFO - Saved progress for chunk 109 to resume_progress.json
+2026-10-04 21:22:31,847 - INFO - Chunk 109 completed
+2026-10-04 21:22:31,847 - INFO - Translating chunk 111 (attempt 1)
+2026-10-04 21:23:55,963 - INFO - Wrote full chunk to chunks\110.txt
+2026-10-04 21:23:55,969 - INFO - Saved progress for chunk 110 to resume_progress.json
+2026-10-04 21:23:55,969 - INFO - Chunk 110 completed
+2026-10-04 21:23:55,969 - INFO - Translating chunk 114 (attempt 1)
+2026-10-04 21:24:11,382 - INFO - Wrote full chunk to chunks\111.txt
+2026-10-04 21:24:11,401 - INFO - Saved progress for chunk 111 to resume_progress.json
+2026-10-04 21:24:11,402 - INFO - Chunk 111 completed
+2026-10-04 21:24:11,402 - INFO - Translating chunk 115 (attempt 1)
+2026-10-04 21:25:55,611 - INFO - Wrote full chunk to chunks\114.txt
+2026-10-04 21:25:55,634 - INFO - Saved progress for chunk 114 to resume_progress.json
+2026-10-04 21:25:55,634 - INFO - Chunk 114 completed
+2026-10-04 21:25:55,635 - INFO - Translating chunk 116 (attempt 1)
+2026-10-04 21:26:13,446 - ERROR - Chunk 115 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 21:26:13,447 - WARNING - Retrying chunk 115 in 60 seconds
+2026-10-04 21:27:13,447 - INFO - Translating chunk 115 (attempt 2)
+2026-10-04 21:27:54,488 - INFO - Wrote full chunk to chunks\116.txt
+2026-10-04 21:27:54,508 - INFO - Saved progress for chunk 116 to resume_progress.json
+2026-10-04 21:27:54,508 - INFO - Chunk 116 completed
+2026-10-04 21:27:54,509 - INFO - Translating chunk 117 (attempt 1)
+2026-10-04 21:28:44,402 - INFO - Wrote full chunk to chunks\115.txt
+2026-10-04 21:28:44,409 - INFO - Saved progress for chunk 115 to resume_progress.json
+2026-10-04 21:28:44,409 - INFO - Chunk 115 completed
+2026-10-04 21:28:44,410 - INFO - Translating chunk 118 (attempt 1)
+2026-10-04 21:29:36,924 - INFO - Wrote full chunk to chunks\117.txt
+2026-10-04 21:29:36,940 - INFO - Saved progress for chunk 117 to resume_progress.json
+2026-10-04 21:29:36,940 - INFO - Chunk 117 completed
+2026-10-04 21:29:36,941 - INFO - Translating chunk 119 (attempt 1)
+2026-10-04 21:30:39,754 - INFO - Wrote full chunk to chunks\118.txt
+2026-10-04 21:30:39,772 - INFO - Saved progress for chunk 118 to resume_progress.json
+2026-10-04 21:30:39,772 - INFO - Chunk 118 completed
+2026-10-04 21:30:39,773 - INFO - Translating chunk 121 (attempt 1)
+2026-10-04 21:31:32,488 - INFO - Wrote full chunk to chunks\119.txt
+2026-10-04 21:31:32,505 - INFO - Saved progress for chunk 119 to resume_progress.json
+2026-10-04 21:31:32,505 - INFO - Chunk 119 completed
+2026-10-04 21:31:32,506 - INFO - Translating chunk 122 (attempt 1)
+2026-10-04 21:32:05,376 - INFO - Wrote full chunk to chunks\121.txt
+2026-10-04 21:32:05,397 - INFO - Saved progress for chunk 121 to resume_progress.json
+2026-10-04 21:32:05,397 - INFO - Chunk 121 completed
+2026-10-04 21:32:05,397 - INFO - Translating chunk 124 (attempt 1)
+2026-10-04 21:32:58,502 - INFO - Wrote full chunk to chunks\122.txt
+2026-10-04 21:32:58,518 - INFO - Saved progress for chunk 122 to resume_progress.json
+2026-10-04 21:32:58,518 - INFO - Chunk 122 completed
+2026-10-04 21:32:58,519 - INFO - Translating chunk 125 (attempt 1)
+2026-10-04 21:33:54,836 - INFO - Wrote full chunk to chunks\124.txt
+2026-10-04 21:33:54,855 - INFO - Saved progress for chunk 124 to resume_progress.json
+2026-10-04 21:33:54,855 - INFO - Chunk 124 completed
+2026-10-04 21:33:54,856 - INFO - Translating chunk 126 (attempt 1)
+2026-10-04 21:34:21,784 - INFO - Wrote full chunk to chunks\125.txt
+2026-10-04 21:34:21,803 - INFO - Saved progress for chunk 125 to resume_progress.json
+2026-10-04 21:34:21,803 - INFO - Chunk 125 completed
+2026-10-04 21:34:21,804 - INFO - Translating chunk 127 (attempt 1)
+2026-10-04 21:35:09,839 - INFO - Wrote full chunk to chunks\126.txt
+2026-10-04 21:35:09,856 - INFO - Saved progress for chunk 126 to resume_progress.json
+2026-10-04 21:35:09,856 - INFO - Chunk 126 completed
+2026-10-04 21:35:09,857 - INFO - Translating chunk 130 (attempt 1)
+2026-10-04 21:35:37,465 - INFO - Wrote full chunk to chunks\127.txt
+2026-10-04 21:35:37,485 - INFO - Saved progress for chunk 127 to resume_progress.json
+2026-10-04 21:35:37,485 - INFO - Chunk 127 completed
+2026-10-04 21:35:37,486 - INFO - Translating chunk 131 (attempt 1)
+2026-10-04 21:36:30,420 - INFO - Wrote full chunk to chunks\130.txt
+2026-10-04 21:36:30,437 - INFO - Saved progress for chunk 130 to resume_progress.json
+2026-10-04 21:36:30,437 - INFO - Chunk 130 completed
+2026-10-04 21:36:30,438 - INFO - Translating chunk 132 (attempt 1)
+2026-10-04 21:37:04,430 - INFO - Wrote full chunk to chunks\131.txt
+2026-10-04 21:37:04,450 - INFO - Saved progress for chunk 131 to resume_progress.json
+2026-10-04 21:37:04,450 - INFO - Chunk 131 completed
+2026-10-04 21:37:04,450 - INFO - Translating chunk 133 (attempt 1)
+2026-10-04 21:37:51,245 - INFO - Wrote full chunk to chunks\132.txt
+2026-10-04 21:37:51,260 - INFO - Saved progress for chunk 132 to resume_progress.json
+2026-10-04 21:37:51,261 - INFO - Chunk 132 completed
+2026-10-04 21:37:51,261 - INFO - Translating chunk 138 (attempt 1)
+2026-10-04 21:38:18,688 - INFO - Wrote full chunk to chunks\133.txt
+2026-10-04 21:38:18,708 - INFO - Saved progress for chunk 133 to resume_progress.json
+2026-10-04 21:38:18,709 - INFO - Chunk 133 completed
+2026-10-04 21:38:18,709 - INFO - Translating chunk 139 (attempt 1)
+2026-10-04 21:39:42,705 - INFO - Wrote full chunk to chunks\139.txt
+2026-10-04 21:39:42,710 - INFO - Saved progress for chunk 139 to resume_progress.json
+2026-10-04 21:39:42,710 - INFO - Chunk 139 completed
+2026-10-04 21:39:42,710 - INFO - Translating chunk 140 (attempt 1)
+2026-10-04 21:39:53,311 - ERROR - Chunk 138 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 21:39:53,312 - WARNING - Retrying chunk 138 in 60 seconds
+2026-10-04 21:40:53,312 - INFO - Translating chunk 138 (attempt 2)
+2026-10-04 21:40:56,619 - INFO - Wrote full chunk to chunks\140.txt
+2026-10-04 21:40:56,633 - INFO - Saved progress for chunk 140 to resume_progress.json
+2026-10-04 21:40:56,633 - INFO - Chunk 140 completed
+2026-10-04 21:40:56,634 - INFO - Translating chunk 141 (attempt 1)
+2026-10-04 21:42:05,053 - INFO - Wrote full chunk to chunks\138.txt
+2026-10-04 21:42:05,073 - INFO - Saved progress for chunk 138 to resume_progress.json
+2026-10-04 21:42:05,073 - INFO - Chunk 138 completed
+2026-10-04 21:42:05,074 - INFO - Translating chunk 142 (attempt 1)
+2026-10-04 21:42:11,004 - INFO - Wrote full chunk to chunks\141.txt
+2026-10-04 21:42:11,019 - INFO - Saved progress for chunk 141 to resume_progress.json
+2026-10-04 21:42:11,019 - INFO - Chunk 141 completed
+2026-10-04 21:42:11,020 - INFO - Translating chunk 143 (attempt 1)
+2026-10-04 21:43:14,824 - INFO - Wrote full chunk to chunks\142.txt
+2026-10-04 21:43:14,839 - INFO - Saved progress for chunk 142 to resume_progress.json
+2026-10-04 21:43:14,840 - INFO - Chunk 142 completed
+2026-10-04 21:43:14,840 - INFO - Translating chunk 144 (attempt 1)
+2026-10-04 21:43:22,116 - INFO - Wrote full chunk to chunks\143.txt
+2026-10-04 21:43:22,130 - INFO - Saved progress for chunk 143 to resume_progress.json
+2026-10-04 21:43:22,130 - INFO - Chunk 143 completed
+2026-10-04 21:43:22,130 - INFO - Translating chunk 145 (attempt 1)
+2026-10-04 21:44:26,567 - INFO - Wrote full chunk to chunks\145.txt
+2026-10-04 21:44:26,586 - INFO - Saved progress for chunk 145 to resume_progress.json
+2026-10-04 21:44:26,586 - INFO - Chunk 145 completed
+2026-10-04 21:44:26,587 - INFO - Translating chunk 146 (attempt 1)
+2026-10-04 21:44:34,047 - INFO - Wrote full chunk to chunks\144.txt
+2026-10-04 21:44:34,063 - INFO - Saved progress for chunk 144 to resume_progress.json
+2026-10-04 21:44:34,063 - INFO - Chunk 144 completed
+2026-10-04 21:44:34,064 - INFO - Translating chunk 147 (attempt 1)
+2026-10-04 21:45:39,611 - INFO - Wrote full chunk to chunks\146.txt
+2026-10-04 21:45:39,626 - INFO - Saved progress for chunk 146 to resume_progress.json
+2026-10-04 21:45:39,626 - INFO - Chunk 146 completed
+2026-10-04 21:45:39,627 - INFO - Translating chunk 148 (attempt 1)
+2026-10-04 21:45:49,386 - INFO - Wrote full chunk to chunks\147.txt
+2026-10-04 21:45:49,407 - INFO - Saved progress for chunk 147 to resume_progress.json
+2026-10-04 21:45:49,407 - INFO - Chunk 147 completed
+2026-10-04 21:45:49,407 - INFO - Translating chunk 149 (attempt 1)
+2026-10-04 21:46:55,013 - INFO - Wrote full chunk to chunks\148.txt
+2026-10-04 21:46:55,031 - INFO - Saved progress for chunk 148 to resume_progress.json
+2026-10-04 21:46:55,031 - INFO - Chunk 148 completed
+2026-10-04 21:46:55,032 - INFO - Translating chunk 150 (attempt 1)
+2026-10-04 21:47:04,774 - INFO - Wrote full chunk to chunks\149.txt
+2026-10-04 21:47:04,789 - INFO - Saved progress for chunk 149 to resume_progress.json
+2026-10-04 21:47:04,789 - INFO - Chunk 149 completed
+2026-10-04 21:47:04,790 - INFO - Translating chunk 151 (attempt 1)
+2026-10-04 21:47:36,123 - INFO - Wrote full chunk to chunks\150.txt
+2026-10-04 21:47:36,140 - INFO - Saved progress for chunk 150 to resume_progress.json
+2026-10-04 21:47:36,140 - INFO - Chunk 150 completed
+2026-10-04 21:47:36,140 - INFO - Translating chunk 152 (attempt 1)
+2026-10-04 21:47:54,034 - INFO - Wrote full chunk to chunks\152.txt
+2026-10-04 21:47:54,053 - INFO - Saved progress for chunk 152 to resume_progress.json
+2026-10-04 21:47:54,053 - INFO - Chunk 152 completed
+2026-10-04 21:47:54,054 - INFO - Translating chunk 153 (attempt 1)
+2026-10-04 21:48:14,421 - INFO - Wrote full chunk to chunks\151.txt
+2026-10-04 21:48:14,438 - INFO - Saved progress for chunk 151 to resume_progress.json
+2026-10-04 21:48:14,439 - INFO - Chunk 151 completed
+2026-10-04 21:48:14,439 - INFO - Translating chunk 154 (attempt 1)
+2026-10-04 21:49:16,205 - INFO - Wrote full chunk to chunks\153.txt
+2026-10-04 21:49:16,209 - INFO - Saved progress for chunk 153 to resume_progress.json
+2026-10-04 21:49:16,209 - INFO - Chunk 153 completed
+2026-10-04 21:49:16,209 - INFO - Translating chunk 155 (attempt 1)
+2026-10-04 21:49:29,764 - INFO - Wrote full chunk to chunks\154.txt
+2026-10-04 21:49:29,783 - INFO - Saved progress for chunk 154 to resume_progress.json
+2026-10-04 21:49:29,783 - INFO - Chunk 154 completed
+2026-10-04 21:49:29,784 - INFO - Translating chunk 156 (attempt 1)
+2026-10-04 21:50:31,650 - INFO - Wrote full chunk to chunks\155.txt
+2026-10-04 21:50:31,665 - INFO - Saved progress for chunk 155 to resume_progress.json
+2026-10-04 21:50:31,665 - INFO - Chunk 155 completed
+2026-10-04 21:50:31,666 - INFO - Translating chunk 157 (attempt 1)
+2026-10-04 21:50:49,614 - INFO - Wrote full chunk to chunks\156.txt
+2026-10-04 21:50:49,631 - INFO - Saved progress for chunk 156 to resume_progress.json
+2026-10-04 21:50:49,631 - INFO - Chunk 156 completed
+2026-10-04 21:50:49,632 - INFO - Translating chunk 158 (attempt 1)
+2026-10-04 21:51:48,780 - INFO - Wrote full chunk to chunks\157.txt
+2026-10-04 21:51:48,796 - INFO - Saved progress for chunk 157 to resume_progress.json
+2026-10-04 21:51:48,796 - INFO - Chunk 157 completed
+2026-10-04 21:51:48,797 - INFO - Translating chunk 159 (attempt 1)
+2026-10-04 21:52:03,204 - INFO - Wrote full chunk to chunks\158.txt
+2026-10-04 21:52:03,220 - INFO - Saved progress for chunk 158 to resume_progress.json
+2026-10-04 21:52:03,221 - INFO - Chunk 158 completed
+2026-10-04 21:52:03,221 - INFO - Translating chunk 160 (attempt 1)
+2026-10-04 21:52:23,191 - INFO - Wrote full chunk to chunks\159.txt
+2026-10-04 21:52:23,208 - INFO - Saved progress for chunk 159 to resume_progress.json
+2026-10-04 21:52:23,208 - INFO - Chunk 159 completed
+2026-10-04 21:52:23,209 - INFO - Translating chunk 161 (attempt 1)
+2026-10-04 21:53:17,940 - INFO - Wrote full chunk to chunks\160.txt
+2026-10-04 21:53:17,955 - INFO - Saved progress for chunk 160 to resume_progress.json
+2026-10-04 21:53:17,955 - INFO - Chunk 160 completed
+2026-10-04 21:53:17,955 - INFO - Translating chunk 162 (attempt 1)
+2026-10-04 21:53:41,837 - INFO - Wrote full chunk to chunks\161.txt
+2026-10-04 21:53:41,854 - INFO - Saved progress for chunk 161 to resume_progress.json
+2026-10-04 21:53:41,854 - INFO - Chunk 161 completed
+2026-10-04 21:53:41,854 - INFO - Translating chunk 163 (attempt 1)
+2026-10-04 21:54:36,251 - INFO - Wrote full chunk to chunks\162.txt
+2026-10-04 21:54:36,256 - INFO - Saved progress for chunk 162 to resume_progress.json
+2026-10-04 21:54:36,256 - INFO - Chunk 162 completed
+2026-10-04 21:54:36,257 - INFO - Translating chunk 164 (attempt 1)
+2026-10-04 21:54:36,321 - INFO - Wrote full chunk to chunks\163.txt
+2026-10-04 21:54:36,333 - INFO - Saved progress for chunk 163 to resume_progress.json
+2026-10-04 21:54:36,334 - INFO - Chunk 163 completed
+2026-10-04 21:54:36,334 - INFO - Translating chunk 165 (attempt 1)
+2026-10-04 21:54:50,423 - INFO - Wrote full chunk to chunks\164.txt
+2026-10-04 21:54:50,440 - INFO - Saved progress for chunk 164 to resume_progress.json
+2026-10-04 21:54:50,440 - INFO - Chunk 164 completed
+2026-10-04 21:54:50,441 - INFO - Translating chunk 166 (attempt 1)
+2026-10-04 21:56:01,745 - INFO - Wrote full chunk to chunks\165.txt
+2026-10-04 21:56:01,752 - INFO - Saved progress for chunk 165 to resume_progress.json
+2026-10-04 21:56:01,753 - INFO - Chunk 165 completed
+2026-10-04 21:56:01,753 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,753 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,754 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,755 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,756 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,757 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,758 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:01,759 - WARNING - Translation cancelled by user
+2026-10-04 21:56:06,262 - INFO - Wrote full chunk to chunks\166.txt
+2026-10-04 21:56:06,275 - INFO - Saved progress for chunk 166 to resume_progress.json
+2026-10-04 21:56:06,275 - INFO - Chunk 166 completed
+2026-10-04 21:56:06,277 - INFO - All chunks processed (files on disk)
+2026-10-04 21:56:35,408 - INFO - Starting translation pipeline
+2026-10-04 21:56:35,408 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 21:56:35,630 - INFO - Extracted 33 units
+2026-10-04 21:56:35,631 - INFO - Total chunks: 226
+2026-10-04 21:56:35,721 - INFO - Background translation thread started
+2026-10-04 21:56:35,734 - INFO - Loaded progress for 167 chunks from resume_progress.json
+2026-10-04 21:56:35,734 - INFO - Starting parallel translation with max_workers=2
+2026-10-04 21:56:36,247 - INFO - Translating chunk 167 (attempt 1)
+2026-10-04 21:56:36,248 - INFO - Translating chunk 168 (attempt 1)
+2026-10-04 21:57:02,614 - INFO - Wrote full chunk to chunks\167.txt
+2026-10-04 21:57:02,618 - INFO - Saved progress for chunk 167 to resume_progress.json
+2026-10-04 21:57:02,618 - INFO - Chunk 167 completed
+2026-10-04 21:57:02,619 - INFO - Translating chunk 169 (attempt 1)
+2026-10-04 21:57:57,708 - INFO - Wrote full chunk to chunks\168.txt
+2026-10-04 21:57:57,713 - INFO - Saved progress for chunk 168 to resume_progress.json
+2026-10-04 21:57:57,713 - INFO - Chunk 168 completed
+2026-10-04 21:57:57,714 - INFO - Translating chunk 170 (attempt 1)
+2026-10-04 21:58:25,494 - INFO - Wrote full chunk to chunks\169.txt
+2026-10-04 21:58:25,512 - INFO - Saved progress for chunk 169 to resume_progress.json
+2026-10-04 21:58:25,512 - INFO - Chunk 169 completed
+2026-10-04 21:58:25,513 - INFO - Translating chunk 171 (attempt 1)
+2026-10-04 21:59:18,148 - INFO - Wrote full chunk to chunks\170.txt
+2026-10-04 21:59:18,169 - INFO - Saved progress for chunk 170 to resume_progress.json
+2026-10-04 21:59:18,169 - INFO - Chunk 170 completed
+2026-10-04 21:59:18,170 - INFO - Translating chunk 172 (attempt 1)
+2026-10-04 21:59:39,675 - INFO - Wrote full chunk to chunks\171.txt
+2026-10-04 21:59:39,697 - INFO - Saved progress for chunk 171 to resume_progress.json
+2026-10-04 21:59:39,698 - INFO - Chunk 171 completed
+2026-10-04 21:59:39,699 - INFO - Translating chunk 173 (attempt 1)
+2026-10-04 22:00:35,097 - INFO - Wrote full chunk to chunks\172.txt
+2026-10-04 22:00:35,116 - INFO - Saved progress for chunk 172 to resume_progress.json
+2026-10-04 22:00:35,116 - INFO - Chunk 172 completed
+2026-10-04 22:00:35,117 - INFO - Translating chunk 174 (attempt 1)
+2026-10-04 22:01:02,056 - INFO - Wrote full chunk to chunks\173.txt
+2026-10-04 22:01:02,072 - INFO - Saved progress for chunk 173 to resume_progress.json
+2026-10-04 22:01:02,073 - INFO - Chunk 173 completed
+2026-10-04 22:01:02,073 - INFO - Translating chunk 175 (attempt 1)
+2026-10-04 22:01:53,527 - INFO - Wrote full chunk to chunks\174.txt
+2026-10-04 22:01:53,533 - INFO - Saved progress for chunk 174 to resume_progress.json
+2026-10-04 22:01:53,533 - INFO - Chunk 174 completed
+2026-10-04 22:01:53,534 - INFO - Translating chunk 176 (attempt 1)
+2026-10-04 22:02:13,789 - INFO - Wrote full chunk to chunks\176.txt
+2026-10-04 22:02:13,809 - INFO - Saved progress for chunk 176 to resume_progress.json
+2026-10-04 22:02:13,810 - INFO - Chunk 176 completed
+2026-10-04 22:02:13,811 - INFO - Translating chunk 177 (attempt 1)
+2026-10-04 22:02:28,296 - INFO - Wrote full chunk to chunks\175.txt
+2026-10-04 22:02:28,314 - INFO - Saved progress for chunk 175 to resume_progress.json
+2026-10-04 22:02:28,315 - INFO - Chunk 175 completed
+2026-10-04 22:02:28,316 - INFO - Translating chunk 178 (attempt 1)
+2026-10-04 22:03:31,761 - INFO - Wrote full chunk to chunks\177.txt
+2026-10-04 22:03:31,779 - INFO - Saved progress for chunk 177 to resume_progress.json
+2026-10-04 22:03:31,779 - INFO - Chunk 177 completed
+2026-10-04 22:03:31,780 - INFO - Translating chunk 179 (attempt 1)
+2026-10-04 22:03:47,330 - INFO - Wrote full chunk to chunks\178.txt
+2026-10-04 22:03:47,344 - INFO - Saved progress for chunk 178 to resume_progress.json
+2026-10-04 22:03:47,344 - INFO - Chunk 178 completed
+2026-10-04 22:03:47,345 - INFO - Translating chunk 180 (attempt 1)
+2026-10-04 22:05:01,416 - INFO - Wrote full chunk to chunks\179.txt
+2026-10-04 22:05:01,433 - INFO - Saved progress for chunk 179 to resume_progress.json
+2026-10-04 22:05:01,433 - INFO - Chunk 179 completed
+2026-10-04 22:05:01,435 - INFO - Translating chunk 181 (attempt 1)
+2026-10-04 22:05:14,029 - INFO - Wrote full chunk to chunks\180.txt
+2026-10-04 22:05:14,050 - INFO - Saved progress for chunk 180 to resume_progress.json
+2026-10-04 22:05:14,051 - INFO - Chunk 180 completed
+2026-10-04 22:05:14,052 - INFO - Translating chunk 182 (attempt 1)
+2026-10-04 22:06:15,300 - INFO - Wrote full chunk to chunks\181.txt
+2026-10-04 22:06:15,317 - INFO - Saved progress for chunk 181 to resume_progress.json
+2026-10-04 22:06:15,317 - INFO - Chunk 181 completed
+2026-10-04 22:06:15,318 - INFO - Translating chunk 183 (attempt 1)
+2026-10-04 22:06:27,789 - INFO - Wrote full chunk to chunks\182.txt
+2026-10-04 22:06:27,803 - INFO - Saved progress for chunk 182 to resume_progress.json
+2026-10-04 22:06:27,803 - INFO - Chunk 182 completed
+2026-10-04 22:06:27,804 - INFO - Translating chunk 184 (attempt 1)
+2026-10-04 22:07:23,425 - INFO - Wrote full chunk to chunks\183.txt
+2026-10-04 22:07:23,445 - INFO - Saved progress for chunk 183 to resume_progress.json
+2026-10-04 22:07:23,445 - INFO - Chunk 183 completed
+2026-10-04 22:07:23,446 - INFO - Translating chunk 185 (attempt 1)
+2026-10-04 22:07:36,374 - INFO - Wrote full chunk to chunks\184.txt
+2026-10-04 22:07:36,387 - INFO - Saved progress for chunk 184 to resume_progress.json
+2026-10-04 22:07:36,388 - INFO - Chunk 184 completed
+2026-10-04 22:07:36,389 - INFO - Translating chunk 186 (attempt 1)
+2026-10-04 22:08:35,519 - INFO - Wrote full chunk to chunks\185.txt
+2026-10-04 22:08:35,534 - INFO - Saved progress for chunk 185 to resume_progress.json
+2026-10-04 22:08:35,534 - INFO - Chunk 185 completed
+2026-10-04 22:08:35,535 - INFO - Translating chunk 187 (attempt 1)
+2026-10-04 22:08:55,069 - INFO - Wrote full chunk to chunks\186.txt
+2026-10-04 22:08:55,084 - INFO - Saved progress for chunk 186 to resume_progress.json
+2026-10-04 22:08:55,085 - INFO - Chunk 186 completed
+2026-10-04 22:08:55,086 - INFO - Translating chunk 188 (attempt 1)
+2026-10-04 22:09:47,496 - INFO - Wrote full chunk to chunks\187.txt
+2026-10-04 22:09:47,515 - INFO - Saved progress for chunk 187 to resume_progress.json
+2026-10-04 22:09:47,515 - INFO - Chunk 187 completed
+2026-10-04 22:09:47,516 - INFO - Translating chunk 189 (attempt 1)
+2026-10-04 22:10:08,662 - INFO - Wrote full chunk to chunks\188.txt
+2026-10-04 22:10:08,681 - INFO - Saved progress for chunk 188 to resume_progress.json
+2026-10-04 22:10:08,682 - INFO - Chunk 188 completed
+2026-10-04 22:10:08,683 - INFO - Translating chunk 190 (attempt 1)
+2026-10-04 22:10:13,270 - INFO - Wrote full chunk to chunks\189.txt
+2026-10-04 22:10:13,289 - INFO - Saved progress for chunk 189 to resume_progress.json
+2026-10-04 22:10:13,289 - INFO - Chunk 189 completed
+2026-10-04 22:10:13,290 - INFO - Translating chunk 191 (attempt 1)
+2026-10-04 22:10:59,391 - INFO - Wrote full chunk to chunks\190.txt
+2026-10-04 22:10:59,404 - INFO - Saved progress for chunk 190 to resume_progress.json
+2026-10-04 22:10:59,405 - INFO - Chunk 190 completed
+2026-10-04 22:10:59,406 - INFO - Translating chunk 192 (attempt 1)
+2026-10-04 22:11:25,683 - INFO - Wrote full chunk to chunks\191.txt
+2026-10-04 22:11:25,701 - INFO - Saved progress for chunk 191 to resume_progress.json
+2026-10-04 22:11:25,702 - INFO - Chunk 191 completed
+2026-10-04 22:11:25,702 - INFO - Translating chunk 193 (attempt 1)
+2026-10-04 22:12:09,528 - INFO - Wrote full chunk to chunks\192.txt
+2026-10-04 22:12:09,548 - INFO - Saved progress for chunk 192 to resume_progress.json
+2026-10-04 22:12:09,549 - INFO - Chunk 192 completed
+2026-10-04 22:12:09,550 - INFO - Translating chunk 194 (attempt 1)
+2026-10-04 22:12:32,882 - INFO - Wrote full chunk to chunks\193.txt
+2026-10-04 22:12:32,900 - INFO - Saved progress for chunk 193 to resume_progress.json
+2026-10-04 22:12:32,900 - INFO - Chunk 193 completed
+2026-10-04 22:12:32,901 - INFO - Translating chunk 195 (attempt 1)
+2026-10-04 22:13:20,576 - INFO - Wrote full chunk to chunks\194.txt
+2026-10-04 22:13:20,588 - INFO - Saved progress for chunk 194 to resume_progress.json
+2026-10-04 22:13:20,588 - INFO - Chunk 194 completed
+2026-10-04 22:13:20,588 - INFO - Translating chunk 196 (attempt 1)
+2026-10-04 22:13:39,153 - INFO - Wrote full chunk to chunks\195.txt
+2026-10-04 22:13:39,166 - INFO - Saved progress for chunk 195 to resume_progress.json
+2026-10-04 22:13:39,166 - INFO - Chunk 195 completed
+2026-10-04 22:13:39,167 - INFO - Translating chunk 197 (attempt 1)
+2026-10-04 22:14:05,332 - INFO - Wrote full chunk to chunks\196.txt
+2026-10-04 22:14:05,349 - INFO - Saved progress for chunk 196 to resume_progress.json
+2026-10-04 22:14:05,349 - INFO - Chunk 196 completed
+2026-10-04 22:14:05,351 - INFO - Translating chunk 198 (attempt 1)
+2026-10-04 22:14:53,713 - INFO - Wrote full chunk to chunks\197.txt
+2026-10-04 22:14:53,727 - INFO - Saved progress for chunk 197 to resume_progress.json
+2026-10-04 22:14:53,727 - INFO - Chunk 197 completed
+2026-10-04 22:14:53,728 - INFO - Translating chunk 199 (attempt 1)
+2026-10-04 22:15:17,639 - INFO - Wrote full chunk to chunks\198.txt
+2026-10-04 22:15:17,655 - INFO - Saved progress for chunk 198 to resume_progress.json
+2026-10-04 22:15:17,655 - INFO - Chunk 198 completed
+2026-10-04 22:15:17,656 - INFO - Translating chunk 200 (attempt 1)
+2026-10-04 22:15:47,879 - INFO - Wrote full chunk to chunks\199.txt
+2026-10-04 22:15:47,893 - INFO - Saved progress for chunk 199 to resume_progress.json
+2026-10-04 22:15:47,894 - INFO - Chunk 199 completed
+2026-10-04 22:15:47,894 - INFO - Translating chunk 201 (attempt 1)
+2026-10-04 22:16:25,553 - INFO - Wrote full chunk to chunks\200.txt
+2026-10-04 22:16:25,567 - INFO - Saved progress for chunk 200 to resume_progress.json
+2026-10-04 22:16:25,568 - INFO - Chunk 200 completed
+2026-10-04 22:16:25,568 - INFO - Translating chunk 202 (attempt 1)
+2026-10-04 22:16:56,871 - INFO - Wrote full chunk to chunks\201.txt
+2026-10-04 22:16:56,889 - INFO - Saved progress for chunk 201 to resume_progress.json
+2026-10-04 22:16:56,889 - INFO - Chunk 201 completed
+2026-10-04 22:16:56,890 - INFO - Translating chunk 203 (attempt 1)
+2026-10-04 22:17:37,104 - INFO - Wrote full chunk to chunks\202.txt
+2026-10-04 22:17:37,118 - INFO - Saved progress for chunk 202 to resume_progress.json
+2026-10-04 22:17:37,118 - INFO - Chunk 202 completed
+2026-10-04 22:17:37,118 - INFO - Translating chunk 204 (attempt 1)
+2026-10-04 22:18:11,003 - INFO - Wrote full chunk to chunks\203.txt
+2026-10-04 22:18:11,023 - INFO - Saved progress for chunk 203 to resume_progress.json
+2026-10-04 22:18:11,023 - INFO - Chunk 203 completed
+2026-10-04 22:18:11,024 - INFO - Translating chunk 205 (attempt 1)
+2026-10-04 22:18:49,961 - INFO - Wrote full chunk to chunks\204.txt
+2026-10-04 22:18:49,974 - INFO - Saved progress for chunk 204 to resume_progress.json
+2026-10-04 22:18:49,975 - INFO - Chunk 204 completed
+2026-10-04 22:18:49,975 - INFO - Translating chunk 206 (attempt 1)
+2026-10-04 22:18:50,441 - INFO - Wrote full chunk to chunks\205.txt
+2026-10-04 22:18:50,454 - INFO - Saved progress for chunk 205 to resume_progress.json
+2026-10-04 22:18:50,455 - INFO - Chunk 205 completed
+2026-10-04 22:18:50,455 - INFO - Translating chunk 207 (attempt 1)
+2026-10-04 22:20:03,332 - INFO - Wrote full chunk to chunks\206.txt
+2026-10-04 22:20:03,349 - INFO - Saved progress for chunk 206 to resume_progress.json
+2026-10-04 22:20:03,350 - INFO - Chunk 206 completed
+2026-10-04 22:20:03,351 - INFO - Translating chunk 208 (attempt 1)
+2026-10-04 22:20:03,842 - INFO - Wrote full chunk to chunks\207.txt
+2026-10-04 22:20:03,851 - INFO - Saved progress for chunk 207 to resume_progress.json
+2026-10-04 22:20:03,851 - INFO - Chunk 207 completed
+2026-10-04 22:20:03,852 - INFO - Translating chunk 209 (attempt 1)
+2026-10-04 22:21:17,125 - INFO - Wrote full chunk to chunks\208.txt
+2026-10-04 22:21:17,139 - INFO - Saved progress for chunk 208 to resume_progress.json
+2026-10-04 22:21:17,140 - INFO - Chunk 208 completed
+2026-10-04 22:21:17,141 - INFO - Translating chunk 210 (attempt 1)
+2026-10-04 22:21:18,941 - INFO - Wrote full chunk to chunks\209.txt
+2026-10-04 22:21:18,951 - INFO - Saved progress for chunk 209 to resume_progress.json
+2026-10-04 22:21:18,951 - INFO - Chunk 209 completed
+2026-10-04 22:21:18,952 - INFO - Translating chunk 211 (attempt 1)
+2026-10-04 22:22:30,568 - INFO - Wrote full chunk to chunks\211.txt
+2026-10-04 22:22:30,582 - INFO - Saved progress for chunk 211 to resume_progress.json
+2026-10-04 22:22:30,582 - INFO - Chunk 211 completed
+2026-10-04 22:22:30,583 - INFO - Translating chunk 212 (attempt 1)
+2026-10-04 22:22:34,299 - INFO - Wrote full chunk to chunks\212.txt
+2026-10-04 22:22:34,314 - INFO - Saved progress for chunk 212 to resume_progress.json
+2026-10-04 22:22:34,315 - INFO - Chunk 212 completed
+2026-10-04 22:22:34,316 - INFO - Translating chunk 213 (attempt 1)
+2026-10-04 22:22:35,733 - INFO - Wrote full chunk to chunks\210.txt
+2026-10-04 22:22:35,744 - INFO - Saved progress for chunk 210 to resume_progress.json
+2026-10-04 22:22:35,744 - INFO - Chunk 210 completed
+2026-10-04 22:22:35,745 - INFO - Translating chunk 214 (attempt 1)
+2026-10-04 22:23:53,826 - INFO - Wrote full chunk to chunks\213.txt
+2026-10-04 22:23:53,846 - INFO - Saved progress for chunk 213 to resume_progress.json
+2026-10-04 22:23:53,846 - INFO - Chunk 213 completed
+2026-10-04 22:23:53,847 - INFO - Translating chunk 215 (attempt 1)
+2026-10-04 22:24:00,391 - INFO - Wrote full chunk to chunks\214.txt
+2026-10-04 22:24:00,415 - INFO - Saved progress for chunk 214 to resume_progress.json
+2026-10-04 22:24:00,416 - INFO - Chunk 214 completed
+2026-10-04 22:24:00,417 - INFO - Translating chunk 216 (attempt 1)
+2026-10-04 22:25:16,501 - INFO - Wrote full chunk to chunks\215.txt
+2026-10-04 22:25:16,515 - INFO - Saved progress for chunk 215 to resume_progress.json
+2026-10-04 22:25:16,515 - INFO - Chunk 215 completed
+2026-10-04 22:25:16,515 - INFO - Translating chunk 217 (attempt 1)
+2026-10-04 22:25:25,554 - INFO - Wrote full chunk to chunks\216.txt
+2026-10-04 22:25:25,569 - INFO - Saved progress for chunk 216 to resume_progress.json
+2026-10-04 22:25:25,569 - INFO - Chunk 216 completed
+2026-10-04 22:25:25,570 - INFO - Translating chunk 218 (attempt 1)
+2026-10-04 22:27:18,546 - ERROR - Chunk 217 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:27:18,546 - WARNING - Retrying chunk 217 in 60 seconds
+2026-10-04 22:27:27,616 - ERROR - Chunk 218 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:27:27,616 - WARNING - Retrying chunk 218 in 60 seconds
+2026-10-04 22:28:18,547 - INFO - Translating chunk 217 (attempt 2)
+2026-10-04 22:28:27,617 - INFO - Translating chunk 218 (attempt 2)
+2026-10-04 22:30:20,610 - ERROR - Chunk 217 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:30:20,610 - WARNING - Retrying chunk 217 in 60 seconds
+2026-10-04 22:30:29,691 - ERROR - Chunk 218 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:30:29,692 - WARNING - Retrying chunk 218 in 60 seconds
+2026-10-04 22:31:20,611 - INFO - Translating chunk 217 (attempt 3)
+2026-10-04 22:31:29,692 - INFO - Translating chunk 218 (attempt 3)
+2026-10-04 22:33:22,659 - ERROR - Chunk 217 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:33:22,659 - WARNING - Retrying chunk 217 in 60 seconds
+2026-10-04 22:33:31,743 - ERROR - Chunk 218 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-04 22:33:31,743 - WARNING - Retrying chunk 218 in 60 seconds
+2026-10-04 22:34:22,659 - INFO - Translating chunk 217 (attempt 4)
+2026-10-04 22:34:31,744 - INFO - Translating chunk 218 (attempt 4)
+2026-10-04 22:36:04,826 - INFO - Wrote full chunk to chunks\217.txt
+2026-10-04 22:36:04,831 - INFO - Saved progress for chunk 217 to resume_progress.json
+2026-10-04 22:36:04,832 - INFO - Chunk 217 completed
+2026-10-04 22:36:04,832 - INFO - Translating chunk 219 (attempt 1)
+2026-10-04 22:36:05,584 - INFO - Wrote full chunk to chunks\218.txt
+2026-10-04 22:36:05,596 - INFO - Saved progress for chunk 218 to resume_progress.json
+2026-10-04 22:36:05,596 - INFO - Chunk 218 completed
+2026-10-04 22:36:05,596 - INFO - Translating chunk 220 (attempt 1)
+2026-10-04 22:36:59,296 - INFO - Wrote full chunk to chunks\219.txt
+2026-10-04 22:36:59,311 - INFO - Saved progress for chunk 219 to resume_progress.json
+2026-10-04 22:36:59,311 - INFO - Chunk 219 completed
+2026-10-04 22:36:59,312 - INFO - Translating chunk 221 (attempt 1)
+2026-10-04 22:37:16,439 - INFO - Wrote full chunk to chunks\220.txt
+2026-10-04 22:37:16,462 - INFO - Saved progress for chunk 220 to resume_progress.json
+2026-10-04 22:37:16,463 - INFO - Chunk 220 completed
+2026-10-04 22:37:16,464 - INFO - Translating chunk 222 (attempt 1)
+2026-10-04 22:38:09,296 - INFO - Wrote full chunk to chunks\221.txt
+2026-10-04 22:38:09,310 - INFO - Saved progress for chunk 221 to resume_progress.json
+2026-10-04 22:38:09,311 - INFO - Chunk 221 completed
+2026-10-04 22:38:09,311 - INFO - Translating chunk 223 (attempt 1)
+2026-10-04 22:38:17,351 - INFO - Wrote full chunk to chunks\222.txt
+2026-10-04 22:38:17,368 - INFO - Saved progress for chunk 222 to resume_progress.json
+2026-10-04 22:38:17,368 - INFO - Chunk 222 completed
+2026-10-04 22:38:17,369 - INFO - Translating chunk 224 (attempt 1)
+2026-10-04 22:39:24,426 - INFO - Wrote full chunk to chunks\223.txt
+2026-10-04 22:39:24,446 - INFO - Saved progress for chunk 223 to resume_progress.json
+2026-10-04 22:39:24,446 - INFO - Chunk 223 completed
+2026-10-04 22:39:24,447 - INFO - Translating chunk 225 (attempt 1)
+2026-10-04 22:39:29,457 - INFO - Wrote full chunk to chunks\224.txt
+2026-10-04 22:39:29,472 - INFO - Saved progress for chunk 224 to resume_progress.json
+2026-10-04 22:39:29,473 - INFO - Chunk 224 completed
+2026-10-04 22:40:00,020 - INFO - Wrote full chunk to chunks\225.txt
+2026-10-04 22:40:00,034 - INFO - Saved progress for chunk 225 to resume_progress.json
+2026-10-04 22:40:00,035 - INFO - Chunk 225 completed
+2026-10-04 22:40:00,035 - INFO - All chunks processed (files on disk)
+2026-10-04 22:40:00,542 - INFO - Output written successfully
+2026-10-04 22:40:00,542 - INFO - Background translation thread finished
+2026-10-04 22:51:29,724 - INFO - Starting translation pipeline
+2026-10-04 22:51:29,724 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 22:51:29,939 - INFO - Extracted 33 units
+2026-10-04 22:51:29,939 - INFO - Total chunks: 226
+2026-10-04 22:51:30,028 - INFO - Background translation thread started
+2026-10-04 22:51:30,028 - INFO - Loaded progress for 145 chunks from resume_progress.json
+2026-10-04 22:51:30,028 - INFO - Starting parallel translation with max_workers=2
+2026-10-04 22:51:30,029 - INFO - Translating chunk 0 (attempt 1)
+2026-10-04 22:51:30,030 - INFO - Translating chunk 1 (attempt 1)
+2026-10-04 22:51:37,187 - INFO - Wrote full chunk to chunks\1.txt
+2026-10-04 22:51:37,189 - INFO - Saved progress for chunk 1 to resume_progress.json
+2026-10-04 22:51:37,189 - INFO - Chunk 1 completed
+2026-10-04 22:51:37,190 - INFO - Translating chunk 2 (attempt 1)
+2026-10-04 22:51:48,856 - INFO - Wrote full chunk to chunks\0.txt
+2026-10-04 22:51:48,857 - INFO - Saved progress for chunk 0 to resume_progress.json
+2026-10-04 22:51:48,857 - INFO - Chunk 0 completed
+2026-10-04 22:51:48,858 - INFO - Translating chunk 3 (attempt 1)
+2026-10-04 22:51:49,388 - INFO - Wrote full chunk to chunks\2.txt
+2026-10-04 22:51:49,396 - INFO - Saved progress for chunk 2 to resume_progress.json
+2026-10-04 22:51:49,397 - INFO - Chunk 2 completed
+2026-10-04 22:51:49,397 - INFO - Translating chunk 4 (attempt 1)
+2026-10-04 22:53:04,325 - INFO - Wrote full chunk to chunks\3.txt
+2026-10-04 22:53:04,336 - INFO - Saved progress for chunk 3 to resume_progress.json
+2026-10-04 22:53:04,337 - INFO - Chunk 3 completed
+2026-10-04 22:53:04,337 - INFO - Translating chunk 5 (attempt 1)
+2026-10-04 22:53:04,650 - INFO - Wrote full chunk to chunks\4.txt
+2026-10-04 22:53:04,657 - INFO - Saved progress for chunk 4 to resume_progress.json
+2026-10-04 22:53:04,657 - INFO - Chunk 4 completed
+2026-10-04 22:53:04,657 - INFO - Translating chunk 6 (attempt 1)
+2026-10-04 22:54:17,585 - INFO - Wrote full chunk to chunks\6.txt
+2026-10-04 22:54:17,586 - INFO - Wrote full chunk to chunks\5.txt
+2026-10-04 22:54:17,592 - INFO - Saved progress for chunk 6 to resume_progress.json
+2026-10-04 22:54:17,592 - INFO - Chunk 6 completed
+2026-10-04 22:54:17,592 - INFO - Saved progress for chunk 5 to resume_progress.json
+2026-10-04 22:54:17,593 - INFO - Chunk 5 completed
+2026-10-04 22:54:17,593 - INFO - Translating chunk 7 (attempt 1)
+2026-10-04 22:54:17,594 - INFO - Translating chunk 8 (attempt 1)
+2026-10-04 22:55:26,938 - INFO - Wrote full chunk to chunks\7.txt
+2026-10-04 22:55:26,948 - INFO - Saved progress for chunk 7 to resume_progress.json
+2026-10-04 22:55:26,948 - INFO - Chunk 7 completed
+2026-10-04 22:55:26,949 - INFO - Translating chunk 9 (attempt 1)
+2026-10-04 22:55:31,931 - INFO - Wrote full chunk to chunks\8.txt
+2026-10-04 22:55:31,947 - INFO - Saved progress for chunk 8 to resume_progress.json
+2026-10-04 22:55:31,948 - INFO - Chunk 8 completed
+2026-10-04 22:55:31,948 - INFO - Translating chunk 10 (attempt 1)
+2026-10-04 22:56:20,920 - INFO - Wrote full chunk to chunks\9.txt
+2026-10-04 22:56:20,929 - INFO - Saved progress for chunk 9 to resume_progress.json
+2026-10-04 22:56:20,929 - INFO - Chunk 9 completed
+2026-10-04 22:56:20,930 - INFO - Translating chunk 11 (attempt 1)
+2026-10-04 22:56:40,953 - INFO - Wrote full chunk to chunks\10.txt
+2026-10-04 22:56:40,968 - INFO - Saved progress for chunk 10 to resume_progress.json
+2026-10-04 22:56:40,968 - INFO - Chunk 10 completed
+2026-10-04 22:56:40,969 - INFO - Translating chunk 13 (attempt 1)
+2026-10-04 22:57:33,177 - INFO - Wrote full chunk to chunks\11.txt
+2026-10-04 22:57:33,187 - INFO - Saved progress for chunk 11 to resume_progress.json
+2026-10-04 22:57:33,187 - INFO - Chunk 11 completed
+2026-10-04 22:57:33,187 - INFO - Translating chunk 14 (attempt 1)
+2026-10-04 22:57:51,294 - INFO - Wrote full chunk to chunks\13.txt
+2026-10-04 22:57:51,304 - INFO - Saved progress for chunk 13 to resume_progress.json
+2026-10-04 22:57:51,305 - INFO - Chunk 13 completed
+2026-10-04 22:57:51,306 - INFO - Translating chunk 16 (attempt 1)
+2026-10-04 22:58:29,632 - INFO - Wrote full chunk to chunks\16.txt
+2026-10-04 22:58:29,640 - INFO - Saved progress for chunk 16 to resume_progress.json
+2026-10-04 22:58:29,641 - INFO - Chunk 16 completed
+2026-10-04 22:58:29,641 - INFO - Translating chunk 17 (attempt 1)
+2026-10-04 22:58:41,904 - INFO - Wrote full chunk to chunks\14.txt
+2026-10-04 22:58:41,913 - INFO - Saved progress for chunk 14 to resume_progress.json
+2026-10-04 22:58:41,913 - INFO - Chunk 14 completed
+2026-10-04 22:58:41,914 - INFO - Translating chunk 18 (attempt 1)
+2026-10-04 22:59:37,344 - INFO - Wrote full chunk to chunks\17.txt
+2026-10-04 22:59:37,355 - INFO - Saved progress for chunk 17 to resume_progress.json
+2026-10-04 22:59:37,355 - INFO - Chunk 17 completed
+2026-10-04 22:59:37,356 - INFO - Translating chunk 19 (attempt 1)
+2026-10-04 22:59:52,105 - INFO - Wrote full chunk to chunks\18.txt
+2026-10-04 22:59:52,114 - INFO - Saved progress for chunk 18 to resume_progress.json
+2026-10-04 22:59:52,114 - INFO - Chunk 18 completed
+2026-10-04 22:59:52,115 - INFO - Translating chunk 20 (attempt 1)
+2026-10-04 23:00:45,237 - INFO - Wrote full chunk to chunks\19.txt
+2026-10-04 23:00:45,246 - INFO - Saved progress for chunk 19 to resume_progress.json
+2026-10-04 23:00:45,246 - INFO - Chunk 19 completed
+2026-10-04 23:00:45,246 - INFO - Translating chunk 21 (attempt 1)
+2026-10-04 23:01:08,732 - INFO - Wrote full chunk to chunks\20.txt
+2026-10-04 23:01:08,742 - INFO - Saved progress for chunk 20 to resume_progress.json
+2026-10-04 23:01:08,743 - INFO - Chunk 20 completed
+2026-10-04 23:01:08,743 - INFO - Translating chunk 22 (attempt 1)
+2026-10-04 23:01:56,153 - INFO - Wrote full chunk to chunks\21.txt
+2026-10-04 23:01:56,164 - INFO - Saved progress for chunk 21 to resume_progress.json
+2026-10-04 23:01:56,164 - INFO - Chunk 21 completed
+2026-10-04 23:01:56,165 - INFO - Translating chunk 23 (attempt 1)
+2026-10-04 23:02:20,872 - INFO - Wrote full chunk to chunks\22.txt
+2026-10-04 23:02:20,880 - INFO - Saved progress for chunk 22 to resume_progress.json
+2026-10-04 23:02:20,881 - INFO - Chunk 22 completed
+2026-10-04 23:02:20,881 - INFO - Translating chunk 24 (attempt 1)
+2026-10-04 23:02:29,801 - INFO - Wrote full chunk to chunks\23.txt
+2026-10-04 23:02:29,811 - INFO - Saved progress for chunk 23 to resume_progress.json
+2026-10-04 23:02:29,812 - INFO - Chunk 23 completed
+2026-10-04 23:02:29,812 - INFO - Translating chunk 26 (attempt 1)
+2026-10-04 23:03:31,894 - INFO - Wrote full chunk to chunks\24.txt
+2026-10-04 23:03:31,910 - INFO - Saved progress for chunk 24 to resume_progress.json
+2026-10-04 23:03:31,910 - INFO - Chunk 24 completed
+2026-10-04 23:03:31,911 - INFO - Translating chunk 28 (attempt 1)
+2026-10-04 23:03:42,740 - INFO - Wrote full chunk to chunks\26.txt
+2026-10-04 23:03:42,750 - INFO - Saved progress for chunk 26 to resume_progress.json
+2026-10-04 23:03:42,751 - INFO - Chunk 26 completed
+2026-10-04 23:03:42,751 - INFO - Translating chunk 29 (attempt 1)
+2026-10-04 23:04:44,523 - INFO - Wrote full chunk to chunks\28.txt
+2026-10-04 23:04:44,534 - INFO - Saved progress for chunk 28 to resume_progress.json
+2026-10-04 23:04:44,535 - INFO - Chunk 28 completed
+2026-10-04 23:04:44,535 - INFO - Translating chunk 30 (attempt 1)
+2026-10-04 23:04:55,007 - INFO - Wrote full chunk to chunks\29.txt
+2026-10-04 23:04:55,018 - INFO - Saved progress for chunk 29 to resume_progress.json
+2026-10-04 23:04:55,019 - INFO - Chunk 29 completed
+2026-10-04 23:04:55,019 - INFO - Translating chunk 32 (attempt 1)
+2026-10-04 23:05:55,118 - INFO - Wrote full chunk to chunks\30.txt
+2026-10-04 23:05:55,134 - INFO - Saved progress for chunk 30 to resume_progress.json
+2026-10-04 23:05:55,134 - INFO - Chunk 30 completed
+2026-10-04 23:05:55,135 - INFO - Translating chunk 33 (attempt 1)
+2026-10-04 23:05:56,477 - INFO - Wrote full chunk to chunks\32.txt
+2026-10-04 23:05:56,483 - INFO - Saved progress for chunk 32 to resume_progress.json
+2026-10-04 23:05:56,483 - INFO - Chunk 32 completed
+2026-10-04 23:05:56,484 - INFO - Translating chunk 34 (attempt 1)
+2026-10-04 23:07:06,632 - INFO - Wrote full chunk to chunks\33.txt
+2026-10-04 23:07:06,632 - INFO - Wrote full chunk to chunks\34.txt
+2026-10-04 23:07:06,639 - INFO - Saved progress for chunk 34 to resume_progress.json
+2026-10-04 23:07:06,639 - INFO - Chunk 34 completed
+2026-10-04 23:07:06,640 - INFO - Saved progress for chunk 33 to resume_progress.json
+2026-10-04 23:07:06,640 - INFO - Chunk 33 completed
+2026-10-04 23:07:06,640 - INFO - Translating chunk 35 (attempt 1)
+2026-10-04 23:07:06,641 - INFO - Translating chunk 36 (attempt 1)
+2026-10-04 23:08:18,712 - INFO - Wrote full chunk to chunks\36.txt
+2026-10-04 23:08:18,723 - INFO - Saved progress for chunk 36 to resume_progress.json
+2026-10-04 23:08:18,724 - INFO - Chunk 36 completed
+2026-10-04 23:08:18,724 - INFO - Translating chunk 37 (attempt 1)
+2026-10-04 23:08:20,846 - INFO - Wrote full chunk to chunks\35.txt
+2026-10-04 23:08:20,854 - INFO - Saved progress for chunk 35 to resume_progress.json
+2026-10-04 23:08:20,854 - INFO - Chunk 35 completed
+2026-10-04 23:08:20,855 - INFO - Translating chunk 39 (attempt 1)
+2026-10-04 23:09:28,449 - INFO - Wrote full chunk to chunks\37.txt
+2026-10-04 23:09:28,461 - INFO - Saved progress for chunk 37 to resume_progress.json
+2026-10-04 23:09:28,461 - INFO - Chunk 37 completed
+2026-10-04 23:09:28,462 - INFO - Translating chunk 40 (attempt 1)
+2026-10-04 23:09:29,624 - INFO - Wrote full chunk to chunks\39.txt
+2026-10-04 23:09:29,637 - INFO - Saved progress for chunk 39 to resume_progress.json
+2026-10-04 23:09:29,638 - INFO - Chunk 39 completed
+2026-10-04 23:09:29,638 - INFO - Translating chunk 41 (attempt 1)
+2026-10-04 23:10:28,061 - INFO - Wrote full chunk to chunks\41.txt
+2026-10-04 23:10:28,072 - INFO - Saved progress for chunk 41 to resume_progress.json
+2026-10-04 23:10:28,072 - INFO - Chunk 41 completed
+2026-10-04 23:10:28,072 - INFO - Translating chunk 42 (attempt 1)
+2026-10-04 23:10:42,405 - INFO - Wrote full chunk to chunks\40.txt
+2026-10-04 23:10:42,414 - INFO - Saved progress for chunk 40 to resume_progress.json
+2026-10-04 23:10:42,415 - INFO - Chunk 40 completed
+2026-10-04 23:10:42,415 - INFO - Translating chunk 43 (attempt 1)
+2026-10-04 23:11:36,620 - INFO - Wrote full chunk to chunks\42.txt
+2026-10-04 23:11:36,630 - INFO - Saved progress for chunk 42 to resume_progress.json
+2026-10-04 23:11:36,630 - INFO - Chunk 42 completed
+2026-10-04 23:11:36,631 - INFO - Translating chunk 45 (attempt 1)
+2026-10-04 23:11:52,035 - INFO - Wrote full chunk to chunks\43.txt
+2026-10-04 23:11:52,044 - INFO - Saved progress for chunk 43 to resume_progress.json
+2026-10-04 23:11:52,044 - INFO - Chunk 43 completed
+2026-10-04 23:11:52,045 - INFO - Translating chunk 46 (attempt 1)
+2026-10-04 23:12:48,493 - INFO - Wrote full chunk to chunks\45.txt
+2026-10-04 23:12:48,505 - INFO - Saved progress for chunk 45 to resume_progress.json
+2026-10-04 23:12:48,505 - INFO - Chunk 45 completed
+2026-10-04 23:12:48,506 - INFO - Translating chunk 47 (attempt 1)
+2026-10-04 23:13:06,304 - INFO - Wrote full chunk to chunks\46.txt
+2026-10-04 23:13:06,313 - INFO - Saved progress for chunk 46 to resume_progress.json
+2026-10-04 23:13:06,314 - INFO - Chunk 46 completed
+2026-10-04 23:13:06,314 - INFO - Translating chunk 48 (attempt 1)
+2026-10-04 23:14:04,063 - INFO - Wrote full chunk to chunks\47.txt
+2026-10-04 23:14:04,074 - INFO - Saved progress for chunk 47 to resume_progress.json
+2026-10-04 23:14:04,075 - INFO - Chunk 47 completed
+2026-10-04 23:14:04,075 - INFO - Translating chunk 49 (attempt 1)
+2026-10-04 23:14:15,347 - INFO - Wrote full chunk to chunks\48.txt
+2026-10-04 23:14:15,365 - INFO - Saved progress for chunk 48 to resume_progress.json
+2026-10-04 23:14:15,365 - INFO - Chunk 48 completed
+2026-10-04 23:14:15,366 - INFO - Translating chunk 50 (attempt 1)
+2026-10-04 23:14:44,546 - INFO - Wrote full chunk to chunks\49.txt
+2026-10-04 23:14:44,557 - INFO - Saved progress for chunk 49 to resume_progress.json
+2026-10-04 23:14:44,557 - INFO - Chunk 49 completed
+2026-10-04 23:14:44,557 - INFO - Translating chunk 51 (attempt 1)
+2026-10-04 23:15:22,700 - INFO - Wrote full chunk to chunks\50.txt
+2026-10-04 23:15:22,711 - INFO - Saved progress for chunk 50 to resume_progress.json
+2026-10-04 23:15:22,711 - INFO - Chunk 50 completed
+2026-10-04 23:15:22,712 - INFO - Translating chunk 52 (attempt 1)
+2026-10-04 23:15:57,508 - INFO - Wrote full chunk to chunks\51.txt
+2026-10-04 23:15:57,522 - INFO - Saved progress for chunk 51 to resume_progress.json
+2026-10-04 23:15:57,522 - INFO - Chunk 51 completed
+2026-10-04 23:15:57,523 - INFO - Translating chunk 53 (attempt 1)
+2026-10-04 23:16:29,684 - INFO - Wrote full chunk to chunks\52.txt
+2026-10-04 23:16:29,695 - INFO - Saved progress for chunk 52 to resume_progress.json
+2026-10-04 23:16:29,695 - INFO - Chunk 52 completed
+2026-10-04 23:16:29,696 - INFO - Translating chunk 54 (attempt 1)
+2026-10-04 23:17:11,823 - INFO - Wrote full chunk to chunks\53.txt
+2026-10-04 23:17:11,841 - INFO - Saved progress for chunk 53 to resume_progress.json
+2026-10-04 23:17:11,841 - INFO - Chunk 53 completed
+2026-10-04 23:17:11,842 - INFO - Translating chunk 55 (attempt 1)
+2026-10-04 23:17:41,754 - INFO - Wrote full chunk to chunks\54.txt
+2026-10-04 23:17:41,764 - INFO - Saved progress for chunk 54 to resume_progress.json
+2026-10-04 23:17:41,764 - INFO - Chunk 54 completed
+2026-10-04 23:17:41,765 - INFO - Translating chunk 56 (attempt 1)
+2026-10-04 23:18:24,421 - INFO - Wrote full chunk to chunks\55.txt
+2026-10-04 23:18:24,430 - INFO - Saved progress for chunk 55 to resume_progress.json
+2026-10-04 23:18:24,430 - INFO - Chunk 55 completed
+2026-10-04 23:18:24,430 - INFO - Translating chunk 57 (attempt 1)
+2026-10-04 23:18:54,485 - INFO - Wrote full chunk to chunks\56.txt
+2026-10-04 23:18:54,497 - INFO - Saved progress for chunk 56 to resume_progress.json
+2026-10-04 23:18:54,497 - INFO - Chunk 56 completed
+2026-10-04 23:18:54,498 - INFO - Translating chunk 58 (attempt 1)
+2026-10-04 23:19:33,828 - INFO - Wrote full chunk to chunks\57.txt
+2026-10-04 23:19:33,839 - INFO - Saved progress for chunk 57 to resume_progress.json
+2026-10-04 23:19:33,839 - INFO - Chunk 57 completed
+2026-10-04 23:19:33,840 - INFO - Translating chunk 59 (attempt 1)
+2026-10-04 23:20:09,317 - INFO - Wrote full chunk to chunks\58.txt
+2026-10-04 23:20:09,327 - INFO - Saved progress for chunk 58 to resume_progress.json
+2026-10-04 23:20:09,327 - INFO - Chunk 58 completed
+2026-10-04 23:20:09,328 - INFO - Translating chunk 60 (attempt 1)
+2026-10-04 23:20:45,185 - INFO - Wrote full chunk to chunks\60.txt
+2026-10-04 23:20:45,186 - INFO - Saved progress for chunk 60 to resume_progress.json
+2026-10-04 23:20:45,186 - INFO - Chunk 60 completed
+2026-10-04 23:20:45,187 - INFO - Translating chunk 61 (attempt 1)
+2026-10-04 23:20:51,915 - INFO - Wrote full chunk to chunks\59.txt
+2026-10-04 23:20:51,925 - INFO - Saved progress for chunk 59 to resume_progress.json
+2026-10-04 23:20:51,925 - INFO - Chunk 59 completed
+2026-10-04 23:20:51,926 - INFO - Translating chunk 62 (attempt 1)
+2026-10-04 23:21:53,724 - INFO - Wrote full chunk to chunks\61.txt
+2026-10-04 23:21:53,733 - INFO - Saved progress for chunk 61 to resume_progress.json
+2026-10-04 23:21:53,734 - INFO - Chunk 61 completed
+2026-10-04 23:21:53,734 - INFO - Translating chunk 63 (attempt 1)
+2026-10-04 23:22:04,911 - INFO - Wrote full chunk to chunks\62.txt
+2026-10-04 23:22:04,922 - INFO - Saved progress for chunk 62 to resume_progress.json
+2026-10-04 23:22:04,922 - INFO - Chunk 62 completed
+2026-10-04 23:22:04,922 - INFO - Translating chunk 65 (attempt 1)
+2026-10-04 23:22:17,540 - INFO - Wrote full chunk to chunks\65.txt
+2026-10-04 23:22:17,551 - INFO - Saved progress for chunk 65 to resume_progress.json
+2026-10-04 23:22:17,551 - INFO - Chunk 65 completed
+2026-10-04 23:22:17,552 - INFO - Translating chunk 67 (attempt 1)
+2026-10-04 23:22:38,300 - INFO - Wrote full chunk to chunks\67.txt
+2026-10-04 23:22:38,309 - INFO - Saved progress for chunk 67 to resume_progress.json
+2026-10-04 23:22:38,309 - INFO - Chunk 67 completed
+2026-10-04 23:22:38,310 - INFO - Translating chunk 69 (attempt 1)
+2026-10-04 23:23:07,883 - INFO - Wrote full chunk to chunks\63.txt
+2026-10-04 23:23:07,897 - INFO - Saved progress for chunk 63 to resume_progress.json
+2026-10-04 23:23:07,897 - INFO - Chunk 63 completed
+2026-10-04 23:23:07,898 - INFO - Translating chunk 70 (attempt 1)
+2026-10-04 23:23:35,051 - INFO - Wrote full chunk to chunks\69.txt
+2026-10-04 23:23:35,062 - INFO - Saved progress for chunk 69 to resume_progress.json
+2026-10-04 23:23:35,063 - INFO - Chunk 69 completed
+2026-10-04 23:23:35,063 - INFO - Translating chunk 72 (attempt 1)
+2026-10-04 23:23:58,545 - INFO - Wrote full chunk to chunks\70.txt
+2026-10-04 23:23:58,558 - INFO - Saved progress for chunk 70 to resume_progress.json
+2026-10-04 23:23:58,558 - INFO - Chunk 70 completed
+2026-10-04 23:23:58,559 - INFO - Translating chunk 73 (attempt 1)
+2026-10-04 23:24:40,162 - INFO - Wrote full chunk to chunks\73.txt
+2026-10-04 23:24:40,175 - INFO - Saved progress for chunk 73 to resume_progress.json
+2026-10-04 23:24:40,175 - INFO - Chunk 73 completed
+2026-10-04 23:24:43,873 - INFO - Wrote full chunk to chunks\72.txt
+2026-10-04 23:24:43,881 - INFO - Saved progress for chunk 72 to resume_progress.json
+2026-10-04 23:24:43,881 - INFO - Chunk 72 completed
+2026-10-04 23:24:44,178 - INFO - Translating chunk 80 (attempt 1)
+2026-10-04 23:24:44,382 - INFO - Translating chunk 83 (attempt 1)
+2026-10-04 23:25:24,576 - INFO - Wrote full chunk to chunks\80.txt
+2026-10-04 23:25:24,585 - INFO - Saved progress for chunk 80 to resume_progress.json
+2026-10-04 23:25:24,585 - INFO - Chunk 80 completed
+2026-10-04 23:25:24,586 - INFO - Translating chunk 89 (attempt 1)
+2026-10-04 23:25:31,121 - INFO - Wrote full chunk to chunks\89.txt
+2026-10-04 23:25:31,122 - INFO - Saved progress for chunk 89 to resume_progress.json
+2026-10-04 23:25:31,122 - INFO - Chunk 89 completed
+2026-10-04 23:25:31,123 - INFO - Translating chunk 90 (attempt 1)
+2026-10-04 23:25:56,478 - INFO - Wrote full chunk to chunks\83.txt
+2026-10-04 23:25:56,480 - INFO - Saved progress for chunk 83 to resume_progress.json
+2026-10-04 23:25:56,480 - INFO - Chunk 83 completed
+2026-10-04 23:25:56,480 - INFO - Translating chunk 92 (attempt 1)
+2026-10-04 23:26:40,779 - INFO - Wrote full chunk to chunks\90.txt
+2026-10-04 23:26:40,797 - INFO - Saved progress for chunk 90 to resume_progress.json
+2026-10-04 23:26:40,798 - INFO - Chunk 90 completed
+2026-10-04 23:26:40,799 - INFO - Translating chunk 95 (attempt 1)
+2026-10-04 23:27:04,623 - INFO - Wrote full chunk to chunks\92.txt
+2026-10-04 23:27:04,633 - INFO - Saved progress for chunk 92 to resume_progress.json
+2026-10-04 23:27:04,634 - INFO - Chunk 92 completed
+2026-10-04 23:27:04,635 - INFO - Translating chunk 97 (attempt 1)
+2026-10-04 23:27:13,779 - INFO - Wrote full chunk to chunks\95.txt
+2026-10-04 23:27:13,790 - INFO - Saved progress for chunk 95 to resume_progress.json
+2026-10-04 23:27:13,790 - INFO - Chunk 95 completed
+2026-10-04 23:27:13,791 - INFO - Translating chunk 99 (attempt 1)
+2026-10-04 23:28:13,664 - INFO - Wrote full chunk to chunks\99.txt
+2026-10-04 23:28:13,674 - INFO - Saved progress for chunk 99 to resume_progress.json
+2026-10-04 23:28:13,674 - INFO - Chunk 99 completed
+2026-10-04 23:28:13,675 - INFO - Translating chunk 112 (attempt 1)
+2026-10-04 23:28:20,401 - INFO - Wrote full chunk to chunks\97.txt
+2026-10-04 23:28:20,418 - INFO - Saved progress for chunk 97 to resume_progress.json
+2026-10-04 23:28:20,419 - INFO - Chunk 97 completed
+2026-10-04 23:28:20,420 - INFO - Translating chunk 113 (attempt 1)
+2026-10-04 23:28:25,722 - INFO - Wrote full chunk to chunks\113.txt
+2026-10-04 23:28:25,736 - INFO - Saved progress for chunk 113 to resume_progress.json
+2026-10-04 23:28:25,736 - INFO - Chunk 113 completed
+2026-10-04 23:28:25,737 - INFO - Translating chunk 120 (attempt 1)
+2026-10-04 23:29:19,948 - INFO - Wrote full chunk to chunks\112.txt
+2026-10-04 23:29:19,958 - INFO - Saved progress for chunk 112 to resume_progress.json
+2026-10-04 23:29:19,958 - INFO - Chunk 112 completed
+2026-10-04 23:29:19,959 - INFO - Translating chunk 123 (attempt 1)
+2026-10-04 23:29:25,795 - INFO - Wrote full chunk to chunks\120.txt
+2026-10-04 23:29:25,805 - INFO - Saved progress for chunk 120 to resume_progress.json
+2026-10-04 23:29:25,805 - INFO - Chunk 120 completed
+2026-10-04 23:29:25,806 - INFO - Translating chunk 128 (attempt 1)
+2026-10-04 23:29:58,545 - INFO - Wrote full chunk to chunks\128.txt
+2026-10-04 23:29:58,557 - INFO - Saved progress for chunk 128 to resume_progress.json
+2026-10-04 23:29:58,557 - INFO - Chunk 128 completed
+2026-10-04 23:29:58,557 - INFO - Translating chunk 129 (attempt 1)
+2026-10-04 23:30:37,607 - INFO - Wrote full chunk to chunks\123.txt
+2026-10-04 23:30:37,618 - INFO - Saved progress for chunk 123 to resume_progress.json
+2026-10-04 23:30:37,618 - INFO - Chunk 123 completed
+2026-10-04 23:30:37,619 - INFO - Translating chunk 134 (attempt 1)
+2026-10-04 23:31:09,504 - INFO - Wrote full chunk to chunks\129.txt
+2026-10-04 23:31:09,514 - INFO - Saved progress for chunk 129 to resume_progress.json
+2026-10-04 23:31:09,514 - INFO - Chunk 129 completed
+2026-10-04 23:31:09,515 - INFO - Translating chunk 135 (attempt 1)
+2026-10-04 23:31:52,638 - INFO - Wrote full chunk to chunks\134.txt
+2026-10-04 23:31:52,648 - INFO - Saved progress for chunk 134 to resume_progress.json
+2026-10-04 23:31:52,648 - INFO - Chunk 134 completed
+2026-10-04 23:31:52,649 - INFO - Translating chunk 136 (attempt 1)
+2026-10-04 23:32:15,188 - INFO - Wrote full chunk to chunks\136.txt
+2026-10-04 23:32:15,199 - INFO - Saved progress for chunk 136 to resume_progress.json
+2026-10-04 23:32:15,200 - INFO - Chunk 136 completed
+2026-10-04 23:32:15,200 - INFO - Translating chunk 137 (attempt 1)
+2026-10-04 23:32:21,348 - INFO - Wrote full chunk to chunks\135.txt
+2026-10-04 23:32:21,356 - INFO - Saved progress for chunk 135 to resume_progress.json
+2026-10-04 23:32:21,356 - INFO - Chunk 135 completed
+2026-10-04 23:33:14,906 - INFO - Wrote full chunk to chunks\137.txt
+2026-10-04 23:33:14,920 - INFO - Saved progress for chunk 137 to resume_progress.json
+2026-10-04 23:33:14,920 - INFO - Chunk 137 completed
+2026-10-04 23:33:14,921 - INFO - All chunks processed (files on disk)
+2026-10-04 23:33:15,411 - INFO - Output written successfully
+2026-10-04 23:33:15,412 - INFO - Background translation thread finished
+2026-10-04 23:48:14,572 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-04 23:48:14,722 - INFO - Background check-only thread started
+2026-10-04 23:48:31,932 - INFO - Wrote check result to checks\0.json
+2026-10-04 23:48:41,798 - INFO - Wrote check result to checks\1.json
+2026-10-04 23:48:52,494 - INFO - Wrote check result to checks\2.json
+2026-10-04 23:49:08,337 - INFO - Wrote check result to checks\3.json
+2026-10-04 23:49:34,938 - INFO - Wrote check result to checks\4.json
+2026-10-04 23:49:59,797 - INFO - Wrote check result to checks\5.json
+2026-10-04 23:50:23,479 - INFO - Wrote check result to checks\6.json
+2026-10-04 23:50:32,369 - INFO - Wrote check result to checks\7.json
+2026-10-04 23:50:49,106 - INFO - Wrote check result to checks\8.json
+2026-10-04 23:51:09,528 - INFO - Wrote check result to checks\9.json
+2026-10-04 23:51:28,821 - INFO - Wrote check result to checks\10.json
+2026-10-04 23:51:42,233 - INFO - Wrote check result to checks\11.json
+2026-10-04 23:51:57,021 - INFO - Wrote check result to checks\12.json
+2026-10-04 23:52:18,403 - INFO - Wrote check result to checks\13.json
+2026-10-04 23:52:29,637 - INFO - Wrote check result to checks\14.json
+2026-10-04 23:52:45,690 - INFO - Wrote check result to checks\15.json
+2026-10-04 23:52:53,568 - INFO - Wrote check result to checks\16.json
+2026-10-04 23:53:08,546 - INFO - Wrote check result to checks\17.json
+2026-10-04 23:53:21,040 - INFO - Wrote check result to checks\18.json
+2026-10-04 23:53:37,483 - INFO - Wrote check result to checks\19.json
+2026-10-04 23:54:11,702 - INFO - Wrote check result to checks\20.json
+2026-10-04 23:54:36,751 - INFO - Wrote check result to checks\21.json
+2026-10-04 23:54:57,617 - INFO - Wrote check result to checks\22.json
+2026-10-04 23:55:16,990 - INFO - Wrote check result to checks\23.json
+2026-10-04 23:55:49,444 - INFO - Wrote check result to checks\24.json
+2026-10-04 23:56:07,038 - INFO - Wrote check result to checks\25.json
+2026-10-04 23:56:25,517 - INFO - Wrote check result to checks\26.json
+2026-10-05 00:09:44,508 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:09:44,601 - INFO - Background check-only thread started
+2026-10-05 00:09:56,803 - INFO - Wrote check result to checks\0.json
+2026-10-05 00:11:40,642 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:11:40,642 - INFO - Starting translation pipeline
+2026-10-05 00:11:40,881 - INFO - Extracted 33 units
+2026-10-05 00:11:40,881 - INFO - Total chunks: 226
+2026-10-05 00:11:40,967 - INFO - Background translation thread started
+2026-10-05 00:11:40,974 - INFO - Loaded progress for 74 chunks from resume_progress.json
+2026-10-05 00:11:40,974 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 00:11:40,975 - INFO - Translating chunk 0 (attempt 1)
+2026-10-05 00:11:40,975 - INFO - Translating chunk 1 (attempt 1)
+2026-10-05 00:11:50,267 - INFO - Wrote full chunk to chunks\1.txt
+2026-10-05 00:11:50,275 - INFO - Saved progress for chunk 1 to resume_progress.json
+2026-10-05 00:11:50,276 - INFO - Chunk 1 completed
+2026-10-05 00:11:50,276 - INFO - Translating chunk 2 (attempt 1)
+2026-10-05 00:12:06,505 - INFO - Wrote full chunk to chunks\2.txt
+2026-10-05 00:12:06,516 - INFO - Saved progress for chunk 2 to resume_progress.json
+2026-10-05 00:12:06,516 - INFO - Chunk 2 completed
+2026-10-05 00:12:06,517 - INFO - Translating chunk 3 (attempt 1)
+2026-10-05 00:12:13,646 - INFO - Wrote full chunk to chunks\0.txt
+2026-10-05 00:12:13,659 - INFO - Saved progress for chunk 0 to resume_progress.json
+2026-10-05 00:12:13,659 - INFO - Chunk 0 completed
+2026-10-05 00:12:13,660 - INFO - Translating chunk 4 (attempt 1)
+2026-10-05 00:14:03,435 - INFO - Wrote full chunk to chunks\3.txt
+2026-10-05 00:14:03,446 - INFO - Saved progress for chunk 3 to resume_progress.json
+2026-10-05 00:14:03,447 - INFO - Chunk 3 completed
+2026-10-05 00:14:03,455 - INFO - Translating chunk 6 (attempt 1)
+2026-10-05 00:14:04,011 - INFO - Wrote full chunk to chunks\4.txt
+2026-10-05 00:14:04,018 - INFO - Saved progress for chunk 4 to resume_progress.json
+2026-10-05 00:14:04,018 - INFO - Chunk 4 completed
+2026-10-05 00:14:04,019 - INFO - Translating chunk 12 (attempt 1)
+2026-10-05 00:15:58,336 - INFO - Wrote full chunk to chunks\6.txt
+2026-10-05 00:15:58,347 - INFO - Saved progress for chunk 6 to resume_progress.json
+2026-10-05 00:15:58,347 - INFO - Chunk 6 completed
+2026-10-05 00:15:58,348 - INFO - Translating chunk 15 (attempt 1)
+2026-10-05 00:16:06,094 - ERROR - Chunk 12 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:16:06,094 - WARNING - Retrying chunk 12 in 60 seconds
+2026-10-05 00:17:06,094 - INFO - Translating chunk 12 (attempt 2)
+2026-10-05 00:17:40,884 - INFO - Wrote full chunk to chunks\15.txt
+2026-10-05 00:17:40,895 - INFO - Saved progress for chunk 15 to resume_progress.json
+2026-10-05 00:17:40,896 - INFO - Chunk 15 completed
+2026-10-05 00:17:40,896 - INFO - Translating chunk 25 (attempt 1)
+2026-10-05 00:18:54,516 - INFO - Wrote full chunk to chunks\25.txt
+2026-10-05 00:18:54,526 - INFO - Saved progress for chunk 25 to resume_progress.json
+2026-10-05 00:18:54,526 - INFO - Chunk 25 completed
+2026-10-05 00:18:54,527 - INFO - Translating chunk 27 (attempt 1)
+2026-10-05 00:19:05,876 - INFO - Wrote full chunk to chunks\12.txt
+2026-10-05 00:19:05,887 - INFO - Saved progress for chunk 12 to resume_progress.json
+2026-10-05 00:19:05,887 - INFO - Chunk 12 completed
+2026-10-05 00:19:05,888 - INFO - Translating chunk 31 (attempt 1)
+2026-10-05 00:20:08,679 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:20:08,680 - INFO - Starting translation pipeline
+2026-10-05 00:20:09,030 - INFO - Extracted 33 units
+2026-10-05 00:20:09,031 - INFO - Total chunks: 226
+2026-10-05 00:20:09,150 - INFO - Background translation thread started
+2026-10-05 00:20:09,157 - INFO - Loaded progress for 83 chunks from resume_progress.json
+2026-10-05 00:20:09,158 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 00:20:09,160 - INFO - Translating chunk 27 (attempt 1)
+2026-10-05 00:20:09,162 - INFO - Translating chunk 31 (attempt 1)
+2026-10-05 00:20:28,291 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:20:28,291 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:20:28,295 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:20:28,295 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:20:28,297 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:20:28,297 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:20:28,301 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:20:28,301 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:21:28,292 - INFO - Translating chunk 31 (attempt 2)
+2026-10-05 00:21:28,295 - INFO - Translating chunk 31 (attempt 2)
+2026-10-05 00:21:28,297 - INFO - Translating chunk 27 (attempt 2)
+2026-10-05 00:21:28,301 - INFO - Translating chunk 27 (attempt 2)
+2026-10-05 00:22:37,447 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:22:37,447 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:22:37,448 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:22:37,448 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:22:37,450 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:22:37,450 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:22:37,451 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:22:37,452 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:23:37,447 - INFO - Translating chunk 31 (attempt 3)
+2026-10-05 00:23:37,449 - INFO - Translating chunk 27 (attempt 3)
+2026-10-05 00:23:37,450 - INFO - Translating chunk 31 (attempt 3)
+2026-10-05 00:23:37,452 - INFO - Translating chunk 27 (attempt 3)
+2026-10-05 00:24:55,282 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:24:55,283 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:24:55,285 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:24:55,285 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:24:55,286 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:24:55,286 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:24:55,288 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:24:55,288 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:25:55,283 - INFO - Translating chunk 31 (attempt 4)
+2026-10-05 00:25:55,285 - INFO - Translating chunk 31 (attempt 4)
+2026-10-05 00:25:55,286 - INFO - Translating chunk 27 (attempt 4)
+2026-10-05 00:25:55,288 - INFO - Translating chunk 27 (attempt 4)
+2026-10-05 00:27:27,535 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:27:27,535 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:27:27,537 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:27:27,537 - WARNING - Retrying chunk 31 in 60 seconds
+2026-10-05 00:27:27,538 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:27:27,538 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:27:27,540 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:27:27,540 - WARNING - Retrying chunk 27 in 60 seconds
+2026-10-05 00:28:27,535 - INFO - Translating chunk 31 (attempt 5)
+2026-10-05 00:28:27,538 - INFO - Translating chunk 31 (attempt 5)
+2026-10-05 00:28:27,539 - INFO - Translating chunk 27 (attempt 5)
+2026-10-05 00:28:27,540 - INFO - Translating chunk 27 (attempt 5)
+2026-10-05 00:30:02,000 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:30:02,000 - ERROR - Skipping chunk 31
+2026-10-05 00:30:02,001 - INFO - Saved progress for chunk 31 to resume_progress.json
+2026-10-05 00:30:02,002 - INFO - Translating chunk 34 (attempt 1)
+2026-10-05 00:30:02,004 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:30:02,004 - ERROR - Skipping chunk 27
+2026-10-05 00:30:02,007 - ERROR - Chunk 27 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:30:02,007 - ERROR - Skipping chunk 27
+2026-10-05 00:30:02,009 - ERROR - Chunk 31 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:30:02,009 - ERROR - Skipping chunk 31
+2026-10-05 00:30:02,014 - INFO - Saved progress for chunk 27 to resume_progress.json
+2026-10-05 00:30:02,014 - INFO - Saved progress for chunk 27 to resume_progress.json
+2026-10-05 00:30:02,014 - INFO - Saved progress for chunk 31 to resume_progress.json
+2026-10-05 00:30:02,015 - INFO - Translating chunk 38 (attempt 1)
+2026-10-05 00:30:02,015 - INFO - Translating chunk 34 (attempt 1)
+2026-10-05 00:30:02,016 - INFO - Translating chunk 38 (attempt 1)
+2026-10-05 00:32:04,057 - ERROR - Chunk 34 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:32:04,058 - WARNING - Retrying chunk 34 in 60 seconds
+2026-10-05 00:32:04,058 - ERROR - Chunk 38 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:32:04,058 - WARNING - Retrying chunk 38 in 60 seconds
+2026-10-05 00:32:37,594 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:32:37,903 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 00:32:51,088 - INFO - Wrote full chunk to chunks\1.txt
+2026-10-05 00:33:04,058 - INFO - Translating chunk 34 (attempt 2)
+2026-10-05 00:33:04,059 - INFO - Translating chunk 38 (attempt 2)
+2026-10-05 00:33:11,583 - INFO - Wrote full chunk to chunks\2.txt
+2026-10-05 00:33:24,004 - INFO - Wrote full chunk to chunks\0.txt
+2026-10-05 00:34:53,479 - ERROR - Chunk 38 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:34:53,480 - WARNING - Retrying chunk 38 in 60 seconds
+2026-10-05 00:34:53,482 - ERROR - Chunk 34 failed: 400 Client Error: Bad Request for url: http://localhost:1234/v1/chat/completions
+2026-10-05 00:34:53,482 - WARNING - Retrying chunk 34 in 60 seconds
+2026-10-05 00:35:42,495 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:35:42,855 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 00:35:53,480 - INFO - Translating chunk 38 (attempt 3)
+2026-10-05 00:35:53,483 - INFO - Translating chunk 34 (attempt 3)
+2026-10-05 00:37:55,493 - ERROR - Chunk 38 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:37:55,494 - WARNING - Retrying chunk 38 in 60 seconds
+2026-10-05 00:37:55,494 - ERROR - Chunk 34 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:37:55,494 - WARNING - Retrying chunk 34 in 60 seconds
+2026-10-05 00:38:55,494 - INFO - Translating chunk 34 (attempt 4)
+2026-10-05 00:38:55,494 - INFO - Translating chunk 38 (attempt 4)
+2026-10-05 00:40:57,547 - ERROR - Chunk 38 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:40:57,548 - WARNING - Retrying chunk 38 in 60 seconds
+2026-10-05 00:40:57,547 - ERROR - Chunk 34 failed: HTTPConnectionPool(host='localhost', port=1234): Read timed out. (read timeout=120)
+2026-10-05 00:40:57,548 - WARNING - Retrying chunk 34 in 60 seconds
+2026-10-05 00:41:48,363 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 00:41:48,680 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 00:48:00,964 - INFO - Wrote full chunk to chunks\1.txt
+2026-10-05 00:48:15,679 - INFO - Wrote full chunk to chunks\0.txt
+2026-10-05 00:48:17,442 - INFO - Wrote full chunk to chunks\2.txt
+2026-10-05 00:49:47,282 - INFO - Wrote full chunk to chunks\4.txt
+2026-10-05 00:49:48,290 - INFO - Wrote full chunk to chunks\3.txt
+2026-10-05 00:51:23,068 - INFO - Wrote full chunk to chunks\6.txt
+2026-10-05 00:51:23,498 - INFO - Wrote full chunk to chunks\5.txt
+2026-10-05 00:53:01,167 - INFO - Wrote full chunk to chunks\15.txt
+2026-10-05 00:53:01,622 - INFO - Wrote full chunk to chunks\12.txt
+2026-10-05 00:54:22,874 - INFO - Wrote full chunk to chunks\25.txt
+2026-10-05 00:54:22,875 - INFO - All chunks processed
+2026-10-05 01:02:49,012 - ERROR - Failed to load settings.json: Extra data: line 12 column 1 (char 290)
+2026-10-05 01:02:49,024 - ERROR - Failed to load settings.json: Extra data: line 12 column 1 (char 290)
+2026-10-05 01:02:49,025 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:02:49,333 - INFO - Starting parallel translation with max_workers=2
+2026-10-05 01:02:49,358 - ERROR - Failed to load settings.json: Extra data: line 12 column 1 (char 290)
+2026-10-05 01:02:49,358 - ERROR - Failed to load settings.json: Extra data: line 12 column 1 (char 290)
+2026-10-05 01:03:36,239 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:03:36,598 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:05:12,533 - INFO - Wrote full chunk to chunks\226.txt
+2026-10-05 01:05:34,225 - INFO - Wrote full chunk to chunks\228.txt
+2026-10-05 01:05:37,967 - INFO - Wrote full chunk to chunks\227.txt
+2026-10-05 01:06:13,441 - INFO - Wrote full chunk to chunks\229.txt
+2026-10-05 01:06:13,442 - INFO - All chunks processed
+2026-10-05 01:08:31,552 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:08:31,876 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:08:31,899 - INFO - All chunks processed
+2026-10-05 01:08:31,926 - ERROR - Failed to write output: 'EpubBook' object has no attribute 'remove_item'
+2026-10-05 01:10:44,805 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:10:45,130 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:10:45,160 - INFO - All chunks processed
+2026-10-05 01:10:45,186 - ERROR - Failed to write output: 'EpubBook' object has no attribute 'remove_item'
+2026-10-05 01:11:04,289 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:11:04,624 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:11:04,644 - INFO - All chunks processed
+2026-10-05 01:11:04,670 - ERROR - Failed to write output: 'EpubBook' object has no attribute 'remove_item'
+2026-10-05 01:20:17,001 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:20:17,317 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:20:17,340 - INFO - All chunks processed
+2026-10-05 01:21:48,550 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:21:48,867 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:21:48,888 - INFO - All chunks processed
+2026-10-05 01:26:34,073 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:26:34,396 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:26:34,419 - INFO - All chunks processed
+2026-10-05 01:27:28,724 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:27:29,040 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:27:29,062 - INFO - All chunks processed
+2026-10-05 01:28:12,715 - INFO - Auto-detected LM Studio path: C:\Users\chrz9\AppData\Local\Programs\LM Studio\LM Studio.exe
+2026-10-05 01:28:13,078 - INFO - Starting parallel translation with max_workers=3
+2026-10-05 01:28:13,101 - INFO - All chunks processed

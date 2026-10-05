@@ -1,0 +1,12 @@
+{
+    "preview_length": 512,
+    "chunks_dir": "chunks",
+    "checks_dir": "checks",
+    "max_workers": 3,
+    "progress_file": "resume_progress.json",
+    "auto_clear_chunks": false,
+    "auto_increment": true,
+    "check_translations": false,
+    "check_model": "qwen2.5-7b-translator"
+}
+

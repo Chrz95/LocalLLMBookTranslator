@@ -30,23 +30,24 @@ python main.py
 
 Tkinter is normally bundled with the Python installers for Windows and macOS.
 On Debian/Ubuntu, install it with `sudo apt install python3-tk` if necessary.
-Enable LM Studio's local server on port 1234, load your chosen model, and enter
-that model's exact identifier in the GUI. The app calls
+Enable LM Studio's local server on port 1234. The model dropdown automatically
+discovers your models on startup; use **Refresh** after downloading or loading
+a model. Select one from the list, or type an exact model identifier manually. The app calls
 `http://localhost:1234/v1/chat/completions` with `model` and two messages: the
 specified literary prompt as the system message and the source chunk as the user
 message. An optional server API key can be entered in the GUI; it is not saved.
 The model and Python dependencies must already be downloaded for offline use.
 
-1. Browse for a book; set model, source language, target language and workers.
-2. Optionally enable proofreading. Click **Start / load**.
+1. Choose a book in the setup sidebar; select a discovered model and set languages.
+2. Set workers/retries/timeout, optionally enable proofreading, then click **Start translation**.
 3. Select a chunk to view its source, translation and proofreading findings.
 4. **Pause** stops new requests and holds completed in-flight responses before
    saving. **Resume** continues. **Cancel** retains previously saved chunks and
    discards responses from requests cancelled before their commit checkpoint.
-5. After cancellation, click **Start / load** with the same settings to resume.
-6. **Retranslate chunk** forces a fresh request for the selected chunk and
+5. After cancellation, click **Start translation** with the same settings to resume.
+6. **Retranslate** forces a fresh request for the selected chunk and
    atomically replaces its file on success. A failed request keeps the old file.
-7. **Export** writes the finished book. Incomplete/malformed chunk files prevent
+7. **Export book** writes the finished book. Incomplete/malformed chunk files prevent
    export. The source file cannot be overwritten.
 
 Cancellation cannot abort a request already executing inside LM Studio. Closing
@@ -67,6 +68,7 @@ literary_translator/
   lmstudio.py             Local HTTP client and exact translation prompt
   requirements.txt        pypdf dependency (other runtime modules use stdlib)
   tests/test_application.py
+  tests/test_updates.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
@@ -85,10 +87,21 @@ unrelated job's chunk files. Changing a model's contents under the same model ID
 requires a new data directory or manual removal of that job's chunk files.
 
 There is **no progress manifest**. Resume relies exclusively on the existence
-of `chunks/<index>.txt`. Existing empty or invalid UTF-8 files surface as errors
-and require explicit retranslation; they are never silently overwritten. The
+of `chunks/<index>.txt`. For meaningful source text, existing empty or invalid UTF-8 files surface as
+errors and require explicit retranslation. Intentionally skipped chunks use
+empty files, which are valid and export as an empty translation. The
 source chunks and `index_map` are regenerated deterministically in memory.
-Whitespace-only chunks are Skipped and do not call the model. Chunk indices are
+Empty/whitespace-only chunks, a single character after trimming (including a
+single letter, digit or punctuation mark), and punctuation/symbol-only chunks
+such as `...`, `?!` or `—` are **Skipped**. Unicode NFC normalization recognizes
+composed accented letters. `Hi`, `你好`, `12` and `A.` still translate.
+Skipped chunks save an empty `chunks/<index>.txt`, produce no translated text,
+and never call translation or proofreading. Boundary whitespace and EPUB tags
+remain intact. This rule also applies to resume and forced retranslation: old
+translations/checks for these chunks are cleared. Single letters or punctuation
+in their own HTML text node will therefore be removed from the exported text,
+as requested; they are not copied from the source. Chunk numbering and existing
+translations for other chunks remain compatible with the previous release. Chunk indices are
 zero-based. Pending, Completed, Resumed, Retranslated, Error, Retry and Skipped
 are visible in the GUI; counters show current states, not historical attempts.
 
@@ -97,6 +110,30 @@ A `.running/` directory prevents two instances from translating the same job
 concurrently. If a process crashes, close all translator instances and remove
 that job's stale `.running/` directory before restarting. Its `pid` file helps
 identify the owning process. It is a concurrency lock, not resume state.
+
+## Model discovery and interface
+
+The modern Tkinter interface uses a navy header, teal primary actions, a
+scrollable setup sidebar, seven status counters, color-coded queue rows and
+side-by-side source/translation previews. It uses standard Tkinter/ttk only;
+no additional theme packages are required. The layout resizes, and the setup
+sidebar scrolls when the window is short.
+
+Model discovery runs in the background without blocking the UI. It tries
+LM Studio's native `GET /api/v1/models` endpoint first to include downloaded
+models and loaded instances, then falls back to `/api/v0/models` and finally
+`/v1/models` for older servers. Known embedding models are excluded when the
+server supplies their type. The OpenAI-compatible fallback only returns models
+visible to that server and may not expose model types or all downloads.
+
+Dropdown entries show name, state and exact identifier. Loaded models appear
+first; custom loaded-instance IDs are used when available. Refresh preserves
+your selection. Discovery authenticates using the optional API key; after
+entering/changing it, click Refresh. A stopped server, rejected key or empty
+model list is shown inline without blocking the application. Manual model-ID
+entry remains available. Downloaded models may need to be loaded in LM Studio
+or have Just-In-Time loading enabled before translation. No models are
+downloaded, loaded or unloaded by discovery itself.
 
 Proofreading uses a separate bilingual review prompt and validates the returned
 JSON. A check error does not delete a valid translation or prevent export.
@@ -205,11 +242,14 @@ python -m unittest discover -s tests -v
 Tests use temporary files, a local mock HTTP server and deterministic fake
 translations. They exercise EPUB preservation, parser escaping and encoding,
 chunk limits, input formats, job isolation, resume, retries, retranslation,
-pause/cancel behavior and proofreading response validation. They do not measure
+pause/cancel behavior, empty-translation skips, model-discovery endpoint
+fallbacks/authentication, selection persistence and proofreading validation. They do not measure
 literary quality. The GUI requires a graphical desktop. This codebase was tested
 headlessly; interaction with a real LM Studio model and visual GUI behavior
 must be verified on your computer.
 
 API references:
+- https://lmstudio.ai/docs/developer/rest/list
+- https://lmstudio.ai/docs/developer/openai-compat/models
 - https://lmstudio.ai/docs/developer/openai-compat
 - https://pypdf.readthedocs.io/en/6.7.0/user/extract-text.html

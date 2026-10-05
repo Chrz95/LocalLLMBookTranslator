@@ -2,9 +2,9 @@
   "model": "qwen2.5-vl-7b",
   "input_lang": "German",
   "output_lang": "English",
-  "max_workers": 2,
+  "max_workers": 3,
   "retries": 2,
   "timeout": 180.0,
   "proofread": false,
-  "last_input_file": "D:/Files/Software/Development/Python/Personal/Translate Books with AI/book.epub"
+  "last_input_file": "D:/Files/Έγγραφα/Βιβλία/Μυθιστορήματα/Peter Freund/Laura und das Geheimniss von Avente (581)/Laura und das Geheimniss von Av - Peter Freund.epub"
 }

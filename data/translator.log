@@ -1,1 +1,2 @@
 2026-10-05 11:38:43,926 INFO translator: Starting job 82ffd3d35a439becbebf8e0282f331a5d9c0018733297be7238ce481c3ea7415 with 4258 chunks and 2 workers
+2026-10-05 14:30:08,627 WARNING gui: Model discovery failed: Cannot reach LM Studio: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>

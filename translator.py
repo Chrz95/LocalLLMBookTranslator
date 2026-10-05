@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import threading
+import unicodedata
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -28,6 +29,12 @@ class Chunk:
     text: str
     prefix: str
     suffix: str
+
+
+def should_skip(text: str) -> bool:
+    """Empty, single-character and punctuation/symbol-only chunks produce no text."""
+    normalized = unicodedata.normalize("NFC", text.strip())
+    return len(normalized) <= 1 or not any(char.isalnum() for char in normalized)
 
 
 def split_unit(text: str) -> Iterator[tuple[str, str, str]]:
@@ -80,6 +87,8 @@ class Job:
         return self.checks_dir / f"{index}.json"
 
     def read_translation(self, index: int) -> str:
+        if should_skip(self.chunks[index].text):
+            return ""
         text = self.chunk_path(index).read_text(encoding="utf-8")
         if not text.strip():
             raise ValueError(f"Chunk {index} is empty; retranslate it.")
@@ -91,9 +100,9 @@ class Job:
             pieces = []
             for index in indices:
                 chunk = self.chunks[index]
-                if chunk.text and not self.chunk_path(index).is_file():
+                if not should_skip(chunk.text) and not self.chunk_path(index).is_file():
                     raise ValueError(f"Chunk {index} is missing; finish translation first.")
-                value = self.read_translation(index) if chunk.text else ""
+                value = self.read_translation(index)
                 pieces.append(chunk.prefix + value + chunk.suffix)
             units[unit_index] = "".join(pieces)
         self.book.export(Path(destination), units)
@@ -232,8 +241,14 @@ class TranslationEngine:
         index = chunk.index
         try:
             self.checkpoint()
-            if not chunk.text:
-                self.event(index, "Skipped", "Whitespace-only source")
+            if should_skip(chunk.text):
+                # Apply this rule before resume and forced retranslation, including
+                # jobs created by an older application version.
+                atomic_write(self.job.chunk_path(index), "")
+                self.job.check_path(index).unlink(missing_ok=True)
+                self.emit({"type": "check", "index": index, "check": "", "detail": ""})
+                self.event(index, "Skipped", "Empty, single-character or punctuation-only source",
+                           preview="")
                 return
             path = self.job.chunk_path(index)
             if path.exists() and not force:

@@ -8,9 +8,11 @@ import tkinter as tk
 from collections import Counter
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
+from tkinter import font as tkfont
 
 import settings_manager
 from extractors import load_book
+from lmstudio import LMStudioClient
 from settings_manager import Settings, load_settings, save_settings
 from translator import Job, TranslationEngine
 
@@ -40,90 +42,306 @@ class TranslatorGUI:
                                     "retries", "timeout", "api_key")}
         self.proofread = tk.BooleanVar(value=settings.proofread)
         self.source = tk.StringVar(value=settings_manager.last_input_file)
-        self.summary = tk.StringVar(value="Choose a book, enter the loaded model name, then start.")
+        self.summary = tk.StringVar(value="Choose a book and a local model to begin.")
+        self.connection = tk.StringVar(value="LM Studio · connecting")
+        self.model_help = tk.StringVar(value="Looking for your local models…")
+        self.model_selection = tk.StringVar(value=settings.model)
+        self.model_choices: dict[str, str] = {}
+        self.models_loading = False
         self._build()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(100, self._poll)
+        self.root.after(200, self.refresh_models)
+
+    def _style(self) -> None:
+        palette = {"background": "#eef2f6", "surface": "#ffffff", "ink": "#17283b",
+                   "muted": "#63758a", "border": "#d9e2eb", "accent": "#087f8c",
+                   "navy": "#152b42", "selected": "#dceff1"}
+        self.palette = palette
+        style = ttk.Style(self.root)
+        style.theme_use("clam")
+        family = tkfont.nametofont("TkDefaultFont").actual("family")
+        tkfont.nametofont("TkDefaultFont").configure(size=10)
+        style.configure(".", font=(family, 10), foreground=palette["ink"],
+                        background=palette["background"])
+        style.configure("TFrame", background=palette["background"])
+        style.configure("Card.TFrame", background=palette["surface"])
+        style.configure("Header.TFrame", background=palette["navy"])
+        style.configure("TLabel", background=palette["background"])
+        style.configure("Card.TLabel", background=palette["surface"])
+        style.configure("Muted.TLabel", foreground=palette["muted"], background=palette["surface"])
+        style.configure("Section.TLabel", font=(family, 11, "bold"), background=palette["surface"])
+        style.configure("Title.TLabel", font=(family, 23, "bold"), foreground="#ffffff",
+                        background=palette["navy"])
+        style.configure("Subtitle.TLabel", foreground="#b9cbdc", background=palette["navy"])
+        style.configure("Badge.TLabel", foreground="#87e0d4", background=palette["navy"],
+                        padding=(14, 8))
+        style.configure("Count.TLabel", font=(family, 19, "bold"), background=palette["surface"])
+        style.configure("TButton", padding=(12, 9), background="#e7eef4", borderwidth=0)
+        style.map("TButton", background=[("active", "#d7e4ed"), ("disabled", "#edf1f5")],
+                  foreground=[("disabled", "#98a5b3")])
+        style.configure("Primary.TButton", background=palette["accent"], foreground="#ffffff")
+        style.map("Primary.TButton", background=[("disabled", "#b4cbd0"), ("active", "#066b76")],
+                  foreground=[("disabled", "#f5f8fa")])
+        style.configure("Danger.TButton", foreground="#a63f46")
+        for name in ("TEntry", "TCombobox", "TSpinbox"):
+            style.configure(name, fieldbackground="#f7f9fc", bordercolor=palette["border"],
+                            lightcolor=palette["border"], darkcolor=palette["border"], padding=7)
+            style.map(name, bordercolor=[("focus", palette["accent"])],
+                      fieldbackground=[("disabled", "#edf1f5")])
+        style.configure("TCheckbutton", background=palette["surface"], padding=(0, 4))
+        style.map("TCheckbutton", background=[("active", palette["surface"])])
+        style.configure("Treeview", background=palette["surface"], fieldbackground=palette["surface"],
+                        rowheight=34, borderwidth=0, font=(family, 10))
+        style.configure("Treeview.Heading", background="#eef3f7", foreground=palette["muted"],
+                        font=(family, 9, "bold"), padding=(8, 9), relief="flat")
+        style.map("Treeview", background=[("selected", palette["selected"])],
+                  foreground=[("selected", palette["ink"])])
+        style.configure("Horizontal.TProgressbar", background=palette["accent"],
+                        troughcolor="#e5edf3", borderwidth=0, thickness=7)
+        self.root.configure(background=palette["background"])
+        self.root.option_add("*TCombobox*Listbox.font", (family, 10))
+        self.root.option_add("*TCombobox*Listbox.background", palette["surface"])
+        self.root.option_add("*TCombobox*Listbox.selectBackground", palette["accent"])
 
     def _build(self) -> None:
-        self.root.title("Offline Literary Translator — LM Studio")
-        self.root.geometry("1150x820")
-        self.root.minsize(800, 600)
-        container = ttk.Frame(self.root, padding=12)
-        container.pack(fill="both", expand=True)
-        source_row = ttk.Frame(container)
-        source_row.pack(fill="x")
-        ttk.Label(source_row, text="Input file").pack(side="left")
-        self.source_entry = ttk.Entry(source_row, textvariable=self.source)
-        self.source_entry.pack(side="left", fill="x", expand=True, padx=8)
-        self.browse = ttk.Button(source_row, text="Browse…", command=self.choose_file)
-        self.browse.pack(side="left")
-        options = ttk.Frame(container)
-        options.pack(fill="x", pady=10)
-        self.option_widgets = []
-        labels = (("model", "Model"), ("input_lang", "From"), ("output_lang", "To"),
-                  ("max_workers", "Workers"), ("retries", "Retries"),
-                  ("timeout", "Timeout (s)"), ("api_key", "API key (optional)"))
-        for column, (name, label) in enumerate(labels):
-            ttk.Label(options, text=label).grid(row=0, column=column, sticky="w", padx=3)
-            entry = ttk.Entry(options, textvariable=self.values[name],
-                              width=22 if name == "model" else 12,
-                              show="•" if name == "api_key" else "")
-            entry.grid(row=1, column=column, sticky="ew", padx=3)
-            self.option_widgets.append(entry)
-            options.columnconfigure(column, weight=1)
-        self.check_option = ttk.Checkbutton(container, text="Proofread translations (extra local requests)",
-                                            variable=self.proofread)
-        self.check_option.pack(anchor="w")
-        actions = ttk.Frame(container)
-        actions.pack(fill="x", pady=8)
-        self.buttons = {}
-        for name, command in (("Start / load", self.start), ("Pause", self.pause),
-                              ("Resume", self.resume), ("Cancel", self.cancel),
-                              ("Retranslate chunk", self.retranslate), ("Export", self.export)):
-            button = ttk.Button(actions, text=name, command=command)
-            button.pack(side="left", padx=(0, 6))
-            self.buttons[name] = button
-        self.progress = ttk.Progressbar(container, mode="determinate")
-        self.progress.pack(fill="x")
-        ttk.Label(container, textvariable=self.summary, wraplength=1050).pack(anchor="w", pady=6)
-        panes = ttk.Panedwindow(container, orient="vertical")
-        panes.pack(fill="both", expand=True)
-        list_frame = ttk.Frame(panes)
-        self.tree = ttk.Treeview(list_frame, columns=("unit", "status", "check", "detail"),
-                                 show="tree headings", selectmode="browse", height=12)
-        for column, title, width in (("#0", "Chunk", 65), ("unit", "Source unit", 310),
-                                     ("status", "Status", 95), ("check", "Check", 100),
-                                     ("detail", "Details", 290)):
-            self.tree.heading(column, text=title)
-            self.tree.column(column, width=width, stretch=column in ("unit", "detail"))
-        scroll = ttk.Scrollbar(list_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scroll.set)
-        self.tree.pack(side="left", fill="both", expand=True)
+        self.root.title("Literary Translator | Local workspace")
+        self.root.geometry("1360x900")
+        self.root.minsize(1100, 760)
+        self._style()
+        header = ttk.Frame(self.root, style="Header.TFrame", padding=(24, 18))
+        header.pack(fill="x")
+        heading = ttk.Frame(header, style="Header.TFrame")
+        heading.pack(side="left")
+        ttk.Label(heading, text="Literary Translator", style="Title.TLabel").pack(anchor="w")
+        ttk.Label(heading, text="Your books. Your model. An entirely local workflow.",
+                  style="Subtitle.TLabel").pack(anchor="w", pady=(5, 0))
+        ttk.Label(header, textvariable=self.connection, style="Badge.TLabel").pack(side="right")
+        body = ttk.Frame(self.root, padding=18)
+        body.pack(fill="both", expand=True)
+        body.columnconfigure(1, weight=1)
+        body.rowconfigure(0, weight=1)
+        sidebar = ttk.Frame(body, style="Card.TFrame", width=330)
+        sidebar.grid(row=0, column=0, sticky="nsew", padx=(0, 16))
+        sidebar.grid_propagate(False)
+        canvas = tk.Canvas(sidebar, background=self.palette["surface"],
+                           highlightthickness=0, width=310)
+        scroll = ttk.Scrollbar(sidebar, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=scroll.set)
         scroll.pack(side="right", fill="y")
-        self.tree.bind("<<TreeviewSelect>>", lambda event: self.preview())
-        panes.add(list_frame, weight=1)
-        preview_frame = ttk.Frame(panes)
-        self.source_preview = self._text_panel(preview_frame, "Source", 0)
-        self.target_preview = self._text_panel(preview_frame, "Translation / check details", 1)
-        panes.add(preview_frame, weight=1)
+        canvas.pack(side="left", fill="both", expand=True)
+        settings = ttk.Frame(canvas, style="Card.TFrame", padding=16)
+        settings.columnconfigure(0, weight=1)
+        window = canvas.create_window(0, 0, window=settings, anchor="nw")
+        canvas.bind("<Configure>", lambda event: canvas.itemconfigure(window, width=event.width))
+        settings.bind("<Configure>", lambda event: canvas.configure(scrollregion=canvas.bbox("all")))
+        self._settings_panel(settings)
+        self._bind_settings_scroll(settings, canvas)
+        workspace = ttk.Frame(body)
+        workspace.grid(row=0, column=1, sticky="nsew")
+        self._workspace(workspace)
         self._controls(False)
 
-    @staticmethod
-    def _text_panel(parent: ttk.Frame, title: str, column: int) -> tk.Text:
-        panel = ttk.LabelFrame(parent, text=title)
-        panel.grid(row=0, column=column, sticky="nsew", padx=3)
-        parent.columnconfigure(column, weight=1)
+    def _bind_settings_scroll(self, widget, canvas: tk.Canvas) -> None:
+        def wheel(event):
+            if canvas.yview() == (0.0, 1.0):
+                return None
+            direction = -1 if getattr(event, "num", None) == 4 or event.delta > 0 else 1
+            canvas.yview_scroll(direction * 2, "units")
+            return "break"
+        # Bind just the settings widgets, not global wheel events; previews retain
+        # their independent scrolling and no bindings survive this window.
+        for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+            widget.bind(sequence, wheel, add="+")
+        for child in widget.winfo_children():
+            self._bind_settings_scroll(child, canvas)
+
+    def _settings_panel(self, parent: ttk.Frame) -> None:
+        ttk.Label(parent, text="TRANSLATION SETUP", style="Section.TLabel").grid(
+            row=0, column=0, sticky="w", pady=(0, 18))
+        ttk.Label(parent, text="Source book", style="Card.TLabel").grid(row=1, column=0, sticky="w")
+        self.source_entry = ttk.Entry(parent, textvariable=self.source, width=25)
+        self.source_entry.grid(row=2, column=0, sticky="ew", pady=(5, 7))
+        self.browse = ttk.Button(parent, text="Choose EPUB, PDF, DOCX or TXT", command=self.choose_file)
+        self.browse.grid(row=3, column=0, sticky="ew")
+        model_heading = ttk.Frame(parent, style="Card.TFrame")
+        model_heading.grid(row=4, column=0, sticky="ew", pady=(20, 5))
+        ttk.Label(model_heading, text="LM Studio model", style="Card.TLabel").pack(side="left")
+        self.refresh_button = ttk.Button(model_heading, text="Refresh", command=self.refresh_models)
+        self.refresh_button.pack(side="right")
+        self.model_combo = ttk.Combobox(parent, textvariable=self.model_selection, width=25,
+                                        height=12, state="normal")
+        self.model_combo.grid(row=5, column=0, sticky="ew")
+        self.model_combo.bind("<<ComboboxSelected>>", self._model_selected)
+        ttk.Label(parent, textvariable=self.model_help, style="Muted.TLabel", wraplength=275).grid(
+            row=6, column=0, sticky="w", pady=(7, 15))
+        fields = ttk.Frame(parent, style="Card.TFrame")
+        fields.grid(row=7, column=0, sticky="ew")
+        self.option_widgets = [self.model_combo]
+        for column, (name, label) in enumerate((("input_lang", "Source language"),
+                                               ("output_lang", "Target language"))):
+            fields.columnconfigure(column, weight=1, uniform="languages")
+            ttk.Label(fields, text=label, style="Card.TLabel").grid(row=0, column=column, sticky="w")
+            entry = ttk.Entry(fields, textvariable=self.values[name], width=10)
+            entry.grid(row=1, column=column, sticky="ew", padx=(0, 8) if column == 0 else 0, pady=(5, 0))
+            self.option_widgets.append(entry)
+        ttk.Label(parent, text="Processing", style="Section.TLabel").grid(
+            row=8, column=0, sticky="w", pady=(22, 8))
+        processing = ttk.Frame(parent, style="Card.TFrame")
+        processing.grid(row=9, column=0, sticky="ew")
+        for column, name in enumerate(("max_workers", "retries", "timeout")):
+            processing.columnconfigure(column, weight=1, uniform="processing")
+            label = {"max_workers": "Workers", "retries": "Retries", "timeout": "Timeout (s)"}[name]
+            ttk.Label(processing, text=label, style="Muted.TLabel").grid(row=0, column=column, sticky="w")
+            entry = ttk.Entry(processing, textvariable=self.values[name], width=5)
+            entry.grid(row=1, column=column, sticky="ew", pady=(5, 0), padx=(0, 6))
+            self.option_widgets.append(entry)
+        ttk.Label(parent, text="API key (optional)", style="Muted.TLabel").grid(
+            row=10, column=0, sticky="w", pady=(14, 5))
+        key = ttk.Entry(parent, textvariable=self.values["api_key"], show="•")
+        key.grid(row=11, column=0, sticky="ew")
+        self.option_widgets.append(key)
+        self.check_option = ttk.Checkbutton(parent, text="Proofread after translation", variable=self.proofread)
+        self.check_option.grid(row=12, column=0, sticky="w", pady=(15, 10))
+        ttk.Separator(parent).grid(row=13, column=0, sticky="ew", pady=8)
+        ttk.Label(parent, text="Empty, single-character and punctuation-only chunks are skipped automatically.",
+                  style="Muted.TLabel", wraplength=270).grid(row=14, column=0, sticky="w", pady=(5, 0))
+
+    def _workspace(self, parent: ttk.Frame) -> None:
+        toolbar = ttk.Frame(parent)
+        toolbar.pack(fill="x", pady=(0, 12))
+        self.buttons = {}
+        actions = (("Start / load", "Start translation", self.start, "Primary.TButton"),
+                   ("Pause", "Pause", self.pause, "TButton"),
+                   ("Resume", "Resume", self.resume, "TButton"),
+                   ("Cancel", "Cancel", self.cancel, "Danger.TButton"),
+                   ("Retranslate chunk", "Retranslate", self.retranslate, "TButton"),
+                   ("Export", "Export book", self.export, "TButton"))
+        for name, label, command, style in actions:
+            button = ttk.Button(toolbar, text=label, command=command, style=style)
+            button.pack(side="left", padx=(0, 5))
+            self.buttons[name] = button
+        stats = ttk.Frame(parent, style="Card.TFrame", padding=(12, 10))
+        stats.pack(fill="x", pady=(0, 12))
+        self.count_vars = {}
+        for column, name in enumerate(("Pending", "Completed", "Resumed", "Retranslated", "Error", "Retry", "Skipped")):
+            stats.columnconfigure(column, weight=1, uniform="counts")
+            self.count_vars[name] = tk.StringVar(value="0")
+            ttk.Label(stats, textvariable=self.count_vars[name], style="Count.TLabel").grid(
+                row=0, column=column, sticky="w", padx=4)
+            ttk.Label(stats, text=name, style="Muted.TLabel").grid(row=1, column=column, sticky="w", padx=4)
+        self.progress = ttk.Progressbar(parent, mode="determinate")
+        self.progress.pack(fill="x")
+        self.summary_label = ttk.Label(parent, textvariable=self.summary, foreground=self.palette["muted"])
+        self.summary_label.pack(fill="x", pady=(7, 12))
+        self.summary_label.bind("<Configure>", lambda event: self.summary_label.configure(wraplength=max(200, event.width - 8)))
+        panes = ttk.Panedwindow(parent, orient="vertical")
+        panes.pack(fill="both", expand=True)
+        list_card = ttk.Frame(panes, style="Card.TFrame", padding=12)
+        ttk.Label(list_card, text="Translation queue", style="Section.TLabel").pack(anchor="w", pady=(0, 10))
+        list_frame = ttk.Frame(list_card, style="Card.TFrame")
+        list_frame.pack(fill="both", expand=True)
+        self.tree = ttk.Treeview(list_frame, columns=("unit", "status", "check", "detail"),
+                                 show="tree headings", selectmode="browse", height=7)
+        for column, title, width in (("#0", "#", 45), ("unit", "SOURCE", 210),
+                                     ("status", "STATUS", 105), ("check", "REVIEW", 110),
+                                     ("detail", "DETAILS", 180)):
+            self.tree.heading(column, text=title)
+            self.tree.column(column, width=width, minwidth=40, stretch=column in ("unit", "detail"))
+        for tag, foreground in (("Pending", "#63758a"), ("Completed", "#087769"),
+                                ("Resumed", "#327190"), ("Retranslated", "#6655a2"),
+                                ("Error", "#b43848"), ("Retry", "#a36512"), ("Skipped", "#84909e")):
+            self.tree.tag_configure(tag, foreground=foreground)
+        self.tree.tag_configure("stripe", background="#f7f9fc")
+        scroll = ttk.Scrollbar(list_frame, orient="vertical", command=self.tree.yview)
+        horizontal = ttk.Scrollbar(list_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=scroll.set, xscrollcommand=horizontal.set)
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        scroll.grid(row=0, column=1, sticky="ns")
+        horizontal.grid(row=1, column=0, sticky="ew")
+        list_frame.columnconfigure(0, weight=1)
+        list_frame.rowconfigure(0, weight=1)
+        self.tree.bind("<<TreeviewSelect>>", lambda event: self.preview())
+        panes.add(list_card, weight=1)
+        preview_frame = ttk.Frame(panes, padding=(0, 10, 0, 0))
+        self.source_preview = self._text_panel(preview_frame, "Original text", 0)
+        self.target_preview = self._text_panel(preview_frame, "Translation & review", 1)
+        panes.add(preview_frame, weight=1)
+        self._set_text(self.source_preview, "Select a chunk to read its original text.")
+        self._set_text(self.target_preview, "Your translation and proofreading notes will appear here.")
+
+    def _text_panel(self, parent: ttk.Frame, title: str, column: int) -> tk.Text:
+        panel = ttk.Frame(parent, style="Card.TFrame", padding=12)
+        panel.grid(row=0, column=column, sticky="nsew", padx=(0, 6) if column == 0 else (6, 0))
+        parent.columnconfigure(column, weight=1, uniform="previews")
         parent.rowconfigure(0, weight=1)
-        text = tk.Text(panel, wrap="word", height=12, width=40, state="disabled")
-        scroll = ttk.Scrollbar(panel, command=text.yview)
+        ttk.Label(panel, text=title, style="Section.TLabel").pack(anchor="w", pady=(0, 10))
+        content = ttk.Frame(panel, style="Card.TFrame")
+        content.pack(fill="both", expand=True)
+        text = tk.Text(content, wrap="word", height=9, width=24, state="disabled",
+                       background=self.palette["surface"], foreground=self.palette["ink"],
+                       relief="flat", borderwidth=0, highlightthickness=0, padx=2, pady=4,
+                       spacing1=3, spacing3=6, selectbackground=self.palette["selected"],
+                       font=(tkfont.nametofont("TkDefaultFont").actual("family"), 11))
+        scroll = ttk.Scrollbar(content, command=text.yview)
         text.configure(yscrollcommand=scroll.set)
         text.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
         return text
 
+    def refresh_models(self) -> None:
+        if self.models_loading or self.busy:
+            return
+        self.models_loading = True
+        self.refresh_button.configure(state="disabled")
+        self.connection.set("LM Studio · connecting")
+        self.model_help.set("Looking for your local models…")
+        # Snapshot Tk variables here, never in the worker thread.
+        client = LMStudioClient(Settings(api_key=self.values["api_key"].get().strip()))
+        def worker():
+            try:
+                self.events.put({"type": "models", "models": client.list_models()})
+            except Exception as exc:
+                logging.getLogger(__name__).warning("Model discovery failed: %s", exc)
+                self.events.put({"type": "models", "error": str(exc)})
+        threading.Thread(target=worker, daemon=True, name="model-discovery").start()
+
+    def _model_selected(self, event=None) -> None:
+        selection = self.model_selection.get().strip()
+        self.values["model"].set(self.model_choices.get(selection, selection))
+
+    def _models_received(self, event: dict) -> None:
+        self.models_loading = False
+        self.refresh_button.configure(state="disabled" if self.busy else "normal")
+        if "error" in event:
+            self.connection.set("LM Studio · unavailable")
+            self.model_help.set(event["error"] + " Start the local server, then Refresh. You can also enter a model ID.")
+            return
+        models = event["models"]
+        current = self.model_selection.get().strip()
+        identifier = self.model_choices.get(current, current)
+        self.model_choices = {model.label: model.identifier for model in models}
+        self.model_combo.configure(values=[model.label for model in models])
+        if current and current not in self.model_choices:
+            # A refresh can arrive during translation, or a selected model can
+            # disappear/change state. Never turn its display label into an ID.
+            self.model_choices[current] = identifier
+        if not self.busy:
+            matching = next((model.label for model in models if model.identifier == identifier), None)
+            if matching:
+                self.model_selection.set(matching)
+            elif not identifier and models:
+                self.model_selection.set(models[0].label)
+            elif identifier:
+                self.model_selection.set(identifier)
+            self._model_selected()
+        self.connection.set(f"LM Studio · {len(models)} models")
+        self.model_help.set("Choose a model or type its ID. Downloaded models need auto-loading enabled or loading in LM Studio."
+                            if models else "No language models found. Download a model in LM Studio, then Refresh.")
+
     def _controls(self, busy: bool) -> None:
         self.busy = busy
+        self.refresh_button.configure(state="disabled" if busy or self.models_loading else "normal")
         for widget in [self.browse, self.source_entry, self.check_option, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         for name, button in self.buttons.items():
@@ -139,6 +357,7 @@ class TranslatorGUI:
             self.source.set(path)
 
     def get_settings(self) -> Settings:
+        self._model_selected()
         settings = Settings(**{name: value.get().strip() for name, value in self.values.items()
                                if name not in ("max_workers", "retries", "timeout")},
                             max_workers=int(self.values["max_workers"].get()),
@@ -233,21 +452,28 @@ class TranslatorGUI:
         self.previews.clear()
         for chunk in self.job.chunks:
             self.statuses[chunk.index] = "Pending"
-            self.tree.insert("", "end", iid=str(chunk.index), text=str(chunk.index), values=(
+            self.tree.insert("", "end", iid=str(chunk.index), text=str(chunk.index),
+                             tags=("Pending", "stripe") if chunk.index % 2 else ("Pending",), values=(
                 self.job.book.units[chunk.unit_index].label, "Pending", "", ""))
         self.progress.configure(maximum=max(1, len(self.job.chunks)), value=0)
         self._controls(True)
+        self._update_counts()
+        self._set_text(self.source_preview, "Select a chunk to read its original text.")
+        self._set_text(self.target_preview, "Your translation and proofreading notes will appear here.")
         if self.closing:
             self.engine.cancel()
 
     def _handle(self, event: dict) -> None:
         kind = event["type"]
-        if kind == "loaded":
+        if kind == "models":
+            self._models_received(event)
+        elif kind == "loaded":
             self._loaded(event)
         elif kind in ("chunk", "check"):
             index = event["index"]
             if kind == "chunk":
                 self.statuses[index] = event["status"]
+                self.tree.item(str(index), tags=(event["status"], "stripe") if index % 2 else (event["status"],))
                 self.details[index] = event.get("detail", "")
                 self.tree.set(str(index), "status", event["status"])
                 self.tree.set(str(index), "detail", event.get("detail", ""))
@@ -273,7 +499,11 @@ class TranslatorGUI:
     def _update_counts(self, prefix: str = "") -> None:
         counts = Counter(self.statuses.values())
         names = ("Pending", "Completed", "Resumed", "Retranslated", "Error", "Retry", "Skipped")
-        self.summary.set(prefix + "  |  ".join(f"{name}: {counts[name]}" for name in names))
+        for name in names:
+            self.count_vars[name].set(str(counts[name]))
+        done = sum(counts[name] for name in ("Completed", "Resumed", "Retranslated", "Skipped"))
+        self.summary.set(f"{prefix}{done:,} of {len(self.statuses):,} chunks ready" +
+                         (f" · {counts['Error']} need attention" if counts["Error"] else ""))
         self.progress.configure(value=sum(counts[name] for name in
                                           ("Completed", "Resumed", "Retranslated", "Skipped")))
 

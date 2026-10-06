@@ -139,9 +139,9 @@ completed lists or resume markers are stored in the catalog. The picker derives
 its saved count directly from chunk files.
 
 There is **no progress manifest**. Resume relies exclusively on the existence
-of `chunks/<index>.txt`. For meaningful source text, existing empty or invalid UTF-8 files surface as
-errors and require explicit retranslation. Intentionally skipped chunks use
-empty files, which are valid and export as an empty translation. The
+of `chunks/<index>.txt`. Existing empty or whitespace-only UTF-8 files are valid saved translations
+and resume without a model request, including proofreading. Invalid UTF-8
+files surface as errors and require editing or explicit retranslation. The
 source chunks and `index_map` are regenerated deterministically in memory.
 Empty/whitespace-only chunks, a single character after trimming (including a
 single letter, digit or punctuation mark), and punctuation/symbol-only chunks
@@ -274,8 +274,7 @@ Click **Apply previewed replacements** to save only the reviewed changes.
 Untranslated chunks and source text are untouched. Skipped chunks remain empty.
 Affected previews refresh, outdated proofreading checks are removed and
 bookmarks remain intact. Export the book again to include the replacements.
-An empty replacement is allowed for deleting words, but a meaningful source
-chunk cannot be left with an empty/whitespace-only translation.
+An empty replacement is allowed, including deleting an entire translated chunk.
 
 Apply rechecks each affected chunk against the preview; if a chunk has changed,
 the batch is rejected before writing. Unreadable translation files block Apply
@@ -334,9 +333,11 @@ Edits are reused when resuming and included in the next export. No model request
 is made when saving an edit. Manual editing is available when the job is idle;
 finish or cancel a run first.
 
-A meaningful source chunk must retain a nonempty translation so an accidentally
-blank file cannot be treated as a completed translation. Skipped source chunks
-retain empty translations under the existing skip rule. XML-invalid characters
+You may save an empty or whitespace-only translation. It remains saved when
+reopening or resuming and exports without translated text; source boundary
+whitespace and EPUB tags stay intact. Use explicit retranslation to replace it
+with a new model translation. Skipped source chunks retain empty translations
+under the existing skip rule. XML-invalid characters
 are rejected for EPUB. Tags typed in the editor are exported as escaped literal
 text; they cannot alter the original EPUB structure.
 

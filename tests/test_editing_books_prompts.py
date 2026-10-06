@@ -47,11 +47,39 @@ class EditingBookPromptTests(unittest.TestCase):
         reopened.export(out)
         self.assertEqual(out.read_text(), 'An edited translation — exactly as typed.\nSECOND PARAGRAPH.\n')
 
+    def test_empty_edits_resume_export_and_can_be_retranslated(self):
+        for value in ('', '   '):
+            with self.subTest(value=value):
+                job = self.job(replace(self.settings, proofread=True))
+                client = Mock()
+                client.translate.return_value = 'New translation'
+                client.check.return_value = {'issues': []}
+                engine = TranslationEngine(job, client=client)
+                job.check_path(0).write_text('{"issues": []}', encoding='utf-8')
+                engine.save_chunk_edit(0, value)
+                engine.save_chunk_edit(1, value)
+                self.assertEqual(job.chunk_path(0).read_text(), value)
+                self.assertFalse(job.check_path(0).exists())
+                reopened = self.job(replace(self.settings, proofread=True))
+                events = []
+                resumed = TranslationEngine(reopened, events.append, client)
+                resumed.run()
+                client.translate.assert_not_called()
+                client.check.assert_not_called()
+                self.assertEqual(reopened.read_translation(0), value)
+                self.assertEqual(sum(e.get('status') == 'Resumed' for e in events), 2)
+                output = self.root / 'blank.txt'
+                reopened.export(output)
+                self.assertEqual(output.read_text(), value + '\n' + value + '\n')
+                resumed.retranslate_single_chunk(0)
+                client.translate.assert_called_once_with('First paragraph.')
+                self.assertEqual(reopened.read_translation(0), 'New translation')
+
     def test_invalid_edits_and_locked_job_do_not_overwrite(self):
         job = self.job()
         job.chunk_path(0).write_text('Keep this', encoding='utf-8')
         engine = TranslationEngine(job, client=Mock())
-        for index, text in ((-1, 'text'), (99, 'text'), (0, ''), (0, '   '), (0, None)):
+        for index, text in ((-1, 'text'), (99, 'text'), (0, None)):
             with self.assertRaises((IndexError, ValueError)):
                 engine.save_chunk_edit(index, text)
         with engine.operation():

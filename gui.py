@@ -15,7 +15,7 @@ import settings_manager
 from extractors import load_book
 from lmstudio import LMStudioClient, TRANSLATION_PROMPT, launch_lm_studio
 from settings_manager import Settings, PromptStore, load_settings, save_settings
-from translator import Job, TranslationEngine, parse_chunk_selection, saved_books
+from translator import Job, TranslationEngine, parse_chunk_selection, saved_books, should_skip
 
 
 class TranslatorGUI:
@@ -684,7 +684,7 @@ class TranslatorGUI:
         try:
             value = self.job.read_translation(index) if self.job.chunk_path(index).exists() else ""
         except (OSError, ValueError):
-            value = ""  # Allows repairing an empty/corrupt translation manually.
+            value = ""  # Allows repairing a corrupt translation manually.
         dialog = tk.Toplevel(self.root)
         dialog.title(f"Edit translated chunk {index}")
         dialog.geometry("900x640")
@@ -693,7 +693,7 @@ class TranslatorGUI:
         panel = ttk.Frame(dialog, padding=16)
         panel.pack(fill="both", expand=True)
         ttk.Label(panel, text=f"Chunk {index} · Edit translation", style="Section.TLabel").pack(anchor="w")
-        ttk.Label(panel, text="Save replaces this chunk's file and clears its old proofreading result.").pack(anchor="w", pady=10)
+        ttk.Label(panel, text="Save replaces this chunk's file and clears its old proofreading result. Leave blank to omit its translated text.").pack(anchor="w", pady=10)
         columns = ttk.Frame(panel)
         columns.pack(fill="both", expand=True)
         source = self._text_panel(columns, "Original text", 0)
@@ -1177,7 +1177,7 @@ class TranslatorGUI:
             if self.job.chunk_path(chunk.index).exists():
                 try:
                     self.previews[chunk.index] = self.job.read_translation(chunk.index)
-                    status = "Skipped" if not self.previews[chunk.index] else "Resumed"
+                    status = "Skipped" if should_skip(chunk.text) else "Resumed"
                 except (OSError, ValueError) as exc:
                     status, detail = "Error", str(exc)
             self.statuses[chunk.index] = status

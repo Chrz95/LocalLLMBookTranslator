@@ -230,10 +230,8 @@ class Job:
     def read_translation(self, index: int) -> str:
         if should_skip(self.chunks[index].text):
             return ""
-        text = self.chunk_path(index).read_text(encoding="utf-8")
-        if not text.strip():
-            raise ValueError(f"Chunk {index} is empty; retranslate it.")
-        return text
+        # An existing empty file is a saved translation, including a manual edit.
+        return self.chunk_path(index).read_text(encoding="utf-8")
 
     def search(self, query: str, scope: str = "Both", case_sensitive: bool = False) -> SearchResults:
         """Literal search of every chunk, reading the latest translated files."""
@@ -435,8 +433,6 @@ class TranslationEngine:
         if should_skip(self.job.chunks[index].text):
             if text:
                 raise ValueError("Skipped source chunks must retain an empty translation.")
-        elif not text.strip():
-            raise ValueError("A meaningful source chunk requires a nonempty translation.")
         if self.job.book.kind == "epub" and any(not valid_xml_character(ord(c)) for c in text):
             raise ValueError("The edit contains characters that are invalid in EPUB/XML.")
 
@@ -561,7 +557,7 @@ class TranslationEngine:
                 self.emit({"type": "check", "index": index, "check": "", "detail": ""})
                 status = "Retranslated" if force else "Completed"
             self.event(index, status, preview=translation)
-            if self.job.settings.proofread:
+            if self.job.settings.proofread and translation.strip():
                 self._check(chunk, translation)
         except Cancelled:
             self.event(index, "Pending", "Cancelled; any previous chunk file is retained")

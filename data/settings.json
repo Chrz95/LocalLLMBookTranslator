@@ -1,5 +1,5 @@
 {
-  "model": "qwen2.5-vl-7b",
+  "model": "qwen/qwen2.5-vl-7b",
   "input_lang": "German",
   "output_lang": "English",
   "max_workers": 3,
@@ -8,5 +8,7 @@
   "proofread": false,
   "custom_prompt": "Translate the provided text from German to English. ",
   "use_custom_prompt": true,
+  "start_lm_studio": true,
+  "lmstudio_path": "",
   "last_input_file": "D:\\Files\\Software\\Development\\Python\\Personal\\Offline-Literary-Translator\\data\\books\\4d105d7b9b15d72f1b335fe61a29395f7e2cf9a129510b260f0b4a646c97eb05.epub"
 }

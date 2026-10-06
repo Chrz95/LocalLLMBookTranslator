@@ -49,16 +49,15 @@ class ReplacementTests(unittest.TestCase):
         self.assertTrue(self.job.check_path(2).exists())
         self.assertEqual(self.job.get_bookmarks(),{0:'Review'})
 
-    def test_stale_preview_or_blank_result_never_writes_any_chunk(self):
+    def test_stale_preview_never_writes_and_empty_result_is_allowed(self):
         plan=self.job.preview_replacement('cat','dog')
         self.job.chunk_path(1).write_text('Changed after preview', encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed since preview'):
             self.engine.apply_replacement(plan)
         self.assertEqual(self.job.read_translation(0),'Cat cat caterpillar.')
         blank=self.job.preview_replacement('Other text.','')
-        with self.assertRaises(ValueError):
-            self.engine.apply_replacement(blank)
-        self.assertEqual(self.job.read_translation(2),'Other text.')
+        self.engine.apply_replacement(blank)
+        self.assertEqual(self.job.read_translation(2),'')
 
     def test_failed_batch_rolls_back_translations_checks_and_emits_no_false_updates(self):
         plan=self.job.preview_replacement('cat','dog')

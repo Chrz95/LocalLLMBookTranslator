@@ -188,7 +188,7 @@ class ApplicationTests(unittest.TestCase):
                 self.assertEqual(result, expected)
                 self.assertEqual(ET.fromstring(result).find("body/p").text, "Γειά")
 
-    def test_missing_or_empty_chunk_never_exports(self):
+    def test_missing_and_corrupt_chunks_fail_but_empty_chunk_resumes(self):
         job = self.text_job()
         with self.assertRaises(ValueError):
             job.export(self.root / "missing.txt")
@@ -197,9 +197,35 @@ class ApplicationTests(unittest.TestCase):
         events = []
         TranslationEngine(job, events.append, client).run()
         self.assertNotIn("eins", client.calls)
+        self.assertTrue(any(e.get("index") == 0 and e.get("status") == "Resumed" for e in events))
+        output = self.root / "empty.txt"
+        job.export(output)
+        self.assertEqual(output.read_text(), "\nZWEI\nDREI\n")
+        job.chunk_path(0).write_bytes(b'\xff')
+        events.clear()
+        TranslationEngine(job, events.append, client).run()
         self.assertTrue(any(e.get("index") == 0 and e.get("status") == "Error" for e in events))
-        with self.assertRaises(ValueError):
-            job.export(self.root / "empty.txt")
+        with self.assertRaises(UnicodeDecodeError):
+            job.export(self.root / "corrupt.txt")
+
+    def test_empty_epub_edits_preserve_all_markup_and_assets(self):
+        source = self.root / "original.epub"
+        members = make_epub(source)
+        job = Job(load_book(source), self.settings, self.root / "jobs")
+        engine = TranslationEngine(job, client=FakeClient())
+        for chunk in job.chunks:
+            engine.save_chunk_edit(chunk.index, "")
+        output = self.root / "empty.epub"
+        job.export(output)
+        with zipfile.ZipFile(output) as archive:
+            for member, original in members.items():
+                if member not in {unit.member for unit in job.book.units}:
+                    self.assertEqual(archive.read(member), original)
+            original_tree = ET.fromstring(members['OPS/one.xhtml'])
+            translated_tree = ET.fromstring(archive.read('OPS/one.xhtml'))
+            self.assertEqual([(e.tag, e.attrib) for e in original_tree.iter()],
+                             [(e.tag, e.attrib) for e in translated_tree.iter()])
+            self.assertNotIn('Hallo', archive.read('OPS/one.xhtml').decode())
 
     def test_retry_and_skipped_status(self):
         job = self.text_job("eins\n\n")

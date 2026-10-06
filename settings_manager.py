@@ -23,10 +23,14 @@ class Settings:
     api_key: str = ""
     custom_prompt: str = ""
     use_custom_prompt: bool = False
+    start_lm_studio: bool = True
+    lmstudio_path: str = ""
 
-    def validate(self) -> None:
+    def validate(self, require_model: bool = True) -> None:
         for name in ("model", "input_lang", "output_lang"):
             value = getattr(self, name)
+            if name == "model" and not require_model and value == "":
+                continue
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{name} is required.")
         if type(self.max_workers) is not int or not 1 <= self.max_workers <= 32:
@@ -41,6 +45,8 @@ class Settings:
             raise ValueError("Invalid custom prompt setting.")
         if self.use_custom_prompt and not self.custom_prompt.strip():
             raise ValueError("Enter a custom prompt or disable the custom prompt option.")
+        if type(self.start_lm_studio) is not bool or not isinstance(self.lmstudio_path, str):
+            raise ValueError("Invalid LM Studio launch preference.")
 
 
 def atomic_write(path: Path, data: str | bytes) -> None:
@@ -59,8 +65,8 @@ def atomic_write(path: Path, data: str | bytes) -> None:
         Path(temporary).unlink(missing_ok=True)
 
 
-def save_settings(path: Path, settings: Settings) -> None:
-    settings.validate()
+def save_settings(path: Path, settings: Settings, require_model: bool = True) -> None:
+    settings.validate(require_model=require_model)
     values = asdict(settings)
     values.pop("api_key")  # Credentials stay in memory, never in settings/logs.
     values["last_input_file"] = last_input_file

@@ -58,6 +58,39 @@ with one or two workers; more workers may exceed the local model's capacity.
 Language/model changes take effect when starting a new job. Retranslation uses
 the loaded job's settings. Retries are additional attempts after the first one.
 
+## Automatically start LM Studio
+
+**Start LM Studio on app launch** is enabled by default in the setup sidebar.
+Disable the checkbox to leave startup under your control; the preference saves
+immediately, even before selecting a model. It applies to the GUI launch.
+
+Startup runs in the background and first checks whether the local API server
+is already running. Otherwise it attempts common Windows/macOS installations,
+Linux executable names and AppImages. For another installation location, use
+**Set LM Studio path…** to choose the executable (or a file inside the macOS
+.app bundle). Its path is saved with the launch preference.
+
+When the `lms` CLI is available, startup also requests a local API server on
+port 1234 bound to 127.0.0.1. If the CLI is unavailable or startup fails, the
+app remains usable; open LM Studio manually and enable **Developer → Start
+server**. Model discovery refreshes after startup and retries after short delays.
+Startup does not download models, change authentication or select/load a model.
+
+## Retranslate with a different model
+
+Open the saved book, select another model in the model dropdown, select chunks,
+and click **Retranslate selected**. The selected chunks now use that model in
+the same saved translation job. Other translations, manual edits, bookmarks,
+prompts and chunk numbering remain available. The selected runtime model is
+remembered and restored when reopening the saved job.
+
+The job's original model remains its folder identity; switching runtime models
+for retranslation does not move or duplicate its chunk files. The book catalog
+stores the original model and the latest selected model separately. A source or
+target language change still requires a separate translation job to prevent
+mixing languages. Starting a new translation with a different model may create
+a separate job; selected retranslation uses the currently opened job.
+
 ## Files
 
 ```text
@@ -77,6 +110,7 @@ literary_translator/
   tests/test_search.py
   tests/test_bookmarks.py
   tests/test_replacement.py
+  tests/test_launch_and_model_switch.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
@@ -367,8 +401,9 @@ another entry replaces it for future requests. A deleted template is not
 silently recreated. The default always remains available.
 
 Custom translation instructions do not replace the separate proofreading
-prompt. Keep the opened book's model/languages for selected retranslation; use
-Start translation for a separate model/language job. If the saved prompt library
+prompt. Selected retranslation can use a different model in the same saved job;
+keep the opened book's source and target languages. Start translation can create
+a separate model/language job. If the saved prompt library
 is damaged, its file is preserved and the app offers the default in read-only
 mode until the file is repaired.
 
@@ -438,6 +473,7 @@ headlessly; interaction with a real LM Studio model and visual GUI behavior
 must be verified on your computer.
 
 API references:
+- https://lmstudio.ai/docs/cli/serve/server-start
 - https://lmstudio.ai/docs/developer/rest/list
 - https://lmstudio.ai/docs/developer/openai-compat/models
 - https://lmstudio.ai/docs/developer/openai-compat

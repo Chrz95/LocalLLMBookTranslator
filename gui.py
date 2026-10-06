@@ -13,7 +13,7 @@ from tkinter import font as tkfont
 
 import settings_manager
 from extractors import load_book
-from lmstudio import LMStudioClient, TRANSLATION_PROMPT
+from lmstudio import LMStudioClient, TRANSLATION_PROMPT, launch_lm_studio
 from settings_manager import Settings, PromptStore, load_settings, save_settings
 from translator import Job, TranslationEngine, parse_chunk_selection, saved_books
 
@@ -42,6 +42,8 @@ class TranslatorGUI:
         self.values = {name: tk.StringVar(value=str(getattr(settings, name)))
                        for name in ("model", "input_lang", "output_lang", "max_workers",
                                     "retries", "timeout", "api_key")}
+        self.start_lm_studio = tk.BooleanVar(value=settings.start_lm_studio)
+        self.lmstudio_path = settings.lmstudio_path
         self.proofread = tk.BooleanVar(value=settings.proofread)
         self.use_custom_prompt = tk.BooleanVar(value=settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
@@ -70,7 +72,7 @@ class TranslatorGUI:
         self._refresh_prompt_choices()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(100, self._poll)
-        self.root.after(200, self.refresh_models)
+        self.root.after(200, self.start_local_studio)
         self.root.after(250, self.refresh_saved_books)
 
     def _style(self) -> None:
@@ -200,6 +202,13 @@ class TranslatorGUI:
                                         height=12, state="normal")
         self.model_combo.grid(row=9, column=0, sticky="ew")
         self.model_combo.bind("<<ComboboxSelected>>", self._model_selected)
+        launch_row = ttk.Frame(parent, style="Card.TFrame")
+        launch_row.grid(row=23, column=0, sticky="ew", pady=(18, 0))
+        self.launch_option = ttk.Checkbutton(launch_row, text="Start LM Studio on app launch",
+                                             variable=self.start_lm_studio, command=self.save_launch_preferences)
+        self.launch_option.pack(anchor="w")
+        self.launch_path_button = ttk.Button(launch_row, text="Set LM Studio path…", command=self.choose_studio_path)
+        self.launch_path_button.pack(fill="x", pady=(6, 0))
         ttk.Label(parent, textvariable=self.model_help, style="Muted.TLabel", wraplength=275).grid(
             row=10, column=0, sticky="w", pady=(7, 15))
         fields = ttk.Frame(parent, style="Card.TFrame")
@@ -353,6 +362,39 @@ class TranslatorGUI:
         scroll.pack(side="right", fill="y")
         return text
 
+    def save_launch_preferences(self) -> None:
+        try:
+            settings = load_settings(self.settings_path)
+            settings = replace(settings, start_lm_studio=self.start_lm_studio.get(), lmstudio_path=self.lmstudio_path)
+            settings_manager.last_input_file = self.source.get()
+            save_settings(self.settings_path, settings, require_model=False)
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showerror("Cannot save launch option", str(exc), parent=self.root)
+
+    def choose_studio_path(self) -> None:
+        path = filedialog.askopenfilename(parent=self.root, title="Choose LM Studio executable (or select a file inside its macOS .app)")
+        if path:
+            candidate = Path(path)
+            bundle = next((p for p in (candidate, *candidate.parents) if p.suffix.lower() == ".app"), None)
+            self.lmstudio_path = str(bundle or candidate)
+            self.save_launch_preferences()
+
+    def start_local_studio(self) -> None:
+        if not self.start_lm_studio.get():
+            self.refresh_models()
+            return
+        path, api_key = self.lmstudio_path, self.values["api_key"].get().strip()
+        self.connection.set("LM Studio · starting")
+        self.model_help.set("Starting LM Studio and its local server…")
+        def worker():
+            try:
+                message = launch_lm_studio(path, api_key)
+            except Exception as exc:
+                logging.getLogger(__name__).exception("LM Studio launch failed")
+                message = f"Could not start LM Studio: {exc}"
+            self.events.put({"type": "studio_started", "detail": message})
+        threading.Thread(target=worker, daemon=True, name="studio-launcher").start()
+
     def refresh_models(self) -> None:
         if self.models_loading or self.busy:
             return
@@ -407,7 +449,7 @@ class TranslatorGUI:
         self.busy = busy
         self.refresh_button.configure(state="disabled" if busy or self.models_loading else "normal")
         for widget in [self.browse, self.source_entry, self.check_option, self.open_button,
-                       self.open_saved_button, *self.option_widgets]:
+                       self.open_saved_button, self.launch_option, self.launch_path_button, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         self.saved_combo.configure(state="disabled" if busy else "readonly")
         self._prompt_controls()
@@ -432,7 +474,8 @@ class TranslatorGUI:
                             retries=int(self.values["retries"].get()),
                             timeout=float(self.values["timeout"].get()),
                             proofread=self.proofread.get(), custom_prompt=self.custom_prompt,
-                            use_custom_prompt=self.use_custom_prompt.get())
+                            use_custom_prompt=self.use_custom_prompt.get(),
+                            start_lm_studio=self.start_lm_studio.get(), lmstudio_path=self.lmstudio_path)
         if validate:
             settings.validate()
         return settings
@@ -506,18 +549,21 @@ class TranslatorGUI:
             if not run and match is None:
                 matches = [entry for entry in saved_books(self.data_directory / "jobs")
                            if entry.digest == book.digest]
-                match = next((entry for entry in matches if entry.settings.model == settings.model
+                match = next((entry for entry in matches if (entry.settings.model == settings.model or entry.last_model == settings.model)
                               and entry.settings.input_lang == settings.input_lang
                               and entry.settings.output_lang == settings.output_lang),
                              matches[0] if matches else None)
             if match:
                 if book.digest != match.digest:
                     raise ValueError("Saved source is damaged or changed; open the original file.")
-                chosen = replace(match.settings, api_key=settings.api_key)
+                chosen = replace(match.settings, api_key=settings.api_key,
+                                 start_lm_studio=settings.start_lm_studio, lmstudio_path=settings.lmstudio_path)
             chosen.validate()
             job = Job(book, chosen, self.data_directory / "jobs")
             if match and job.directory != match.directory:
                 raise ValueError("Saved book configuration does not match its translation folder.")
+            if match and match.last_model:
+                job.configure_translation(replace(chosen, model=match.last_model))
             engine = TranslationEngine(job, self.events.put)
             self.events.put({"type": "loaded", "job": job, "engine": engine,
                              "restore": bool(match), "source": filename, "run": run})
@@ -1080,11 +1126,7 @@ class TranslatorGUI:
             return
         try:
             settings = self.get_settings()
-            if any(getattr(settings, name) != getattr(self.job.settings, name)
-                   for name in ("model", "input_lang", "output_lang")):
-                raise ValueError("Keep the opened book's model/languages for retranslation, or start a new translation job.")
-            self.job.settings = settings
-            self.job.remember()
+            self.job.configure_translation(settings)
             save_settings(self.settings_path, settings)
             self.engine = TranslationEngine(self.job, self.events.put)
         except (OSError, ValueError, TypeError) as exc:
@@ -1155,7 +1197,12 @@ class TranslatorGUI:
 
     def _handle(self, event: dict) -> None:
         kind = event["type"]
-        if kind == "saved_books":
+        if kind == "studio_started":
+            self.model_help.set(event["detail"])
+            self.refresh_models()
+            self.root.after(4000, self.refresh_models)
+            self.root.after(12000, self.refresh_models)
+        elif kind == "saved_books":
             self.saved_choices = {book.label: book for book in event["books"]}
             self.saved_combo.configure(values=list(self.saved_choices))
             if self.saved_selection.get() not in self.saved_choices:

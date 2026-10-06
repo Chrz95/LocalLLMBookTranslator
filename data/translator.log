@@ -3805,3 +3805,6 @@ lmstudio.APIError: LM Studio HTTP 400.
 2026-10-06 13:14:20,993 INFO translator: Saved manual edit for chunk 194
 2026-10-06 13:14:35,961 INFO translator: Saved manual edit for chunk 194
 2026-10-06 13:15:28,451 INFO translator: Retranslating 1 selected chunks
+2026-10-06 13:17:47,270 INFO translator: Retranslating 1 selected chunks
+2026-10-06 13:18:13,050 INFO translator: Retranslating 1 selected chunks
+2026-10-06 13:18:49,926 INFO translator: Retranslating 1 selected chunks

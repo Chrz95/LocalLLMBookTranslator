@@ -192,3 +192,80 @@ class LMStudioClient:
             return report
         except (ValueError, TypeError) as exc:
             raise APIError("Proofreader returned invalid JSON/schema.") from exc
+
+
+def lmstudio_launch_command(custom_path: str = "") -> list[str] | None:
+    """Resolve common installations; a configured path handles other locations."""
+    import os
+    import platform
+    import shutil
+    from pathlib import Path
+    system = platform.system()
+    if custom_path:
+        path = Path(custom_path).expanduser()
+        if not path.exists():
+            raise ValueError("The configured LM Studio path does not exist.")
+        if system == "Darwin" and path.suffix.lower() == ".app":
+            return ["open", str(path)]
+        if not path.is_file():
+            raise ValueError("Choose the LM Studio executable or macOS .app bundle.")
+        return [str(path)]
+    if system == "Darwin":
+        for path in (Path("/Applications/LM Studio.app"), Path.home()/"Applications"/"LM Studio.app"):
+            if path.exists():
+                return ["open", str(path)]
+    elif system == "Windows":
+        roots = [Path(os.environ[name]) for name in ("LOCALAPPDATA", "ProgramFiles", "ProgramFiles(x86)")
+                 if os.environ.get(name)]
+        for root in roots:
+            for relative in ("Programs/LM Studio/LM Studio.exe", "LM Studio/LM Studio.exe"):
+                path = root/relative
+                if path.is_file():
+                    return [str(path)]
+    else:
+        for name in ("lm-studio", "lmstudio", "LM-Studio"):
+            executable = shutil.which(name)
+            if executable:
+                return [executable]
+        for directory in (Path.home()/"Applications", Path.home()/"Downloads", Path.home()):
+            for pattern in ("*LM*Studio*.AppImage", "*LM-Studio*.AppImage", "*lm-studio*.AppImage"):
+                for path in sorted(directory.glob(pattern)):
+                    if path.is_file() and os.access(path, os.X_OK):
+                        return [str(path)]
+    return None
+
+
+def launch_lm_studio(custom_path: str = "", api_key: str = "") -> str:
+    """Launch locally without a shell, then start the loopback API when lms exists."""
+    import platform
+    import shutil
+    import subprocess
+    from pathlib import Path
+    client = LMStudioClient(Settings(api_key=api_key))
+    try:
+        client._json_request("http://localhost:1234/v1/models", timeout=1)
+        return "LM Studio server is already running."
+    except APIError as exc:
+        if exc.status_code in (401, 403):
+            return "LM Studio server is already running; enter its API key."
+    command = lmstudio_launch_command(custom_path)
+    options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+    if platform.system() == "Windows":
+        options["creationflags"] = subprocess.CREATE_NO_WINDOW
+    if command:
+        subprocess.Popen(command, **options)
+    cli = shutil.which("lms")
+    if not cli:
+        path = Path.home()/".lmstudio"/"bin"/("lms.exe" if platform.system() == "Windows" else "lms")
+        cli = str(path) if path.is_file() else None
+    if cli:
+        try:
+            result = subprocess.run([cli, "server", "start", "--port", "1234", "--bind", "127.0.0.1"],
+                                    timeout=25, **options)
+            if result.returncode == 0:
+                return "LM Studio local server started."
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    if command:
+        return "LM Studio launched. Enable its Developer → Start server option if needed."
+    return "LM Studio was not found. Set its path in the app or start it manually."

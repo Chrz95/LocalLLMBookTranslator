@@ -86,10 +86,11 @@ class SavedBook:
     title: str
     saved_chunks: int
     directory: Path
+    last_model: str = ""
 
     @property
     def label(self) -> str:
-        return (f"{self.title} · {self.settings.output_lang} · {self.settings.model} "
+        return (f"{self.title} · {self.settings.output_lang} · {self.last_model or self.settings.model} "
                 f"· {self.saved_chunks} saved · {self.directory.name[:8]}")
 
 
@@ -107,7 +108,8 @@ def saved_books(workspace: Path) -> list[SavedBook]:
             source = Path(workspace).parent / "books" / f"{digest}.{kind}"
             if source.is_file():
                 results.append(SavedBook(source, digest, settings, str(data["title"]),
-                                         len(list((path.parent / "chunks").glob("[0-9]*.txt"))), path.parent))
+                                         len(list((path.parent / "chunks").glob("[0-9]*.txt"))), path.parent,
+                                         str(data.get("last_model", settings.model))))
         except (OSError, ValueError, KeyError, TypeError):
             logging.getLogger(__name__).warning("Ignoring invalid book catalog: %s", path)
     return results
@@ -144,6 +146,7 @@ class Job:
         settings.validate()
         self.book = book
         self.settings = settings
+        self.identity_model = settings.model
         identity = json.dumps([book.digest, settings.model, settings.input_lang,
                                settings.output_lang, TRANSLATION_PROMPT, CHUNK_VERSION],
                               ensure_ascii=False).encode("utf-8")
@@ -174,6 +177,7 @@ class Job:
             atomic_write(source, payload)
         settings = asdict(self.settings)
         settings.pop("api_key")
+        settings["model"] = self.identity_model
         title = next(iter(self.book.metadata.get("title", [])), self.book.path.name)
         catalog = self.directory / "book.json"
         if catalog.exists():
@@ -184,7 +188,22 @@ class Job:
         atomic_write(catalog, json.dumps({
             "digest": self.book.digest, "kind": self.book.kind,
             "title": title, "settings": settings,
+            "last_model": self.settings.model,
         }, ensure_ascii=False, indent=2))
+
+    def configure_translation(self, settings: Settings) -> None:
+        """Change runtime model/prompt without moving the book's existing files."""
+        settings.validate()
+        if (settings.input_lang != self.settings.input_lang
+            or settings.output_lang != self.settings.output_lang):
+            raise ValueError("Keep the opened book's source/target languages, or start a new translation job.")
+        previous = self.settings
+        self.settings = settings
+        try:
+            self.remember()
+        except Exception:
+            self.settings = previous
+            raise
 
     def chunk_path(self, index: int) -> Path:
         return self.chunks_dir / f"{index}.txt"

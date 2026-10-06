@@ -32,6 +32,7 @@ class TranslatorGUI:
         self.details: dict[int, str] = {}
         self.check_details: dict[int, str] = {}
         self.previews: dict[int, str] = {}
+        self.bookmarks: dict[int, str] = {}
         try:
             settings = load_settings(self.settings_path)
         except (OSError, ValueError, TypeError) as exc:
@@ -288,14 +289,25 @@ class TranslatorGUI:
         self.buttons["Choose chunks"].pack(side="right")
         self.buttons["Edit chunk"] = ttk.Button(queue_header, text="Edit chunk…", command=self.edit_chunk)
         self.buttons["Edit chunk"].pack(side="right", padx=8)
+        self.buttons["Search chunks"] = ttk.Button(queue_header, text="Search…", command=self.search_chunks)
+        self.buttons["Search chunks"].pack(side="right")
+        bookmark_actions = ttk.Frame(list_card, style="Card.TFrame")
+        bookmark_actions.pack(fill="x", pady=(0, 8))
+        for name, label, command in (("Bookmark", "Bookmark selected", self.bookmark_selected),
+                                     ("Remove bookmark", "Remove bookmark", lambda: self.bookmark_selected(remove=True)),
+                                     ("Bookmarks", "Bookmarks…", self.show_bookmarks)):
+            self.buttons[name] = ttk.Button(bookmark_actions, text=label, command=command)
+            self.buttons[name].pack(side="left", padx=(0, 6))
+        self.buttons["Replace words"] = ttk.Button(bookmark_actions, text="Replace words…", command=self.replace_words)
+        self.buttons["Replace words"].pack(side="right")
         self.selection_label = ttk.Label(list_card, text="Ctrl/Cmd-click for multiple chunks; Shift-click for a range.",
                                          style="Muted.TLabel")
         self.selection_label.pack(anchor="w", pady=(0, 8))
         list_frame = ttk.Frame(list_card, style="Card.TFrame")
         list_frame.pack(fill="both", expand=True)
-        self.tree = ttk.Treeview(list_frame, columns=("unit", "status", "check", "detail"),
+        self.tree = ttk.Treeview(list_frame, columns=("bookmark", "unit", "status", "check", "detail"),
                                  show="tree headings", selectmode="extended", height=7)
-        for column, title, width in (("#0", "#", 45), ("unit", "SOURCE", 210),
+        for column, title, width in (("#0", "#", 45), ("bookmark", "★", 40), ("unit", "SOURCE", 210),
                                      ("status", "STATUS", 105), ("check", "REVIEW", 110),
                                      ("detail", "DETAILS", 180)):
             self.tree.heading(column, text=title)
@@ -681,6 +693,365 @@ class TranslatorGUI:
         self.selection_label.configure(text=f"{count} selected · Ctrl/Cmd-click to add chunks; Shift-click for a range.")
         self.preview()
 
+    def replace_words(self) -> None:
+        if self.busy or self.job is None or self.engine is None:
+            return
+        job, engine = self.job, self.engine
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Replace text across translated chunks")
+        dialog.geometry("1050x790")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        panel = ttk.Frame(dialog, padding=16)
+        panel.pack(fill="both", expand=True)
+        ttk.Label(panel, text="Replace in all translated chunks", style="Section.TLabel").pack(anchor="w")
+        controls = ttk.Frame(panel)
+        controls.pack(fill="x", pady=12)
+        find, replacement = tk.StringVar(), tk.StringVar()
+        whole_word, match_case = tk.BooleanVar(value=True), tk.BooleanVar(value=False)
+        controls.columnconfigure(1, weight=1)
+        controls.columnconfigure(3, weight=1)
+        ttk.Label(controls, text="Find").grid(row=0, column=0, padx=(0, 6))
+        find_entry = ttk.Entry(controls, textvariable=find)
+        find_entry.grid(row=0, column=1, sticky="ew", padx=(0, 16))
+        ttk.Label(controls, text="Replace with").grid(row=0, column=2, padx=(0, 6))
+        replacement_entry = ttk.Entry(controls, textvariable=replacement)
+        replacement_entry.grid(row=0, column=3, sticky="ew")
+        options = ttk.Frame(panel)
+        options.pack(fill="x", pady=(0, 10))
+        word_check = ttk.Checkbutton(options, text="Whole words only", variable=whole_word)
+        word_check.pack(side="left")
+        case_check = ttk.Checkbutton(options, text="Match case", variable=match_case)
+        case_check.pack(side="left", padx=12)
+        status = tk.StringVar(value="Preview first. Select a result to review the complete before-and-after text.")
+        ttk.Label(panel, textvariable=status, wraplength=1000).pack(anchor="w", pady=(0, 8))
+        rows = ttk.Frame(panel)
+        rows.pack(fill="both", expand=True)
+        tree = ttk.Treeview(rows, columns=("chunk", "count", "before", "after"), show="headings", selectmode="browse", height=7)
+        for column, title, width in (("chunk", "Chunk", 65), ("count", "Replacements", 100),
+                                    ("before", "Before", 390), ("after", "After", 390)):
+            tree.heading(column, text=title)
+            tree.column(column, width=width, stretch=column in ("before", "after"))
+        scroll = ttk.Scrollbar(rows, command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        previews = ttk.Frame(panel)
+        previews.pack(fill="both", expand=True, pady=(12, 0))
+        before_text = self._text_panel(previews, "Before replacement", 0)
+        after_text = self._text_panel(previews, "After replacement", 1)
+        actions = ttk.Frame(panel)
+        actions.pack(fill="x", pady=(12, 0))
+        messages = queue.Queue()
+        state = {"preview": None, "running": False, "after": None}
+        inputs = (find_entry, replacement_entry, word_check, case_check)
+        def invalidate(*args):
+            if state["running"]:
+                return
+            state["preview"] = None
+            apply_button.configure(state="disabled")
+            status.set("Settings changed. Click Preview replacements before applying.")
+        def close():
+            if state["running"]:
+                return
+            if state["after"] is not None:
+                dialog.after_cancel(state["after"])
+            dialog.destroy()
+        def selected(event=None):
+            row = tree.selection()
+            plan = state["preview"]
+            if not row or plan is None:
+                return
+            change = plan.replacements[int(row[0])]
+            for widget, text, spans in ((before_text, change.before, change.before_spans),
+                                        (after_text, change.after, change.after_spans)):
+                self._set_text(widget, text)
+                widget.tag_configure("replace_match", background="#ffe69a", foreground="#17283b")
+                for start, end in spans:
+                    widget.tag_add("replace_match", f"1.0+{start}c", f"1.0+{end}c")
+                if spans:
+                    widget.see(f"1.0+{spans[0][0]}c")
+        def poll():
+            state["after"] = None
+            try:
+                phase, result, error = messages.get_nowait()
+            except queue.Empty:
+                state["after"] = dialog.after(50, poll)
+                return
+            state["running"] = False
+            if phase == "apply":
+                self._controls(False)
+            close_button.configure(state="normal")
+            preview_button.configure(state="normal")
+            for widget in inputs:
+                widget.configure(state="normal")
+            if error:
+                state["preview"] = None
+                status.set(error + " Generate a fresh preview before applying again.")
+                apply_button.configure(state="disabled")
+                return
+            if phase == "apply":
+                plan = state["preview"]
+                count = sum(len(c.before_spans) for c in plan.replacements)
+                status.set(f"Applied {count} replacements in {len(plan.replacements)} chunks. Original files were backed up.")
+                state["preview"] = None
+                apply_button.configure(state="disabled")
+                return
+            state["preview"] = result
+            for number, change in enumerate(result.replacements):
+                start, end = change.before_spans[0]
+                new_start, new_end = change.after_spans[0]
+                tree.insert("", "end", iid=str(number), values=(change.chunk_index, len(change.before_spans),
+                            " ".join(change.before[max(0, start-40):end+70].split()),
+                            " ".join(change.after[max(0, new_start-40):new_end+70].split())))
+            count = sum(len(c.before_spans) for c in result.replacements)
+            status.set(f"Preview: {count} replacements in {len(result.replacements)} chunks. No files changed."
+                       + (" Fix unreadable translation files first: " + "; ".join(result.errors[:3]) if result.errors else ""))
+            apply_button.configure(state="normal" if result.replacements and not result.errors else "disabled")
+            if result.replacements:
+                tree.selection_set("0")
+                selected()
+        def start_worker(phase, action):
+            state["running"] = True
+            if phase == "apply":
+                self._controls(True)
+            for widget in (*inputs, preview_button, apply_button, close_button):
+                widget.configure(state="disabled")
+            status.set("Preparing replacement preview…" if phase == "preview" else "Applying reviewed replacements…")
+            def worker():
+                try:
+                    messages.put((phase, action(), None))
+                except Exception as exc:
+                    logging.getLogger(__name__).exception("Replacement %s failed", phase)
+                    messages.put((phase, None, str(exc)))
+            threading.Thread(target=worker, daemon=False, name="chunk-replacement").start()
+            state["after"] = dialog.after(50, poll)
+        def preview(event=None):
+            if state["running"]:
+                return
+            query, new_text, words, case = find.get(), replacement.get(), whole_word.get(), match_case.get()
+            children = tree.get_children()
+            if children:
+                tree.delete(*children)
+            state["preview"] = None
+            self._set_text(before_text, "")
+            self._set_text(after_text, "")
+            start_worker("preview", lambda: job.preview_replacement(query, new_text, words, case))
+        def apply():
+            if state["running"] or state["preview"] is None:
+                return
+            plan = state["preview"]
+            start_worker("apply", lambda: engine.apply_replacement(plan))
+        preview_button = ttk.Button(actions, text="Preview replacements", command=preview)
+        preview_button.pack(side="left")
+        apply_button = ttk.Button(actions, text="Apply previewed replacements", command=apply, state="disabled", style="Primary.TButton")
+        apply_button.pack(side="right")
+        close_button = ttk.Button(actions, text="Close", command=close)
+        close_button.pack(side="right", padx=8)
+        for variable in (find, replacement, whole_word, match_case):
+            variable.trace_add("write", invalidate)
+        tree.bind("<<TreeviewSelect>>", selected)
+        find_entry.bind("<Return>", preview)
+        dialog.protocol("WM_DELETE_WINDOW", close)
+        find_entry.focus_set()
+
+    def bookmark_selected(self, remove: bool = False) -> None:
+        if self.busy or self.engine is None:
+            return
+        indices = [int(index) for index in self.tree.selection()]
+        if not indices:
+            messagebox.showinfo("Select chunks", "Select the chunks you want to bookmark.", parent=self.root)
+            return
+        label = ""
+        if not remove:
+            label = simpledialog.askstring("Bookmark selected chunks", "Optional bookmark label (leave blank for a simple bookmark):",
+                                           initialvalue=self.bookmarks.get(indices[0], ""), parent=self.root)
+            if label is None:
+                return
+        try:
+            self.bookmarks = self.engine.set_bookmarks(indices, label, remove=remove)
+        except (OSError, ValueError, RuntimeError) as exc:
+            messagebox.showerror("Cannot change bookmarks", str(exc), parent=self.root)
+            return
+        for index in indices:
+            self.tree.set(str(index), "bookmark", "★" if index in self.bookmarks else "")
+        self.summary.set(f"{len(self.bookmarks)} bookmarked chunks in this book.")
+
+    def show_bookmarks(self) -> None:
+        if self.busy or self.job is None:
+            return
+        try:
+            self.bookmarks = self.job.get_bookmarks()
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Cannot read bookmarks", str(exc), parent=self.root)
+            return
+        if not self.bookmarks:
+            messagebox.showinfo("Bookmarks", "No bookmarks yet. Select chunks and click Bookmark selected.", parent=self.root)
+            return
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Bookmarked chunks")
+        dialog.geometry("850x480")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        panel = ttk.Frame(dialog, padding=16)
+        panel.pack(fill="both", expand=True)
+        ttk.Label(panel, text=f"{len(self.bookmarks)} bookmarked chunks", style="Section.TLabel").pack(anchor="w", pady=(0, 12))
+        rows = ttk.Frame(panel)
+        rows.pack(fill="both", expand=True)
+        tree = ttk.Treeview(rows, columns=("chunk", "label", "source"), show="headings", selectmode="browse")
+        for column, title, width in (("chunk", "Chunk", 65), ("label", "Bookmark label", 220),
+                                    ("source", "Original text", 480)):
+            tree.heading(column, text=title)
+            tree.column(column, width=width, stretch=column != "chunk")
+        scroll = ttk.Scrollbar(rows, command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        for index, label in sorted(self.bookmarks.items()):
+            tree.insert("", "end", iid=str(index), values=(index, label, " ".join(self.job.chunks[index].text.split())[:160]))
+        def jump(event=None):
+            selection = tree.selection()
+            if not selection:
+                return
+            index = selection[0]
+            self.tree.selection_set(index)
+            self.tree.focus(index)
+            self.tree.see(index)
+            self.selection_changed()
+            dialog.destroy()
+        actions = ttk.Frame(panel)
+        actions.pack(fill="x", pady=(12, 0))
+        ttk.Button(actions, text="Open chunk", command=jump, style="Primary.TButton").pack(side="right")
+        ttk.Button(actions, text="Close", command=dialog.destroy).pack(side="right", padx=8)
+        tree.bind("<Double-1>", jump)
+        tree.bind("<Return>", jump)
+
+    def search_chunks(self) -> None:
+        if self.busy or self.job is None:
+            return
+        job = self.job
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Search all chunks")
+        dialog.geometry("1000x580")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        panel = ttk.Frame(dialog, padding=16)
+        panel.pack(fill="both", expand=True)
+        ttk.Label(panel, text="Search source and translated chunks", style="Section.TLabel").pack(anchor="w")
+        controls = ttk.Frame(panel)
+        controls.pack(fill="x", pady=12)
+        query = tk.StringVar()
+        scope = tk.StringVar(value="Both")
+        case_sensitive = tk.BooleanVar(value=False)
+        entry = ttk.Entry(controls, textvariable=query)
+        entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        scope_box = ttk.Combobox(controls, textvariable=scope, values=("Both", "Source", "Translation"),
+                                  state="readonly", width=13)
+        scope_box.pack(side="left", padx=(0, 8))
+        case_box = ttk.Checkbutton(controls, text="Match case", variable=case_sensitive)
+        case_box.pack(side="left", padx=(0, 8))
+        status = tk.StringVar(value="Enter a word or phrase. Results show the chunk where it appears.")
+        ttk.Label(panel, textvariable=status, wraplength=930).pack(anchor="w", pady=(0, 10))
+        results_frame = ttk.Frame(panel)
+        results_frame.pack(fill="both", expand=True)
+        tree = ttk.Treeview(results_frame, columns=("chunk", "field", "count", "unit", "snippet"),
+                            show="headings", selectmode="browse")
+        for column, label, width in (("chunk", "Chunk", 65), ("field", "Found in", 95),
+                                     ("count", "Matches", 70), ("unit", "Source unit", 200),
+                                     ("snippet", "Matching text", 470)):
+            tree.heading(column, text=label)
+            tree.column(column, width=width, stretch=column in ("unit", "snippet"))
+        scroll = ttk.Scrollbar(results_frame, command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        messages = queue.Queue()
+        state = {"after": None, "running": False, "matches": ()}
+        def close():
+            if state["after"] is not None:
+                dialog.after_cancel(state["after"])
+            dialog.destroy()
+        def jump(event=None):
+            selection = tree.selection()
+            if not selection:
+                return
+            match = state["matches"][int(selection[0])]
+            # Reading from disk again prevents stale preview caches after edits.
+            self.previews.pop(match.chunk_index, None)
+            index = str(match.chunk_index)
+            self.tree.selection_set(index)
+            self.tree.focus(index)
+            self.tree.see(index)
+            self.selection_changed()
+            widget = self.source_preview if match.field == "Source" else self.target_preview
+            def highlight():
+                widget.tag_configure("search_match", background="#ffe69a", foreground="#17283b")
+                for start, end in match.spans:
+                    widget.tag_add("search_match", f"1.0+{start}c", f"1.0+{end}c")
+                if match.spans:
+                    widget.see(f"1.0+{match.spans[0][0]}c")
+            # Run after Treeview's queued selection event refreshes the preview.
+            self.root.after_idle(highlight)
+            close()
+        def poll():
+            state["after"] = None
+            try:
+                result, error = messages.get_nowait()
+            except queue.Empty:
+                state["after"] = dialog.after(50, poll)
+                return
+            state["running"] = False
+            search_button.configure(state="normal")
+            entry.configure(state="normal")
+            scope_box.configure(state="readonly")
+            case_box.configure(state="normal")
+            if error:
+                status.set(error)
+                return
+            state["matches"] = result.matches
+            for number, match in enumerate(result.matches):
+                tree.insert("", "end", iid=str(number), values=(match.chunk_index, match.field,
+                            len(match.spans), match.label, match.snippet))
+            chunk_count = len({match.chunk_index for match in result.matches})
+            occurrence_count = sum(len(match.spans) for match in result.matches)
+            status.set(f"{occurrence_count} matches in {chunk_count} chunks. Double-click a result or choose Open chunk."
+                       + (f" {len(result.errors)} unreadable translation files: " + "; ".join(result.errors[:3])
+                          if result.errors else ""))
+        def search(event=None):
+            if state["running"]:
+                return
+            text, area, match_case = query.get(), scope.get(), case_sensitive.get()
+            if not text.strip():
+                status.set("Enter text to search for.")
+                return
+            children = tree.get_children()
+            if children:
+                tree.delete(*children)
+            state["matches"] = ()
+            state["running"] = True
+            status.set("Searching all chunks…")
+            for widget in (entry, scope_box, case_box, search_button):
+                widget.configure(state="disabled")
+            def worker():
+                try:
+                    messages.put((job.search(text, area, match_case), None))
+                except Exception as exc:
+                    logging.getLogger(__name__).exception("Chunk search failed")
+                    messages.put((None, str(exc)))
+            threading.Thread(target=worker, daemon=True, name="chunk-search").start()
+            state["after"] = dialog.after(50, poll)
+        search_button = ttk.Button(controls, text="Search", command=search, style="Primary.TButton")
+        search_button.pack(side="left")
+        footer = ttk.Frame(panel)
+        footer.pack(fill="x", pady=(12, 0))
+        ttk.Button(footer, text="Open chunk", command=jump, style="Primary.TButton").pack(side="right")
+        ttk.Button(footer, text="Close", command=close).pack(side="right", padx=8)
+        entry.bind("<Return>", search)
+        tree.bind("<Double-1>", jump)
+        tree.bind("<Return>", jump)
+        dialog.protocol("WM_DELETE_WINDOW", close)
+        entry.focus_set()
+
     def choose_chunks(self) -> None:
         if self.busy or self.job is None:
             return
@@ -754,6 +1125,11 @@ class TranslatorGUI:
         self.details.clear()
         self.check_details.clear()
         self.previews.clear()
+        try:
+            self.bookmarks = self.job.get_bookmarks()
+        except (OSError, ValueError) as exc:
+            self.bookmarks = {}
+            messagebox.showwarning("Bookmarks", str(exc), parent=self.root)
         for chunk in self.job.chunks:
             status, detail = "Pending", ""
             if self.job.chunk_path(chunk.index).exists():
@@ -766,6 +1142,7 @@ class TranslatorGUI:
             self.details[chunk.index] = detail
             self.tree.insert("", "end", iid=str(chunk.index), text=str(chunk.index),
                              tags=(status, "stripe") if chunk.index % 2 else (status,), values=(
+                "★" if chunk.index in self.bookmarks else "",
                 self.job.book.units[chunk.unit_index].label, status, "", detail))
         self.progress.configure(maximum=max(1, len(self.job.chunks)), value=0)
         self._controls(True)

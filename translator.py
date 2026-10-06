@@ -8,6 +8,7 @@ import os
 import re
 import threading
 import unicodedata
+import uuid
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -44,6 +45,37 @@ class Chunk:
     text: str
     prefix: str
     suffix: str
+
+
+@dataclass(frozen=True)
+class SearchMatch:
+    chunk_index: int
+    field: str
+    label: str
+    snippet: str
+    spans: tuple[tuple[int, int], ...]
+
+
+@dataclass(frozen=True)
+class SearchResults:
+    matches: tuple[SearchMatch, ...]
+    errors: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Replacement:
+    chunk_index: int
+    before: str
+    after: str
+    before_spans: tuple[tuple[int, int], ...]
+    after_spans: tuple[tuple[int, int], ...]
+
+
+@dataclass(frozen=True)
+class ReplacementPreview:
+    job_directory: Path
+    replacements: tuple[Replacement, ...]
+    errors: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -160,6 +192,22 @@ class Job:
     def check_path(self, index: int) -> Path:
         return self.checks_dir / f"{index}.json"
 
+    def get_bookmarks(self) -> dict[int, str]:
+        """Bookmarks are user annotations, never translation resume markers."""
+        path = self.directory / "bookmarks.json"
+        if not path.exists():
+            return {}
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or data.get("version") != 1 or not isinstance(data.get("bookmarks"), dict):
+            raise ValueError("Invalid bookmarks file; repair it before changing bookmarks.")
+        bookmarks = {}
+        for key, label in data["bookmarks"].items():
+            if (not isinstance(key, str) or not re.fullmatch(r"[0-9]+", key)
+                or not 0 <= int(key) < len(self.chunks) or not isinstance(label, str)):
+                raise ValueError("Invalid bookmark entry.")
+            bookmarks[int(key)] = label
+        return bookmarks
+
     def read_translation(self, index: int) -> str:
         if should_skip(self.chunks[index].text):
             return ""
@@ -167,6 +215,64 @@ class Job:
         if not text.strip():
             raise ValueError(f"Chunk {index} is empty; retranslate it.")
         return text
+
+    def search(self, query: str, scope: str = "Both", case_sensitive: bool = False) -> SearchResults:
+        """Literal search of every chunk, reading the latest translated files."""
+        if not query.strip():
+            raise ValueError("Enter text to search for.")
+        if scope not in ("Both", "Source", "Translation"):
+            raise ValueError("Choose Both, Source or Translation.")
+        pattern = re.compile(re.escape(query), 0 if case_sensitive else re.IGNORECASE)
+        matches, errors = [], []
+        for chunk in self.chunks:
+            fields = []
+            if scope != "Translation":
+                fields.append(("Source", chunk.text))
+            if scope != "Source" and self.chunk_path(chunk.index).exists():
+                try:
+                    fields.append(("Translation", self.read_translation(chunk.index)))
+                except (OSError, ValueError) as exc:
+                    errors.append(f"Chunk {chunk.index}: {exc}")
+            for name, value in fields:
+                spans = tuple((m.start(), m.end()) for m in pattern.finditer(value))
+                if spans:
+                    start, end = spans[0]
+                    snippet = value[max(0, start - 45):min(len(value), end + 85)]
+                    snippet = ("…" if start > 45 else "") + " ".join(snippet.split())
+                    matches.append(SearchMatch(chunk.index, name,
+                                               self.book.units[chunk.unit_index].label,
+                                               snippet, spans))
+        return SearchResults(tuple(matches), tuple(errors))
+
+    def preview_replacement(self, find: str, replacement: str, whole_word: bool = True,
+                            case_sensitive: bool = False) -> ReplacementPreview:
+        if not isinstance(find, str) or not find.strip():
+            raise ValueError("Enter a word or phrase to replace.")
+        if not isinstance(replacement, str):
+            raise ValueError("Replacement must be text.")
+        expression = re.escape(find)
+        if whole_word:
+            expression = r"(?<!\w)" + expression + r"(?!\w)"
+        pattern = re.compile(expression, 0 if case_sensitive else re.IGNORECASE)
+        changes, errors = [], []
+        for chunk in self.chunks:
+            if should_skip(chunk.text) or not self.chunk_path(chunk.index).exists():
+                continue
+            try:
+                before = self.read_translation(chunk.index)
+            except (OSError, ValueError) as exc:
+                errors.append(f"Chunk {chunk.index}: {exc}")
+                continue
+            spans = tuple((m.start(), m.end()) for m in pattern.finditer(before))
+            after = pattern.sub(lambda match: replacement, before)
+            if not spans or after == before:
+                continue
+            after_spans, offset = [], 0
+            for start, end in spans:
+                after_spans.append((start + offset, start + offset + len(replacement)))
+                offset += len(replacement) - (end - start)
+            changes.append(Replacement(chunk.index, before, after, spans, tuple(after_spans)))
+        return ReplacementPreview(self.directory.resolve(), tuple(changes), tuple(errors))
 
     def export(self, destination: Path) -> None:
         units = {}
@@ -285,7 +391,24 @@ class TranslationEngine:
     def retranslate_single_chunk(self, index: int) -> None:
         self.retranslate_chunks([index])
 
-    def save_chunk_edit(self, index: int, text: str) -> None:
+    def set_bookmarks(self, indices: list[int], label: str = "", remove: bool = False) -> dict[int, str]:
+        if not indices or any(type(i) is not int or not 0 <= i < len(self.job.chunks) for i in indices):
+            raise ValueError("Select valid chunks to bookmark.")
+        if not isinstance(label, str) or len(label) > 200:
+            raise ValueError("Bookmark labels must be text of at most 200 characters.")
+        with self.operation():
+            bookmarks = self.job.get_bookmarks()
+            for index in indices:
+                if remove:
+                    bookmarks.pop(index, None)
+                else:
+                    bookmarks[index] = label.strip()
+            atomic_write(self.job.directory / "bookmarks.json", json.dumps({
+                "version": 1, "bookmarks": {str(i): value for i, value in sorted(bookmarks.items())},
+            }, ensure_ascii=False, indent=2))
+        return bookmarks
+
+    def _validate_edit(self, index: int, text: str) -> None:
         if type(index) is not int or not 0 <= index < len(self.job.chunks):
             raise IndexError("Chunk index is out of range.")
         if not isinstance(text, str):
@@ -297,13 +420,66 @@ class TranslationEngine:
             raise ValueError("A meaningful source chunk requires a nonempty translation.")
         if self.job.book.kind == "epub" and any(not valid_xml_character(ord(c)) for c in text):
             raise ValueError("The edit contains characters that are invalid in EPUB/XML.")
+
+    def _write_edit(self, index: int, text: str) -> None:
+        atomic_write(self.job.chunk_path(index), text)
+        self.job.check_path(index).unlink(missing_ok=True)
+
+    def _edited_event(self, index: int, text: str, detail: str) -> None:
+        self.emit({"type": "check", "index": index, "check": "Not checked",
+                   "detail": "Translation edited manually; previous check was cleared."})
+        self.event(index, "Completed", detail, preview=text)
+        self.log.info("Saved manual edit for chunk %s", index)
+
+    def save_chunk_edit(self, index: int, text: str) -> None:
+        self._validate_edit(index, text)
         with self.operation():
-            atomic_write(self.job.chunk_path(index), text)
-            self.job.check_path(index).unlink(missing_ok=True)
-            self.emit({"type": "check", "index": index, "check": "Not checked",
-                       "detail": "Translation edited manually; previous check was cleared."})
-            self.event(index, "Completed", "Edited manually", preview=text)
-            self.log.info("Saved manual edit for chunk %s", index)
+            self._write_edit(index, text)
+            self._edited_event(index, text, "Edited manually")
+
+    def apply_replacement(self, preview: ReplacementPreview) -> Path:
+        """Apply only reviewed text; preserve backups and roll back failed batches."""
+        if preview.job_directory != self.job.directory.resolve():
+            raise ValueError("This preview belongs to a different book/job.")
+        if preview.errors or not preview.replacements:
+            raise ValueError("Resolve preview errors and preview at least one change before applying.")
+        with self.operation():
+            for change in preview.replacements:
+                self._validate_edit(change.chunk_index, change.after)
+                if self.job.read_translation(change.chunk_index) != change.before:
+                    raise ValueError(f"Chunk {change.chunk_index} changed since preview. Preview again.")
+            backup = self.job.directory / "replacement_backups" / uuid.uuid4().hex
+            originals = {}
+            for change in preview.replacements:
+                index = change.chunk_index
+                raw = self.job.chunk_path(index).read_bytes()
+                check = self.job.check_path(index)
+                checked = check.read_bytes() if check.exists() else None
+                originals[index] = (raw, checked)
+                atomic_write(backup / "chunks" / f"{index}.txt", raw)
+                if checked is not None:
+                    atomic_write(backup / "checks" / f"{index}.json", checked)
+            try:
+                for change in preview.replacements:
+                    self._write_edit(change.chunk_index, change.after)
+            except Exception as exc:
+                failures = []
+                for index, (raw, checked) in originals.items():
+                    try:
+                        atomic_write(self.job.chunk_path(index), raw)
+                        if checked is None:
+                            self.job.check_path(index).unlink(missing_ok=True)
+                        else:
+                            atomic_write(self.job.check_path(index), checked)
+                    except OSError:
+                        failures.append(index)
+                raise RuntimeError(f"Replacement failed: {exc}. " +
+                                   (f"Could not restore chunks {failures}; originals are in {backup}."
+                                    if failures else "Original translations and checks were restored.")) from exc
+            for change in preview.replacements:
+                self._edited_event(change.chunk_index, change.after,
+                                   f"Replaced text ({len(change.before_spans)} matches)")
+            return backup
 
     def retranslate_chunks(self, indices: list[int]) -> None:
         """Force only selected chunks through the shared pause/cancel worker pool."""

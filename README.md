@@ -74,6 +74,9 @@ literary_translator/
   tests/test_selection.py
   tests/test_editing_books_prompts.py
   tests/test_prompt_library.py
+  tests/test_search.py
+  tests/test_bookmarks.py
+  tests/test_replacement.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
@@ -82,6 +85,8 @@ literary_translator/
     books/<source hash>.<extension>  Source copies for offline reopening
     jobs/<job hash>/
       book.json           Book identity/settings only; no translation progress
+      bookmarks.json      User bookmarks and optional labels; no resume state
+      replacement_backups/<id>/  Originals from each applied replacement batch
       chunks/0.txt        Translated chunk; existence is the resume marker
       chunks/1.txt
       checks/0.json       Optional proofreading result and translation hash
@@ -215,6 +220,75 @@ Headers, footers, footnotes/endnotes, comments, embedded objects and tracked
 revision semantics are not reconstructed; output is text, not a styled DOCX.
 TXT input must be UTF-8 (optional BOM); lines and their boundary whitespace are
 preserved. All exports should be reviewed before publication.
+
+## Replace a word across translated chunks
+
+Open a book and click **Replace words…** above the queue. Enter the text to find
+and its replacement. **Whole words only** is enabled by default, so `cat` does
+not change `caterpillar`. Matching is case-insensitive by default; enable
+**Match case** for exact capitalization. Literal words or phrases are supported;
+regular-expression syntax and replacement escapes are treated as normal text.
+Replacement text is inserted exactly as entered, without automatic capitalization.
+
+Click **Preview replacements**. No files are changed. The results list every
+affected translated chunk with its ID, replacement count and before/after
+snippets. Select a row to review the full original and proposed translation;
+matched spans are highlighted. Changing any search option invalidates the
+preview, so a new preview is required before applying.
+
+Click **Apply previewed replacements** to save only the reviewed changes.
+Untranslated chunks and source text are untouched. Skipped chunks remain empty.
+Affected previews refresh, outdated proofreading checks are removed and
+bookmarks remain intact. Export the book again to include the replacements.
+An empty replacement is allowed for deleting words, but a meaningful source
+chunk cannot be left with an empty/whitespace-only translation.
+
+Apply rechecks each affected chunk against the preview; if a chunk has changed,
+the batch is rejected before writing. Unreadable translation files block Apply
+until repaired, rather than silently omitting them from a whole-book operation.
+Each successful batch retains original chunk and check files under the job's
+`replacement_backups/<id>/` directory. On a write error, the app attempts to
+restore every original translation and check. If restoration fails, the error
+identifies the affected chunks and backup directory for manual recovery.
+Replacement is available while the job is idle and never calls LM Studio.
+
+## Bookmark specific chunks
+
+Select one or several chunks and click **Bookmark selected**. Enter an optional
+label, or leave it blank for a simple bookmark. A star appears in the queue's
+bookmark column. Clicking Bookmark selected again can update the label.
+
+Click **Bookmarks…** to list marked chunks, labels and source-text snippets.
+Double-click a bookmark or click **Open chunk** to jump to its queue row and
+preview. To remove marks, select their rows and click **Remove bookmark**.
+
+Bookmarks persist in the current job's `bookmarks.json`, including when reopening
+the same book after renaming it. Editing, retranslating or resuming chunks retains
+them. They are local user annotations, independent of chunk files, and never
+cause translation to be skipped. They are not inserted into exported books.
+Bookmarks belong to a book/model/language job; a different translation job has
+its own bookmarks. Bookmark management is available while the job is idle.
+
+## Search all chunks
+
+Open a book and click **Search…** above the translation queue. Enter a word or
+phrase, choose **Both**, **Source**, or **Translation**, and optionally enable
+**Match case**. Press Enter or click Search. The search runs in a background
+thread and searches every chunk in the opened book.
+
+Results show the zero-based chunk number, whether the match is in the source
+or translation, occurrence count, source unit and a matching snippet. Double-click
+a result or select it and click **Open chunk** to jump to the queue row and
+highlight matching text in the preview. You can then edit or retranslate that
+chunk using the existing controls.
+
+Search is literal, Unicode-aware and case-insensitive by default. It reads the
+latest translation files, including manual edits. Source text is searched even
+when a chunk has not yet been translated. Missing translation files are skipped;
+unreadable translation files are reported without hiding source matches. Each
+chunk/field produces one result row, with all its occurrences counted. Phrases
+spanning two separate chunks are not combined. Search is available while the
+translation job is idle and does not contact LM Studio.
 
 ## Edit translated chunks
 

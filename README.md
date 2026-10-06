@@ -38,7 +38,9 @@ specified literary prompt as the system message and the source chunk as the user
 message. An optional server API key can be entered in the GUI; it is not saved.
 The model and Python dependencies must already be downloaded for offline use.
 
-1. Choose a book in the setup sidebar; select a discovered model and set languages.
+1. Choose a book in the setup sidebar, or select one under Saved books. Opening
+   recognizes existing work and displays cached chunks without contacting the model.
+   For a new book, select a model and set languages first.
 2. Set workers/retries/timeout, optionally enable proofreading, then click **Start translation**.
 3. Select a chunk to view its source, translation and proofreading findings.
 4. **Pause** stops new requests and holds completed in-flight responses before
@@ -70,11 +72,14 @@ literary_translator/
   tests/test_application.py
   tests/test_updates.py
   tests/test_selection.py
+  tests/test_editing_books_prompts.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
     translator.log        Rotating error/operation log
+    books/<source hash>.<extension>  Source copies for offline reopening
     jobs/<job hash>/
+      book.json           Book identity/settings only; no translation progress
       chunks/0.txt        Translated chunk; existence is the resume marker
       chunks/1.txt
       checks/0.json       Optional proofreading result and translation hash
@@ -86,6 +91,11 @@ translation prompt and chunking version. Worker count, timeout, retries and
 proofreading do not change it. Switching books/languages/models cannot reuse an
 unrelated job's chunk files. Changing a model's contents under the same model ID
 requires a new data directory or manual removal of that job's chunk files.
+
+Book catalogs (`book.json`) store source identity, title and settings to support
+the saved-book picker. Source copies are retained in `data/books/`; no counts,
+completed lists or resume markers are stored in the catalog. The picker derives
+its saved count directly from chunk files.
 
 There is **no progress manifest**. Resume relies exclusively on the existence
 of `chunks/<index>.txt`. For meaningful source text, existing empty or invalid UTF-8 files surface as
@@ -204,6 +214,64 @@ revision semantics are not reconstructed; output is text, not a styled DOCX.
 TXT input must be UTF-8 (optional BOM); lines and their boundary whitespace are
 preserved. All exports should be reviewed before publication.
 
+## Edit translated chunks
+
+Open a book or a saved book; select exactly one chunk and click **Edit chunk…**.
+The editor shows the original alongside an editable translation with undo.
+Click **Save chunk** to atomically replace that chunk's file. The preview updates,
+the row says Edited manually, and the old proofreading result is cleared.
+Edits are reused when resuming and included in the next export. No model request
+is made when saving an edit. Manual editing is available when the job is idle;
+finish or cancel a run first.
+
+A meaningful source chunk must retain a nonempty translation so an accidentally
+blank file cannot be treated as a completed translation. Skipped source chunks
+retain empty translations under the existing skip rule. XML-invalid characters
+are rejected for EPUB. Tags typed in the editor are exported as escaped literal
+text; they cannot alter the original EPUB structure.
+
+## Recognize and reopen saved books
+
+Recognition uses the entire source file's SHA-256, so an identical book is
+recognized after renaming or moving it. Choose a file or click **Open book /
+recognize saved work** to inspect saved translations without running inference.
+If several configurations exist, the current model/languages are preferred;
+otherwise the most recently opened matching book is restored. Model and language
+settings are restored with the book to keep translated chunks compatible.
+
+The **Saved books** dropdown lists imported jobs with title, target language,
+model and a chunk-file count. Click **Open saved book** to use the retained source
+copy; the original file does not need to remain at its previous location. You
+can edit and export cached chunks while LM Studio is offline. **Start translation**
+uses the currently displayed configuration and resumes only missing chunks.
+A different model or language creates its own translation job.
+
+Changing the source bytes creates a different identity, even if its filename or
+title remains the same. Existing jobs from earlier releases are recognized using
+their original model/language settings; opening them once adds the source copy
+and catalog used by the saved-book picker. To preserve earlier work when replacing
+the application source, keep your existing `data/` directory (or use `--data-dir`).
+
+## Custom translation prompts
+
+Click **Write / edit custom prompt…**, enter your instructions and click **Use
+this prompt**. The **Use custom translation prompt** checkbox switches between
+your instructions and the original literary prompt. The custom prompt replaces
+the system message. Optional `<input_lang>` and `<output_lang>` placeholders
+are expanded from the selected languages; the source chunk remains the user
+message. Empty enabled prompts are rejected.
+
+Use **Start translation** to apply the prompt to missing chunks, or select chunks
+and click **Retranslate selected** to replace specific existing translations.
+Prompt changes preserve the current job and its edited/cached chunks. This is
+intentional: existing chunks are reused until explicitly selected for
+retranslation, so one book may contain results produced with different prompts.
+The prompt/checkbox are retained in job and UI settings when opening, starting
+or retranslating a job. Opening a saved book restores its last stored prompt.
+Custom translation instructions do not replace the separate proofreading prompt.
+Keep the opened book's model/languages for selected retranslation; use Start
+translation for a separate model/language job.
+
 ## Retranslate specific chunks
 
 When the current run has finished or been cancelled, select one or more chunks
@@ -263,7 +331,8 @@ Tests use temporary files, a local mock HTTP server and deterministic fake
 translations. They exercise EPUB preservation, parser escaping and encoding,
 chunk limits, input formats, job isolation, resume, retries, retranslation,
 pause/cancel behavior, empty-translation skips, model-discovery endpoint
-fallbacks/authentication, selection persistence and proofreading validation. They do not measure
+fallbacks/authentication, selection persistence, persistent manual edits, source snapshots, renamed-book
+recognition, custom prompts and proofreading validation. They do not measure
 literary quality. The GUI requires a graphical desktop. This codebase was tested
 headlessly; interaction with a real LM Studio model and visual GUI behavior
 must be verified on your computer.

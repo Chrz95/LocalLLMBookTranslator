@@ -162,7 +162,9 @@ class LMStudioClient:
         raise APIError("No supported model-list endpoint. Update LM Studio.", retryable=False)
 
     def translate(self, text: str) -> str:
-        prompt = TRANSLATION_PROMPT.replace(
+        template = (self.settings.custom_prompt if self.settings.use_custom_prompt
+                    else TRANSLATION_PROMPT)
+        prompt = template.replace(
             "<input_lang>", self.settings.input_lang
         ).replace("<output_lang>", self.settings.output_lang)
         return self.complete(prompt, text)

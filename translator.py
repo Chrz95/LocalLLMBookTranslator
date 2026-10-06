@@ -10,11 +10,11 @@ import threading
 import unicodedata
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Callable, Iterator
 
-from extractors import Book
+from extractors import Book, valid_xml_character
 from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT
 from settings_manager import Settings, atomic_write
 
@@ -44,6 +44,41 @@ class Chunk:
     text: str
     prefix: str
     suffix: str
+
+
+@dataclass(frozen=True)
+class SavedBook:
+    source_path: Path
+    digest: str
+    settings: Settings
+    title: str
+    saved_chunks: int
+    directory: Path
+
+    @property
+    def label(self) -> str:
+        return (f"{self.title} · {self.settings.output_lang} · {self.settings.model} "
+                f"· {self.saved_chunks} saved · {self.directory.name[:8]}")
+
+
+def saved_books(workspace: Path) -> list[SavedBook]:
+    """Catalogs describe books/settings only; chunk files supply all resume state."""
+    results = []
+    for path in sorted(Path(workspace).glob("*/book.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            digest, kind = data["digest"], data["kind"]
+            if not re.fullmatch(r"[0-9a-f]{64}", digest) or kind not in ("epub", "pdf", "docx", "txt"):
+                raise ValueError("Invalid book catalog")
+            settings = Settings(**data["settings"])
+            settings.validate()
+            source = Path(workspace).parent / "books" / f"{digest}.{kind}"
+            if source.is_file():
+                results.append(SavedBook(source, digest, settings, str(data["title"]),
+                                         len(list((path.parent / "chunks").glob("[0-9]*.txt"))), path.parent))
+        except (OSError, ValueError, KeyError, TypeError):
+            logging.getLogger(__name__).warning("Ignoring invalid book catalog: %s", path)
+    return results
 
 
 def should_skip(text: str) -> bool:
@@ -81,6 +116,7 @@ class Job:
                                settings.output_lang, TRANSLATION_PROMPT, CHUNK_VERSION],
                               ensure_ascii=False).encode("utf-8")
         self.directory = Path(workspace) / hashlib.sha256(identity).hexdigest()
+        self.recognized = self.directory.exists()
         self.chunks_dir = self.directory / "chunks"
         self.checks_dir = self.directory / "checks"
         self.chunks_dir.mkdir(parents=True, exist_ok=True)
@@ -94,6 +130,29 @@ class Job:
                 self.chunks.append(Chunk(index, unit_index, text, prefix, suffix))
                 self.unit_chunks[unit_index].append(index)
         self.index_map = {chunk.index: chunk.unit_index for chunk in self.chunks}
+        self.remember()
+
+    def remember(self) -> None:
+        """Retain the source for offline reopening, with no progress in the catalog."""
+        source = self.directory.parent.parent / "books" / f"{self.book.digest}.{self.book.kind}"
+        if not source.exists():
+            payload = self.book.original or self.book.path.read_bytes()
+            if hashlib.sha256(payload).hexdigest() != self.book.digest:
+                raise ValueError("Source changed during import; reopen the book.")
+            atomic_write(source, payload)
+        settings = asdict(self.settings)
+        settings.pop("api_key")
+        title = next(iter(self.book.metadata.get("title", [])), self.book.path.name)
+        catalog = self.directory / "book.json"
+        if catalog.exists():
+            try:
+                title = str(json.loads(catalog.read_text(encoding="utf-8"))["title"])
+            except (OSError, ValueError, KeyError, TypeError):
+                pass
+        atomic_write(catalog, json.dumps({
+            "digest": self.book.digest, "kind": self.book.kind,
+            "title": title, "settings": settings,
+        }, ensure_ascii=False, indent=2))
 
     def chunk_path(self, index: int) -> Path:
         return self.chunks_dir / f"{index}.txt"
@@ -225,6 +284,26 @@ class TranslationEngine:
 
     def retranslate_single_chunk(self, index: int) -> None:
         self.retranslate_chunks([index])
+
+    def save_chunk_edit(self, index: int, text: str) -> None:
+        if type(index) is not int or not 0 <= index < len(self.job.chunks):
+            raise IndexError("Chunk index is out of range.")
+        if not isinstance(text, str):
+            raise ValueError("The translation must be text.")
+        if should_skip(self.job.chunks[index].text):
+            if text:
+                raise ValueError("Skipped source chunks must retain an empty translation.")
+        elif not text.strip():
+            raise ValueError("A meaningful source chunk requires a nonempty translation.")
+        if self.job.book.kind == "epub" and any(not valid_xml_character(ord(c)) for c in text):
+            raise ValueError("The edit contains characters that are invalid in EPUB/XML.")
+        with self.operation():
+            atomic_write(self.job.chunk_path(index), text)
+            self.job.check_path(index).unlink(missing_ok=True)
+            self.emit({"type": "check", "index": index, "check": "Not checked",
+                       "detail": "Translation edited manually; previous check was cleared."})
+            self.event(index, "Completed", "Edited manually", preview=text)
+            self.log.info("Saved manual edit for chunk %s", index)
 
     def retranslate_chunks(self, indices: list[int]) -> None:
         """Force only selected chunks through the shared pause/cancel worker pool."""

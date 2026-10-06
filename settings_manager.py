@@ -20,6 +20,8 @@ class Settings:
     timeout: float = 180.0
     proofread: bool = False
     api_key: str = ""
+    custom_prompt: str = ""
+    use_custom_prompt: bool = False
 
     def validate(self) -> None:
         for name in ("model", "input_lang", "output_lang"):
@@ -34,6 +36,10 @@ class Settings:
             raise ValueError("Timeout must be between 1 and 3600 seconds.")
         if type(self.proofread) is not bool or not isinstance(self.api_key, str):
             raise ValueError("Invalid proofreading or API key setting.")
+        if not isinstance(self.custom_prompt, str) or type(self.use_custom_prompt) is not bool:
+            raise ValueError("Invalid custom prompt setting.")
+        if self.use_custom_prompt and not self.custom_prompt.strip():
+            raise ValueError("Enter a custom prompt or disable the custom prompt option.")
 
 
 def atomic_write(path: Path, data: str | bytes) -> None:

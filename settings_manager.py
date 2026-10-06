@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -78,3 +79,94 @@ def load_settings(path: Path) -> Settings:
     if settings.model:
         settings.validate()
     return settings
+
+
+@dataclass(frozen=True)
+class Prompt:
+    identifier: str
+    name: str
+    text: str
+
+
+class PromptStore:
+    """Persistent named prompts. The built-in default is always available/read-only."""
+    DEFAULT_ID = "default"
+    DEFAULT_NAME = "Default literary translation"
+
+    def __init__(self, path: Path, default_text: str, read_only: bool = False):
+        self.path = Path(path)
+        self.default = Prompt(self.DEFAULT_ID, self.DEFAULT_NAME, default_text)
+        self.read_only = read_only
+        self._prompts: list[Prompt] = []
+        self.selected_id = self.DEFAULT_ID
+        if self.path.exists() and not read_only:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict) or data.get("version") != 1 or not isinstance(data.get("prompts"), list):
+                raise ValueError("Invalid prompt library. Repair prompts.json before editing it.")
+            for item in data["prompts"]:
+                if not isinstance(item, dict) or set(item) != {"identifier", "name", "text"}:
+                    raise ValueError("Invalid saved prompt entry.")
+                prompt = Prompt(**item)
+                self._validate(prompt.name, prompt.text)
+                if (not isinstance(prompt.identifier, str) or not prompt.identifier
+                    or not re.fullmatch(r"[0-9a-f]{32}", prompt.identifier)
+                    or prompt.identifier in {p.identifier for p in self.all()}):
+                    raise ValueError("Invalid or duplicate prompt identifier.")
+                self._prompts.append(prompt)
+            selected = data.get("selected_id", self.DEFAULT_ID)
+            self.selected_id = selected if any(p.identifier == selected for p in self.all()) else self.DEFAULT_ID
+
+    def all(self) -> tuple[Prompt, ...]:
+        return (self.default, *self._prompts)
+
+    def get(self, identifier: str) -> Prompt:
+        for prompt in self.all():
+            if prompt.identifier == identifier:
+                return prompt
+        raise ValueError("Prompt does not exist.")
+
+    def _validate(self, name: str, text: str, exclude: str | None = None) -> None:
+        if not isinstance(name, str) or not name.strip() or len(name.strip()) > 100:
+            raise ValueError("Enter a prompt name from 1 to 100 characters.")
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("Prompt text cannot be empty.")
+        if name.strip() == "Book prompt (unsaved)":
+            raise ValueError("Choose a different prompt name.")
+        if any(p.name.casefold() == name.strip().casefold() and p.identifier != exclude for p in self.all()):
+            raise ValueError("A prompt with that name already exists.")
+
+    def _commit(self, prompts: list[Prompt], selected_id: str) -> None:
+        if self.read_only:
+            raise ValueError("Prompt library is read-only because its saved file could not be loaded.")
+        atomic_write(self.path, json.dumps({"version": 1, "selected_id": selected_id,
+                                           "prompts": [asdict(p) for p in prompts]},
+                                          ensure_ascii=False, indent=2))
+        self._prompts, self.selected_id = prompts, selected_id
+
+    def create(self, name: str, text: str) -> Prompt:
+        import uuid
+        self._validate(name, text)
+        prompt = Prompt(uuid.uuid4().hex, name.strip(), text)
+        self._commit([*self._prompts, prompt], prompt.identifier)
+        return prompt
+
+    def update(self, identifier: str, name: str, text: str) -> Prompt:
+        self.get(identifier)
+        if identifier == self.DEFAULT_ID:
+            raise ValueError("The default prompt is read-only. Create a new prompt to customize it.")
+        self._validate(name, text, exclude=identifier)
+        prompt = Prompt(identifier, name.strip(), text)
+        self._commit([prompt if p.identifier == identifier else p for p in self._prompts], self.selected_id)
+        return prompt
+
+    def delete(self, identifier: str) -> None:
+        self.get(identifier)
+        if identifier == self.DEFAULT_ID:
+            raise ValueError("The default prompt cannot be deleted.")
+        selected = self.DEFAULT_ID if self.selected_id == identifier else self.selected_id
+        self._commit([p for p in self._prompts if p.identifier != identifier], selected)
+
+    def select(self, identifier: str) -> Prompt:
+        prompt = self.get(identifier)
+        self._commit(list(self._prompts), identifier)
+        return prompt

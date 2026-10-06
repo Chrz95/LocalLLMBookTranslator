@@ -14,7 +14,7 @@ from tkinter import font as tkfont
 import settings_manager
 from extractors import load_book
 from lmstudio import LMStudioClient, TRANSLATION_PROMPT
-from settings_manager import Settings, load_settings, save_settings
+from settings_manager import Settings, PromptStore, load_settings, save_settings
 from translator import Job, TranslationEngine, parse_chunk_selection, saved_books
 
 
@@ -44,6 +44,18 @@ class TranslatorGUI:
         self.proofread = tk.BooleanVar(value=settings.proofread)
         self.use_custom_prompt = tk.BooleanVar(value=settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
+        prompt_path = data_directory / "prompts.json"
+        had_library = prompt_path.exists()
+        try:
+            self.prompt_store = PromptStore(prompt_path, TRANSLATION_PROMPT)
+            if not had_library and settings.use_custom_prompt and settings.custom_prompt.strip():
+                self.prompt_store.create("Imported custom prompt", settings.custom_prompt)
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showwarning("Prompt library", f"Saved prompts could not be loaded: {exc}\n"
+                                   "The existing file was kept; the default remains available.", parent=root)
+            self.prompt_store = PromptStore(prompt_path, TRANSLATION_PROMPT, read_only=True)
+        self.prompt_selection = tk.StringVar()
+        self.book_prompt_text = ""
         self.saved_selection = tk.StringVar()
         self.saved_choices = {}
         self.source = tk.StringVar(value=settings_manager.last_input_file)
@@ -54,6 +66,7 @@ class TranslatorGUI:
         self.model_choices: dict[str, str] = {}
         self.models_loading = False
         self._build()
+        self._refresh_prompt_choices()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(100, self._poll)
         self.root.after(200, self.refresh_models)
@@ -220,10 +233,21 @@ class TranslatorGUI:
         ttk.Label(parent, text="Empty, single-character and punctuation-only chunks are skipped automatically.",
                   style="Muted.TLabel", wraplength=270).grid(row=18, column=0, sticky="w", pady=(5, 0))
 
-        self.prompt_option = ttk.Checkbutton(parent, text="Use custom translation prompt", variable=self.use_custom_prompt)
-        self.prompt_option.grid(row=19, column=0, sticky="w", pady=(15, 4))
-        self.prompt_button = ttk.Button(parent, text="Write / edit custom prompt…", command=self.edit_prompt)
-        self.prompt_button.grid(row=20, column=0, sticky="ew")
+        ttk.Label(parent, text="Translation prompt", style="Section.TLabel").grid(
+            row=19, column=0, sticky="w", pady=(18, 6))
+        self.prompt_combo = ttk.Combobox(parent, textvariable=self.prompt_selection, state="readonly", width=25)
+        self.prompt_combo.grid(row=20, column=0, sticky="ew")
+        self.prompt_combo.bind("<<ComboboxSelected>>", self._prompt_selected)
+        actions = ttk.Frame(parent, style="Card.TFrame")
+        actions.grid(row=21, column=0, sticky="ew", pady=(8, 0))
+        self.prompt_buttons = {}
+        for name, command in (("New", lambda: self.edit_prompt(new=True)),
+                              ("Edit", self.edit_prompt), ("Delete", self.delete_prompt)):
+            button = ttk.Button(actions, text=name, command=command)
+            button.pack(side="left", expand=True, fill="x", padx=(0, 4))
+            self.prompt_buttons[name] = button
+        ttk.Label(parent, text="Selected prompt is used for new and retranslated chunks.",
+                  style="Muted.TLabel", wraplength=270).grid(row=22, column=0, sticky="w", pady=(8, 0))
 
     def _workspace(self, parent: ttk.Frame) -> None:
         toolbar = ttk.Frame(parent)
@@ -371,9 +395,10 @@ class TranslatorGUI:
         self.busy = busy
         self.refresh_button.configure(state="disabled" if busy or self.models_loading else "normal")
         for widget in [self.browse, self.source_entry, self.check_option, self.open_button,
-                       self.open_saved_button, self.prompt_button, self.prompt_option, *self.option_widgets]:
+                       self.open_saved_button, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         self.saved_combo.configure(state="disabled" if busy else "readonly")
+        self._prompt_controls()
         for name, button in self.buttons.items():
             enabled = (not busy if name == "Start / load" else
                        busy and self.engine is not None if name in ("Pause", "Resume", "Cancel") else
@@ -443,6 +468,12 @@ class TranslatorGUI:
         self.proofread.set(settings.proofread)
         self.use_custom_prompt.set(settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
+        if not settings.use_custom_prompt:
+            self._refresh_prompt_choices(identifier=PromptStore.DEFAULT_ID)
+        else:
+            match = next((p for p in self.prompt_store.all() if p.text == settings.custom_prompt), None)
+            self._refresh_prompt_choices(identifier=match.identifier if match else None,
+                                         snapshot=settings.custom_prompt if match is None else None)
 
     def _load_book(self, run: bool, saved=None) -> None:
         if self.busy:
@@ -482,35 +513,102 @@ class TranslatorGUI:
                 engine.run()
         self._background(action)
 
-    def edit_prompt(self) -> None:
+    def _prompt_controls(self) -> None:
+        self.prompt_combo.configure(state="disabled" if self.busy else "readonly")
+        identifier = self.prompt_choices.get(self.prompt_selection.get(), PromptStore.DEFAULT_ID) if hasattr(self, "prompt_choices") else PromptStore.DEFAULT_ID
+        writable = not self.busy and not self.prompt_store.read_only
+        self.prompt_buttons["New"].configure(state="normal" if writable else "disabled")
+        for name in ("Edit", "Delete"):
+            self.prompt_buttons[name].configure(state="normal" if writable and identifier not in (PromptStore.DEFAULT_ID, "book") else "disabled")
+
+    def _refresh_prompt_choices(self, identifier: str | None = None, snapshot: str | None = None) -> None:
+        self.prompt_choices = {p.name: p.identifier for p in self.prompt_store.all()}
+        self.book_prompt_text = snapshot or ""
+        if snapshot is not None:
+            self.prompt_choices["Book prompt (unsaved)"] = "book"
+            identifier = "book"
+        identifier = identifier or self.prompt_store.selected_id
+        name = next((name for name, key in self.prompt_choices.items() if key == identifier), PromptStore.DEFAULT_NAME)
+        self.prompt_combo.configure(values=list(self.prompt_choices))
+        self.prompt_selection.set(name)
+        self._apply_prompt()
+        self._prompt_controls()
+
+    def _apply_prompt(self) -> None:
+        identifier = self.prompt_choices[self.prompt_selection.get()]
+        self.use_custom_prompt.set(identifier != PromptStore.DEFAULT_ID)
+        self.custom_prompt = self.book_prompt_text if identifier == "book" else self.prompt_store.get(identifier).text
+
+    def _prompt_selected(self, event=None) -> None:
         if self.busy:
             return
+        identifier = self.prompt_choices[self.prompt_selection.get()]
+        try:
+            if identifier != "book" and not self.prompt_store.read_only:
+                self.prompt_store.select(identifier)
+            self._apply_prompt()
+            self._prompt_controls()
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Cannot select prompt", str(exc), parent=self.root)
+            self._refresh_prompt_choices()
+
+    def delete_prompt(self) -> None:
+        if self.busy:
+            return
+        identifier = self.prompt_choices[self.prompt_selection.get()]
+        if identifier in (PromptStore.DEFAULT_ID, "book"):
+            return
+        name = self.prompt_store.get(identifier).name
+        if not messagebox.askyesno("Delete saved prompt", f"Delete '{name}' from the prompt library?", parent=self.root):
+            return
+        try:
+            self.prompt_store.delete(identifier)
+            if self.prompt_store.selected_id != PromptStore.DEFAULT_ID:
+                self.prompt_store.select(PromptStore.DEFAULT_ID)
+            self._refresh_prompt_choices(identifier=PromptStore.DEFAULT_ID)
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Cannot delete prompt", str(exc), parent=self.root)
+
+    def edit_prompt(self, new: bool = False) -> None:
+        if self.busy:
+            return
+        identifier = self.prompt_choices[self.prompt_selection.get()]
+        new = new or identifier in (PromptStore.DEFAULT_ID, "book")
+        prompt = self.prompt_store.get(identifier) if identifier != "book" else None
         dialog = tk.Toplevel(self.root)
-        dialog.title("Custom translation prompt")
-        dialog.geometry("790x620")
+        dialog.title("Create prompt" if new else "Edit saved prompt")
+        dialog.geometry("790x650")
         dialog.transient(self.root)
         dialog.grab_set()
         panel = ttk.Frame(dialog, padding=16)
         panel.pack(fill="both", expand=True)
-        ttk.Label(panel, text="Custom translation prompt", style="Section.TLabel").pack(anchor="w")
+        ttk.Label(panel, text="Prompt name").pack(anchor="w")
+        name_var = tk.StringVar(value="" if new else prompt.name)
+        name_entry = ttk.Entry(panel, textvariable=name_var)
+        name_entry.pack(fill="x", pady=(5, 10))
         ttk.Label(panel, text="This replaces the system prompt for new or retranslated chunks.\n"
                   "Optional placeholders: <input_lang> and <output_lang>.").pack(anchor="w", pady=10)
         text = tk.Text(panel, wrap="word", undo=True, padx=10, pady=10)
         text.pack(fill="both", expand=True)
-        text.insert("1.0", self.custom_prompt or TRANSLATION_PROMPT)
+        text.insert("1.0", self.book_prompt_text if identifier == "book" else prompt.text)
         actions = ttk.Frame(panel)
         actions.pack(fill="x", pady=(12, 0))
         def save():
-            value = text.get("1.0", "end-1c")
-            if not value.strip():
-                messagebox.showerror("Empty prompt", "Enter a prompt before saving.", parent=dialog)
+            try:
+                value = text.get("1.0", "end-1c")
+                saved = (self.prompt_store.create(name_var.get(), value) if new else
+                         self.prompt_store.update(identifier, name_var.get(), value))
+                if self.prompt_store.selected_id != saved.identifier:
+                    self.prompt_store.select(saved.identifier)
+                self._refresh_prompt_choices(identifier=saved.identifier)
+            except (OSError, ValueError) as exc:
+                messagebox.showerror("Cannot save prompt", str(exc), parent=dialog)
                 return
-            self.custom_prompt = value
-            self.use_custom_prompt.set(True)
             dialog.destroy()
-        ttk.Button(actions, text="Use this prompt", command=save, style="Primary.TButton").pack(side="right")
+        ttk.Button(actions, text="Save & select", command=save, style="Primary.TButton").pack(side="right")
         ttk.Button(actions, text="Cancel", command=dialog.destroy).pack(side="right", padx=8)
         ttk.Button(actions, text="Insert default prompt", command=lambda: self._replace_editor(text, TRANSLATION_PROMPT)).pack(side="left")
+        name_entry.focus_set()
 
     @staticmethod
     def _replace_editor(widget: tk.Text, value: str) -> None:

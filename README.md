@@ -73,9 +73,11 @@ literary_translator/
   tests/test_updates.py
   tests/test_selection.py
   tests/test_editing_books_prompts.py
+  tests/test_prompt_library.py
   README.md
   data/                   Created automatically
     settings.json         UI preferences only; never translation progress
+    prompts.json          Named prompts and last selected prompt
     translator.log        Rotating error/operation log
     books/<source hash>.<extension>  Source copies for offline reopening
     jobs/<job hash>/
@@ -252,25 +254,49 @@ their original model/language settings; opening them once adds the source copy
 and catalog used by the saved-book picker. To preserve earlier work when replacing
 the application source, keep your existing `data/` directory (or use `--data-dir`).
 
-## Custom translation prompts
+## Saved translation prompt library
 
-Click **Write / edit custom prompt…**, enter your instructions and click **Use
-this prompt**. The **Use custom translation prompt** checkbox switches between
-your instructions and the original literary prompt. The custom prompt replaces
-the system message. Optional `<input_lang>` and `<output_lang>` placeholders
+The setup sidebar has a **Translation prompt** dropdown containing the original
+**Default literary translation** prompt and your saved prompts.
+
+- **New** creates a named prompt. The editor starts with the selected prompt's
+  text, so you can create a variation of the default or another saved prompt.
+- **Edit** modifies the selected custom prompt's name and instructions.
+- **Delete** removes the selected custom prompt after confirmation and selects
+  the default. The built-in default cannot be edited or deleted.
+- **Save & select** saves immediately and activates that prompt. Selection from
+  the dropdown also persists immediately, even before opening a book.
+
+Names must be unique (case-insensitive), from 1 to 100 characters. Empty prompt
+text is rejected. The library is stored in `data/prompts.json` and remains
+available after restarting the application. Keep the existing `data/` directory
+when updating the code. A prior single custom prompt is imported automatically
+as **Imported custom prompt** when the library is first created.
+
+The selected prompt replaces the system message for new and selected
+retranslated chunks. Optional `<input_lang>` and `<output_lang>` placeholders
 are expanded from the selected languages; the source chunk remains the user
-message. Empty enabled prompts are rejected.
+message. Select a prompt before **Start translation** or **Retranslate selected**.
+Prompt management and selection are disabled while a run is active.
 
-Use **Start translation** to apply the prompt to missing chunks, or select chunks
-and click **Retranslate selected** to replace specific existing translations.
-Prompt changes preserve the current job and its edited/cached chunks. This is
-intentional: existing chunks are reused until explicitly selected for
-retranslation, so one book may contain results produced with different prompts.
-The prompt/checkbox are retained in job and UI settings when opening, starting
-or retranslating a job. Opening a saved book restores its last stored prompt.
-Custom translation instructions do not replace the separate proofreading prompt.
-Keep the opened book's model/languages for selected retranslation; use Start
-translation for a separate model/language job.
+Prompt changes preserve cached and edited translations. Existing chunks reuse
+their files until explicitly selected for retranslation, so a book may contain
+results produced with different prompts. Editing or deleting a library prompt
+does not modify previously translated chunks or the prompt snapshot retained
+with a saved book.
+
+Opening a saved book restores its stored prompt text. If that text matches a
+library prompt, the matching entry is shown. If it was deleted or changed,
+**Book prompt (unsaved)** appears temporarily so reopening keeps the original
+instructions. Use **New** to save that snapshot as a named prompt; choosing
+another entry replaces it for future requests. A deleted template is not
+silently recreated. The default always remains available.
+
+Custom translation instructions do not replace the separate proofreading
+prompt. Keep the opened book's model/languages for selected retranslation; use
+Start translation for a separate model/language job. If the saved prompt library
+is damaged, its file is preserved and the app offers the default in read-only
+mode until the file is repaired.
 
 ## Retranslate specific chunks
 

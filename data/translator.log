@@ -3768,3 +3768,10 @@ lmstudio.APIError: LM Studio HTTP 400.
 2026-10-06 12:23:57,704 INFO translator: Job finished; cancelled=False
 2026-10-06 12:26:01,393 INFO translator: Retranslating 1 selected chunks
 2026-10-06 12:26:15,894 INFO translator: Retranslating 1 selected chunks
+2026-10-06 12:47:53,915 INFO translator: Retranslating 1 selected chunks
+2026-10-06 12:48:47,798 INFO translator: Saved manual edit for chunk 35
+2026-10-06 12:48:58,852 INFO translator: Saved manual edit for chunk 36
+2026-10-06 12:49:13,054 INFO translator: Retranslating 1 selected chunks
+2026-10-06 12:49:42,032 INFO translator: Retranslating 1 selected chunks
+2026-10-06 12:50:14,192 INFO translator: Saved manual edit for chunk 66
+2026-10-06 12:50:45,032 INFO translator: Retranslating 1 selected chunks

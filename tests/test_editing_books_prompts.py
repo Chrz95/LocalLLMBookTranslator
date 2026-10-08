@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from extractors import load_book
-from lmstudio import LMStudioClient, TRANSLATION_PROMPT
+from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT, TRANSLATION_OUTPUT_RULE
 from settings_manager import Settings, load_settings, save_settings
 from translator import Job, TranslationEngine, saved_books
 
@@ -46,6 +46,46 @@ class EditingBookPromptTests(unittest.TestCase):
         out = self.root / 'edited.txt'
         reopened.export(out)
         self.assertEqual(out.read_text(), 'An edited translation — exactly as typed.\nSECOND PARAGRAPH.\n')
+
+    def test_model_empty_translation_is_saved_resumed_and_exported_without_checks(self):
+        job = self.job(replace(self.settings, proofread=True))
+        client = LMStudioClient(job.settings)
+        client._json_request = Mock(return_value={
+            'choices': [{'finish_reason': 'stop', 'message': {'content': ''}}]})
+        client.check = Mock(return_value={'issues': []})
+        events = []
+        engine = TranslationEngine(job, events.append, client)
+        engine.run()
+        self.assertEqual(client._json_request.call_count, 2)
+        self.assertEqual(job.chunk_path(0).read_bytes(), b'')
+        self.assertEqual(job.chunk_path(1).read_bytes(), b'')
+        self.assertTrue(any(e.get('detail') == 'Empty translation returned by model' for e in events))
+        self.assertFalse(any(e.get('status') in ('Retry', 'Error') for e in events))
+        client.check.assert_not_called()
+        engine.run()
+        self.assertEqual(client._json_request.call_count, 2)
+        output = self.root / 'model-empty.txt'
+        job.export(output)
+        self.assertEqual(output.read_text(), '\n\n')
+        client._json_request.return_value['choices'][0]['message']['content'] = 'Restored translation'
+        engine.retranslate_single_chunk(0)
+        self.assertEqual(job.read_translation(0), 'Restored translation')
+
+    def test_completion_empty_vs_invalid_or_truncated_output(self):
+        client = LMStudioClient(self.settings)
+        client._json_request = Mock()
+        for value in ('', ' \n\t '):
+            client._json_request.return_value = {
+                'choices': [{'finish_reason': 'stop', 'message': {'content': value}}]}
+            self.assertEqual(client.translate('An unfinished sentence'), '')
+            with self.assertRaises(APIError):
+                client.check('Source', 'Translation')
+        for reason, value in (('length', ''), ('length', 'Partial'), ('stop', None),
+                              ('stop', [])):
+            client._json_request.return_value = {
+                'choices': [{'finish_reason': reason, 'message': {'content': value}}]}
+            with self.assertRaises(APIError):
+                client.translate('Source')
 
     def test_empty_edits_resume_export_and_can_be_retranslated(self):
         for value in ('', '   '):
@@ -116,11 +156,11 @@ class EditingBookPromptTests(unittest.TestCase):
         client = LMStudioClient(settings)
         client.complete = Mock(return_value='Translated')
         self.assertEqual(client.translate('Hallo Welt'), 'Translated')
-        client.complete.assert_called_once_with('Translate German into Greek. Preserve names.', 'Hallo Welt')
+        client.complete.assert_called_once_with('Translate German into Greek. Preserve names.' + '\n\n' + TRANSLATION_OUTPUT_RULE, 'Hallo Welt')
         default = LMStudioClient(replace(settings, use_custom_prompt=False))
         default.complete = Mock(return_value='Default translation')
         default.translate('Hallo Welt')
-        default.complete.assert_called_once_with(TRANSLATION_PROMPT.replace('<input_lang>', 'German').replace('<output_lang>', 'Greek'), 'Hallo Welt')
+        default.complete.assert_called_once_with(TRANSLATION_PROMPT.replace('<input_lang>', 'German').replace('<output_lang>', 'Greek') + '\n\n' + TRANSLATION_OUTPUT_RULE, 'Hallo Welt')
 
     def test_custom_prompt_keeps_existing_job_and_updates_only_forced_chunks(self):
         job = self.job()
@@ -136,7 +176,7 @@ class EditingBookPromptTests(unittest.TestCase):
         engine.run()
         custom.complete.assert_not_called()
         engine.retranslate_chunks([1])
-        custom.complete.assert_called_once_with('My custom instructions', 'Second paragraph.')
+        custom.complete.assert_called_once_with('My custom instructions' + '\n\n' + TRANSLATION_OUTPUT_RULE, 'Second paragraph.')
         self.assertEqual(updated.read_translation(0), 'Old translation')
         self.assertEqual(updated.read_translation(1), 'Custom result')
         other_language = self.job(replace(settings, output_lang='Greek'))

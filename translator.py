@@ -116,9 +116,9 @@ def saved_books(workspace: Path) -> list[SavedBook]:
 
 
 def should_skip(text: str) -> bool:
-    """Empty, single-character and punctuation/symbol-only chunks produce no text."""
+    """Chunks shorter than four characters or containing only symbols produce no text."""
     normalized = unicodedata.normalize("NFC", text.strip())
-    return len(normalized) <= 1 or not any(char.isalnum() for char in normalized)
+    return len(normalized) < 4 or not any(char.isalnum() for char in normalized)
 
 
 def split_unit(text: str) -> Iterator[tuple[str, str, str]]:
@@ -540,7 +540,7 @@ class TranslationEngine:
                 atomic_write(self.job.chunk_path(index), "")
                 self.job.check_path(index).unlink(missing_ok=True)
                 self.emit({"type": "check", "index": index, "check": "", "detail": ""})
-                self.event(index, "Skipped", "Empty, single-character or punctuation-only source",
+                self.event(index, "Skipped", "Source shorter than 4 characters or punctuation-only",
                            preview="")
                 return
             path = self.job.chunk_path(index)
@@ -556,7 +556,8 @@ class TranslationEngine:
                 self.job.check_path(index).unlink(missing_ok=True)
                 self.emit({"type": "check", "index": index, "check": "", "detail": ""})
                 status = "Retranslated" if force else "Completed"
-            self.event(index, status, preview=translation)
+            self.event(index, status, "Empty translation returned by model" if not translation.strip()
+                       and status != "Resumed" else "", preview=translation)
             if self.job.settings.proofread and translation.strip():
                 self._check(chunk, translation)
         except Cancelled:

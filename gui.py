@@ -18,6 +18,27 @@ from settings_manager import Settings, PromptStore, load_settings, save_settings
 from translator import Job, TranslationEngine, parse_chunk_selection, saved_books, should_skip
 
 
+def queue_view(rows: list[dict], status: str = "All", review: str = "All",
+               bookmarks_only: bool = False, query: str = "", sort: str = "#0",
+               descending: bool = False) -> list[int]:
+    """Return visible chunk IDs without changing translation or selection state."""
+    query = query.strip().casefold()
+    visible = [row for row in rows
+               if (status == "All" or row["status"] == status)
+               and (review == "All" or (row["check"] or "Not checked") == review)
+               and (not bookmarks_only or row["bookmark"])
+               and (not query or query in " ".join(str(value) for value in row.values()).casefold())]
+    visible.sort(key=lambda row: row["index"])
+    def key(row):
+        if sort == "#0":
+            return row["index"]
+        if sort == "bookmark":
+            return bool(row["bookmark"])
+        return str(row[sort]).casefold()
+    visible.sort(key=key, reverse=descending)
+    return [row["index"] for row in visible]
+
+
 class TranslatorGUI:
     def __init__(self, root: tk.Tk, data_directory: Path):
         self.root = root
@@ -33,6 +54,9 @@ class TranslatorGUI:
         self.check_details: dict[int, str] = {}
         self.previews: dict[int, str] = {}
         self.bookmarks: dict[int, str] = {}
+        self.queue_sort = "#0"
+        self.queue_descending = False
+        self.queue_refresh_after = None
         try:
             settings = load_settings(self.settings_path)
         except (OSError, ValueError, TypeError) as exc:
@@ -256,7 +280,7 @@ class TranslatorGUI:
             button = ttk.Button(actions, text=name, command=command)
             button.pack(side="left", expand=True, fill="x", padx=(0, 4))
             self.prompt_buttons[name] = button
-        ttk.Label(parent, text="Selected prompt is used for new and retranslated chunks.",
+        ttk.Label(parent, text="Selected prompt is used for new and retranslated chunks. Incomplete or unclear text should return empty output.",
                   style="Muted.TLabel", wraplength=270).grid(row=22, column=0, sticky="w", pady=(8, 0))
 
     def _workspace(self, parent: ttk.Frame) -> None:
@@ -309,6 +333,25 @@ class TranslatorGUI:
             self.buttons[name].pack(side="left", padx=(0, 6))
         self.buttons["Replace words"] = ttk.Button(bookmark_actions, text="Replace words…", command=self.replace_words)
         self.buttons["Replace words"].pack(side="right")
+        filters = ttk.Frame(list_card, style="Card.TFrame")
+        filters.pack(fill="x", pady=(0, 8))
+        self.queue_status = tk.StringVar(value="All")
+        self.queue_review = tk.StringVar(value="All")
+        self.queue_bookmarked = tk.BooleanVar(value=False)
+        self.queue_query = tk.StringVar()
+        self.queue_visible = tk.StringVar(value="0 of 0 chunks shown")
+        ttk.Label(filters, text="Status").grid(row=0, column=0, padx=(0, 5))
+        ttk.Combobox(filters, textvariable=self.queue_status, state="readonly", width=13,
+                     values=("All", "Pending", "Completed", "Resumed", "Retranslated", "Error", "Retry", "Skipped")).grid(row=0, column=1, padx=(0, 12))
+        ttk.Label(filters, text="Review").grid(row=0, column=2, padx=(0, 5))
+        ttk.Combobox(filters, textvariable=self.queue_review, state="readonly", width=13,
+                     values=("All", "Not checked", "Checked", "Issues found", "Check error", "Retry")).grid(row=0, column=3, padx=(0, 12))
+        ttk.Checkbutton(filters, text="Bookmarked only", variable=self.queue_bookmarked).grid(row=0, column=4, sticky="w")
+        ttk.Label(filters, text="Text / chunk ID").grid(row=1, column=0, sticky="w", pady=(8, 0))
+        ttk.Entry(filters, textvariable=self.queue_query).grid(row=1, column=1, columnspan=4, sticky="ew", pady=(8, 0))
+        ttk.Button(filters, text="Reset view", command=self.reset_queue_view).grid(row=1, column=5, padx=(8, 0), pady=(8, 0))
+        filters.columnconfigure(4, weight=1)
+        ttk.Label(list_card, textvariable=self.queue_visible, style="Muted.TLabel").pack(anchor="w", pady=(0, 6))
         self.selection_label = ttk.Label(list_card, text="Ctrl/Cmd-click for multiple chunks; Shift-click for a range.",
                                          style="Muted.TLabel")
         self.selection_label.pack(anchor="w", pady=(0, 8))
@@ -319,7 +362,7 @@ class TranslatorGUI:
         for column, title, width in (("#0", "#", 45), ("bookmark", "★", 40), ("unit", "SOURCE", 210),
                                      ("status", "STATUS", 105), ("check", "REVIEW", 110),
                                      ("detail", "DETAILS", 180)):
-            self.tree.heading(column, text=title)
+            self.tree.heading(column, text=title, command=lambda name=column: self.sort_queue(name))
             self.tree.column(column, width=width, minwidth=40, stretch=column in ("unit", "detail"))
         for tag, foreground in (("Pending", "#63758a"), ("Completed", "#087769"),
                                 ("Resumed", "#327190"), ("Retranslated", "#6655a2"),
@@ -335,6 +378,9 @@ class TranslatorGUI:
         list_frame.columnconfigure(0, weight=1)
         list_frame.rowconfigure(0, weight=1)
         self.tree.bind("<<TreeviewSelect>>", self.selection_changed)
+        for variable in (self.queue_status, self.queue_review, self.queue_bookmarked, self.queue_query):
+            variable.trace_add("write", self.schedule_queue_refresh)
+        self._queue_headings()
         panes.add(list_card, weight=1)
         preview_frame = ttk.Frame(panes, padding=(0, 10, 0, 0))
         self.source_preview = self._text_panel(preview_frame, "Original text", 0)
@@ -739,20 +785,101 @@ class TranslatorGUI:
         self.selection_label.configure(text=f"{count} selected · Ctrl/Cmd-click to add chunks; Shift-click for a range.")
         self.preview()
 
+    def schedule_queue_refresh(self, *args) -> None:
+        # Coalesce worker updates so a large queue is not sorted for every event.
+        if self.queue_refresh_after is None:
+            self.queue_refresh_after = self.root.after(150, self.refresh_queue_view)
+
+    def _queue_headings(self) -> None:
+        for column, title in (("#0", "#"), ("bookmark", "★"), ("unit", "SOURCE"),
+                              ("status", "STATUS"), ("check", "REVIEW"), ("detail", "DETAILS")):
+            suffix = (" ▼" if self.queue_descending else " ▲") if column == self.queue_sort else ""
+            self.tree.heading(column, text=title + suffix)
+
+    def sort_queue(self, column: str) -> None:
+        self.queue_descending = not self.queue_descending if column == self.queue_sort else False
+        self.queue_sort = column
+        self._queue_headings()
+        self.refresh_queue_view()
+
+    def reset_queue_view(self) -> None:
+        self.queue_status.set("All")
+        self.queue_review.set("All")
+        self.queue_bookmarked.set(False)
+        self.queue_query.set("")
+        self.queue_sort, self.queue_descending = "#0", False
+        self._queue_headings()
+        self.refresh_queue_view()
+
+    def refresh_queue_view(self) -> None:
+        if self.queue_refresh_after is not None:
+            self.root.after_cancel(self.queue_refresh_after)
+            self.queue_refresh_after = None
+        rows = []
+        if self.job is not None:
+            for chunk in self.job.chunks:
+                values = self.tree.set(str(chunk.index))
+                rows.append({**values, "index": chunk.index, "source": chunk.text,
+                             "translation": self.previews.get(chunk.index, ""),
+                             "label": self.bookmarks.get(chunk.index, "")})
+        visible = queue_view(rows, self.queue_status.get(), self.queue_review.get(),
+                             self.queue_bookmarked.get(), self.queue_query.get(),
+                             self.queue_sort, self.queue_descending)
+        visible_ids = {str(index) for index in visible}
+        hidden_selection = [item for item in self.tree.selection() if item not in visible_ids]
+        if hidden_selection:
+            self.tree.selection_remove(*hidden_selection)
+        hidden = [item for item in self.tree.get_children() if item not in visible_ids]
+        if hidden:
+            self.tree.detach(*hidden)
+        for position, index in enumerate(visible):
+            self.tree.move(str(index), "", position)
+        self.queue_visible.set(f"{len(visible):,} of {len(rows):,} chunks shown · Click a column heading to sort")
+        if hidden_selection:
+            self.selection_changed()
+            if self.selected() is None:
+                self._set_text(self.source_preview, "Select a visible chunk to read its original text.")
+                self._set_text(self.target_preview, "Select a visible chunk to read its translation.")
+
+    def select_queue_chunks(self, indices: list[int]) -> None:
+        # Search, bookmarks and direct selection must reveal filtered-out targets.
+        self.refresh_queue_view()
+        if not {str(index) for index in indices}.issubset(self.tree.get_children()):
+            self.queue_status.set("All")
+            self.queue_review.set("All")
+            self.queue_bookmarked.set(False)
+            self.queue_query.set("")
+            self.refresh_queue_view()
+        self.tree.selection_set([str(index) for index in indices])
+        self.tree.focus(str(indices[0]))
+        self.tree.see(str(indices[0]))
+        self.selection_changed()
+
+    @staticmethod
+    def _size_dialog(dialog: tk.Toplevel, width: int, height: int) -> None:
+        """Fit the window to the screen while keeping its controls accessible."""
+        width = min(width, max(320, dialog.winfo_screenwidth() - 80))
+        height = min(height, max(320, dialog.winfo_screenheight() - 100))
+        dialog.geometry(f"{width}x{height}")
+        dialog.minsize(min(720, width), min(480, height))
+
     def replace_words(self) -> None:
         if self.busy or self.job is None or self.engine is None:
             return
         job, engine = self.job, self.engine
         dialog = tk.Toplevel(self.root)
         dialog.title("Replace text across translated chunks")
-        dialog.geometry("1050x790")
+        self._size_dialog(dialog, 1050, 790)
         dialog.transient(self.root)
         dialog.grab_set()
         panel = ttk.Frame(dialog, padding=16)
         panel.pack(fill="both", expand=True)
-        ttk.Label(panel, text="Replace in all translated chunks", style="Section.TLabel").pack(anchor="w")
+        panel.columnconfigure(0, weight=1)
+        panel.rowconfigure(4, weight=1)
+        panel.rowconfigure(5, weight=2)
+        ttk.Label(panel, text="Replace in all translated chunks", style="Section.TLabel").grid(row=0, column=0, sticky="w")
         controls = ttk.Frame(panel)
-        controls.pack(fill="x", pady=12)
+        controls.grid(row=1, column=0, sticky="ew", pady=12)
         find, replacement = tk.StringVar(), tk.StringVar()
         whole_word, match_case = tk.BooleanVar(value=True), tk.BooleanVar(value=False)
         controls.columnconfigure(1, weight=1)
@@ -764,15 +891,17 @@ class TranslatorGUI:
         replacement_entry = ttk.Entry(controls, textvariable=replacement)
         replacement_entry.grid(row=0, column=3, sticky="ew")
         options = ttk.Frame(panel)
-        options.pack(fill="x", pady=(0, 10))
+        options.grid(row=2, column=0, sticky="ew", pady=(0, 10))
         word_check = ttk.Checkbutton(options, text="Whole words only", variable=whole_word)
         word_check.pack(side="left")
         case_check = ttk.Checkbutton(options, text="Match case", variable=match_case)
         case_check.pack(side="left", padx=12)
-        status = tk.StringVar(value="Preview first. Select a result to review the complete before-and-after text.")
-        ttk.Label(panel, textvariable=status, wraplength=1000).pack(anchor="w", pady=(0, 8))
+        status = tk.StringVar(value="Preview first, review the results, then click Replace words to apply.")
+        status_label = ttk.Label(panel, textvariable=status, wraplength=1000)
+        status_label.grid(row=3, column=0, sticky="ew", pady=(0, 8))
+        panel.bind("<Configure>", lambda event: status_label.configure(wraplength=max(200, event.width - 32)))
         rows = ttk.Frame(panel)
-        rows.pack(fill="both", expand=True)
+        rows.grid(row=4, column=0, sticky="nsew")
         tree = ttk.Treeview(rows, columns=("chunk", "count", "before", "after"), show="headings", selectmode="browse", height=7)
         for column, title, width in (("chunk", "Chunk", 65), ("count", "Replacements", 100),
                                     ("before", "Before", 390), ("after", "After", 390)):
@@ -783,11 +912,12 @@ class TranslatorGUI:
         tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
         previews = ttk.Frame(panel)
-        previews.pack(fill="both", expand=True, pady=(12, 0))
+        previews.grid(row=5, column=0, sticky="nsew", pady=(12, 0))
         before_text = self._text_panel(previews, "Before replacement", 0)
         after_text = self._text_panel(previews, "After replacement", 1)
         actions = ttk.Frame(panel)
-        actions.pack(fill="x", pady=(12, 0))
+        # A fixed footer stays visible as the results and previews shrink.
+        actions.grid(row=6, column=0, sticky="ew", pady=(12, 0))
         messages = queue.Queue()
         state = {"preview": None, "running": False, "after": None}
         inputs = (find_entry, replacement_entry, word_check, case_check)
@@ -851,7 +981,7 @@ class TranslatorGUI:
                             " ".join(change.before[max(0, start-40):end+70].split()),
                             " ".join(change.after[max(0, new_start-40):new_end+70].split())))
             count = sum(len(c.before_spans) for c in result.replacements)
-            status.set(f"Preview: {count} replacements in {len(result.replacements)} chunks. No files changed."
+            status.set(f"Preview: {count} replacements in {len(result.replacements)} chunks. No files changed. Click Replace words to apply."
                        + (" Fix unreadable translation files first: " + "; ".join(result.errors[:3]) if result.errors else ""))
             apply_button.configure(state="normal" if result.replacements and not result.errors else "disabled")
             if result.replacements:
@@ -890,7 +1020,7 @@ class TranslatorGUI:
             start_worker("apply", lambda: engine.apply_replacement(plan))
         preview_button = ttk.Button(actions, text="Preview replacements", command=preview)
         preview_button.pack(side="left")
-        apply_button = ttk.Button(actions, text="Apply previewed replacements", command=apply, state="disabled", style="Primary.TButton")
+        apply_button = ttk.Button(actions, text="Replace words", command=apply, state="disabled", style="Primary.TButton")
         apply_button.pack(side="right")
         close_button = ttk.Button(actions, text="Close", command=close)
         close_button.pack(side="right", padx=8)
@@ -922,9 +1052,10 @@ class TranslatorGUI:
         for index in indices:
             self.tree.set(str(index), "bookmark", "★" if index in self.bookmarks else "")
         self.summary.set(f"{len(self.bookmarks)} bookmarked chunks in this book.")
+        self.schedule_queue_refresh()
 
     def show_bookmarks(self) -> None:
-        if self.busy or self.job is None:
+        if self.busy or self.job is None or self.engine is None:
             return
         try:
             self.bookmarks = self.job.get_bookmarks()
@@ -936,15 +1067,19 @@ class TranslatorGUI:
             return
         dialog = tk.Toplevel(self.root)
         dialog.title("Bookmarked chunks")
-        dialog.geometry("850x480")
+        self._size_dialog(dialog, 850, 480)
         dialog.transient(self.root)
         dialog.grab_set()
         panel = ttk.Frame(dialog, padding=16)
         panel.pack(fill="both", expand=True)
-        ttk.Label(panel, text=f"{len(self.bookmarks)} bookmarked chunks", style="Section.TLabel").pack(anchor="w", pady=(0, 12))
+        heading = tk.StringVar(value=f"{len(self.bookmarks)} bookmarked chunks")
+        ttk.Label(panel, textvariable=heading, style="Section.TLabel").pack(anchor="w", pady=(0, 8))
+        ttk.Label(panel, text="Ctrl/Cmd-click or Shift-click to select multiple bookmarks.").pack(anchor="w", pady=(0, 8))
+        actions = ttk.Frame(panel)
+        actions.pack(side="bottom", fill="x", pady=(12, 0))
         rows = ttk.Frame(panel)
         rows.pack(fill="both", expand=True)
-        tree = ttk.Treeview(rows, columns=("chunk", "label", "source"), show="headings", selectmode="browse")
+        tree = ttk.Treeview(rows, columns=("chunk", "label", "source"), show="headings", selectmode="extended")
         for column, title, width in (("chunk", "Chunk", 65), ("label", "Bookmark label", 220),
                                     ("source", "Original text", 480)):
             tree.heading(column, text=title)
@@ -959,18 +1094,46 @@ class TranslatorGUI:
             selection = tree.selection()
             if not selection:
                 return
-            index = selection[0]
-            self.tree.selection_set(index)
-            self.tree.focus(index)
-            self.tree.see(index)
-            self.selection_changed()
+            focused = tree.focus()
+            index = focused if focused in selection else selection[0]
+            self.select_queue_chunks([int(index)])
             dialog.destroy()
-        actions = ttk.Frame(panel)
-        actions.pack(fill="x", pady=(12, 0))
-        ttk.Button(actions, text="Open chunk", command=jump, style="Primary.TButton").pack(side="right")
+        def selection_changed(event=None):
+            selected = bool(tree.selection())
+            delete_button.configure(state="normal" if selected else "disabled")
+            open_button.configure(state="normal" if selected else "disabled")
+        def delete_selected(event=None):
+            indices = [int(index) for index in tree.selection()]
+            if not indices:
+                return
+            try:
+                self.bookmarks = self.engine.set_bookmarks(indices, remove=True)
+            except (OSError, ValueError, RuntimeError) as exc:
+                messagebox.showerror("Cannot delete bookmarks", str(exc), parent=dialog)
+                return
+            tree.delete(*(str(index) for index in indices))
+            for index in indices:
+                self.tree.set(str(index), "bookmark", "")
+            heading.set(f"{len(self.bookmarks)} bookmarked chunks" if self.bookmarks else "No bookmarks remaining")
+            self.summary.set(f"{len(self.bookmarks)} bookmarked chunks in this book.")
+            self.schedule_queue_refresh()
+            selection_changed()
+        def select_all(event=None):
+            tree.selection_set(tree.get_children())
+            selection_changed()
+            return "break"
+        delete_button = ttk.Button(actions, text="Delete selected bookmarks", command=delete_selected, state="disabled")
+        delete_button.pack(side="left")
+        open_button = ttk.Button(actions, text="Open chunk", command=jump, style="Primary.TButton", state="disabled")
+        open_button.pack(side="right")
         ttk.Button(actions, text="Close", command=dialog.destroy).pack(side="right", padx=8)
+        tree.bind("<<TreeviewSelect>>", selection_changed)
+        tree.bind("<Delete>", delete_selected)
+        tree.bind("<Control-a>", select_all)
+        tree.bind("<Command-a>", select_all)
         tree.bind("<Double-1>", jump)
         tree.bind("<Return>", jump)
+        tree.focus_set()
 
     def search_chunks(self) -> None:
         if self.busy or self.job is None:
@@ -1024,11 +1187,7 @@ class TranslatorGUI:
             match = state["matches"][int(selection[0])]
             # Reading from disk again prevents stale preview caches after edits.
             self.previews.pop(match.chunk_index, None)
-            index = str(match.chunk_index)
-            self.tree.selection_set(index)
-            self.tree.focus(index)
-            self.tree.see(index)
-            self.selection_changed()
+            self.select_queue_chunks([match.chunk_index])
             widget = self.source_preview if match.field == "Source" else self.target_preview
             def highlight():
                 widget.tag_configure("search_match", background="#ffe69a", foreground="#17283b")
@@ -1112,10 +1271,7 @@ class TranslatorGUI:
         except ValueError as exc:
             messagebox.showerror("Invalid chunk selection", str(exc), parent=self.root)
             return
-        self.tree.selection_set([str(index) for index in indices])
-        self.tree.focus(str(indices[0]))
-        self.tree.see(str(indices[0]))
-        self.selection_changed()
+        self.select_queue_chunks(indices)
 
     def retranslate(self) -> None:
         if self.busy:
@@ -1160,7 +1316,8 @@ class TranslatorGUI:
             save_settings(self.settings_path, self.job.settings)
         except OSError as exc:
             logging.getLogger(__name__).warning("Cannot save UI settings: %s", exc)
-        children = self.tree.get_children()
+        # Detached (filtered) rows must also be deleted when switching books.
+        children = [str(index) for index in self.statuses if self.tree.exists(str(index))]
         if children:
             self.tree.delete(*children)
         self.statuses.clear()
@@ -1186,6 +1343,7 @@ class TranslatorGUI:
                              tags=(status, "stripe") if chunk.index % 2 else (status,), values=(
                 "★" if chunk.index in self.bookmarks else "",
                 self.job.book.units[chunk.unit_index].label, status, "", detail))
+        self.refresh_queue_view()
         self.progress.configure(maximum=max(1, len(self.job.chunks)), value=0)
         self._controls(True)
         self._update_counts("Recognized saved book. " if self.job.recognized else "Book opened. ")
@@ -1225,6 +1383,7 @@ class TranslatorGUI:
                 self.tree.set(str(index), "check", event["check"])
                 self.check_details[index] = event.get("detail", "")
             self._update_counts()
+            self.schedule_queue_refresh()
             if self.selected() == index:
                 self.preview()
         elif kind == "fatal":
@@ -1265,6 +1424,7 @@ class TranslatorGUI:
         if not translated and self.job.chunk_path(index).exists():
             try:
                 translated = self.job.read_translation(index)
+                self.previews[index] = translated
             except (OSError, ValueError) as exc:
                 translated = str(exc)
         detail = self.details.get(index, "")

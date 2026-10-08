@@ -109,6 +109,7 @@ literary_translator/
   tests/test_prompt_library.py
   tests/test_search.py
   tests/test_bookmarks.py
+  tests/test_queue_view.py
   tests/test_replacement.py
   tests/test_launch_and_model_switch.py
   README.md
@@ -143,10 +144,14 @@ of `chunks/<index>.txt`. Existing empty or whitespace-only UTF-8 files are valid
 and resume without a model request, including proofreading. Invalid UTF-8
 files surface as errors and require editing or explicit retranslation. The
 source chunks and `index_map` are regenerated deterministically in memory.
-Empty/whitespace-only chunks, a single character after trimming (including a
-single letter, digit or punctuation mark), and punctuation/symbol-only chunks
+Chunks with fewer than four characters after trimming surrounding whitespace
+and Unicode NFC normalization, as well as punctuation/symbol-only chunks
 such as `...`, `?!` or `—` are **Skipped**. Unicode NFC normalization recognizes
-composed accented letters. `Hi`, `你好`, `12` and `A.` still translate.
+composed accented letters. `Hi`, `No!`, `你好`, `12`, `A.` and `abc` are skipped;
+`Word`, `Hi!!` and `你好世界` translate. The threshold applies to source text,
+not translated text. Short chunks never call LM Studio, including proofreading
+or forced retranslation. Existing cached translations for short source chunks
+are replaced with empty files when translation is run or resumed.
 Skipped chunks save an empty `chunks/<index>.txt`, produce no translated text,
 and never call translation or proofreading. Boundary whitespace and EPUB tags
 remain intact. This rule also applies to resume and forced retranslation: old
@@ -239,8 +244,8 @@ consistency. No automatic alignment or rewrite moves text across inline tags.
 Long units are split at sentence/whitespace boundaries where possible, otherwise
 at 4,000 characters. Each translation request contains at most 4,000 source
 characters. Character limits are not token limits: configure a sufficiently
-large context/output budget in LM Studio. Truncated completions, empty replies
-and malformed responses are rejected and can be retried.
+large context/output budget in LM Studio. Truncated completions and malformed responses are rejected and can be retried.
+Normally finished empty translation replies are accepted and saved.
 
 PDF extraction uses pypdf's existing text layer, in page order. It does not
 perform OCR; image-only files need OCR first. Mixed scanned/text PDFs may have
@@ -270,7 +275,9 @@ snippets. Select a row to review the full original and proposed translation;
 matched spans are highlighted. Changing any search option invalidates the
 preview, so a new preview is required before applying.
 
-Click **Apply previewed replacements** to save only the reviewed changes.
+Click **Replace words** in the fixed bottom toolbar to save the reviewed changes.
+The button enables after a preview with matches and no unreadable chunk files.
+Changing the search or replacement options requires a fresh preview.
 Untranslated chunks and source text are untouched. Skipped chunks remain empty.
 Affected previews refresh, outdated proofreading checks are removed and
 bookmarks remain intact. Export the book again to include the replacements.
@@ -285,6 +292,46 @@ restore every original translation and check. If restoration fails, the error
 identifies the affected chunks and backup directory for manual recovery.
 Replacement is available while the job is idle and never calls LM Studio.
 
+## Incomplete or unclear source text
+
+Every translation request appends an output rule to the selected prompt, including
+custom and saved prompts: if the model judges the source incomplete or unclear,
+it must return no characters, without explanations, clarification requests,
+guesses or placeholders. Otherwise it must return only the translation.
+The built-in literary prompt and saved prompt templates remain intact.
+
+An empty (or whitespace-only) reply with a normal stop is saved as an empty chunk,
+marked Completed or Retranslated, and reused on resume. It is not retried or
+proofread, and exports without translated text while preserving EPUB markup and
+source boundary whitespace. The queue detail says **Empty translation returned
+by model**. You can edit or explicitly retranslate it later. Existing translations
+are retained until you select them for retranslation.
+
+This judgment and instruction-following depend on the selected local model;
+the application does not use keyword rules to remove ordinary translations.
+Truncated replies, missing/non-text content and malformed responses remain errors.
+Empty proofreading replies remain errors because proofreading requires JSON.
+
+## Sort and filter the translation queue
+
+Click any queue column heading to sort ascending; click again for descending.
+The arrow shows the current direction. Chunk IDs sort numerically, and IDs stay
+unchanged so edits, bookmarks, selected retranslation and exports address the
+same chunks regardless of display order.
+
+Combine **Status**, **Review**, **Bookmarked only** and **Text / chunk ID** filters.
+Text matching is case-insensitive and searches source text, translated text,
+chunk IDs, source labels, bookmark labels, status and queue details. Filters
+update as translations and checks finish. The shown count reflects the view;
+progress and status totals still reflect every chunk in the book. No matches
+shows an empty queue. **Reset view** clears filters and restores chunk order.
+
+Filtering never pauses or limits a translation run. Chunks hidden by a filter
+are removed from the current selection, so selected actions affect visible
+chunks only. Search results, bookmarks and **Select by number** clear filters
+when needed to reveal their target chunks. Filtering and sorting are available
+while a run is active; preferences apply to subsequent books in this session.
+
 ## Bookmark specific chunks
 
 Select one or several chunks and click **Bookmark selected**. Enter an optional
@@ -293,7 +340,11 @@ bookmark column. Clicking Bookmark selected again can update the label.
 
 Click **Bookmarks…** to list marked chunks, labels and source-text snippets.
 Double-click a bookmark or click **Open chunk** to jump to its queue row and
-preview. To remove marks, select their rows and click **Remove bookmark**.
+preview. In this window, select one or more rows and click **Delete selected
+bookmarks**, or press Delete. Use Ctrl/Cmd-click or Shift-click for multiple
+selection, or Ctrl/Cmd+A to select all. The list, count and main queue stars
+update immediately. Deleting bookmarks leaves translated chunks intact.
+You can also remove bookmarks from the main chunk list with **Remove bookmark**.
 
 Bookmarks persist in the current job's `bookmarks.json`, including when reopening
 the same book after renaming it. Editing, retranslating or resuming chunks retains
@@ -421,7 +472,7 @@ Click **Retranslate selected** to force new translations for only those chunks.
 The batch uses the configured worker count and supports Pause, Resume and Cancel.
 Successful results overwrite their chunk files and refresh previews/checks;
 failed requests retain previous files. Unselected chunk files remain unchanged.
-Empty, single-character and punctuation-only chunks still produce empty text
+Shorter-than-four-character and punctuation-only chunks still produce empty text
 without contacting the model. Export the book again to include the new results.
 
 Programmatically, use `engine.retranslate_chunks([3, 8, 12, 13])` or the existing

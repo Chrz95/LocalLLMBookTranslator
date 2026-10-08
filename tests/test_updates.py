@@ -23,17 +23,17 @@ from translator import Job, TranslationEngine, should_skip
 
 class UpdateTests(unittest.TestCase):
     def test_skip_rule_handles_unicode_and_real_text(self):
-        for value in ("", " \t\n", "A", "é", "e\u0301", "字", ".", ",", "...", "—", "?!", "★", "7"):
+        for value in ("", " \t\n", "A", "é", "e\u0301", "字", ".", ",", "...", "—", "?!", "★", "7", "Hi", "No!", "你好", "12", "A.", "abc", "  abc  "):
             with self.subTest(value=value):
                 self.assertTrue(should_skip(value))
-        for value in ("Hi", "No!", "Hello, world.", "你好", "12", "A."):
+        for value in ("Word", "Four", "abcd", "Hi!!", "Hello, world.", "你好世界", "1234", "  Word  "):
             self.assertFalse(should_skip(value))
 
     def test_skips_write_empty_files_without_translation_or_proofreading(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source = root / "source.txt"
-            source.write_text(" \nA\n.\n,\n…?!\ne\u0301\nWord\n", encoding="utf-8")
+            source.write_text(" \nA\n.\n,\n…?!\ne\u0301\nHi\nabc\nWord\n", encoding="utf-8")
             settings = Settings(model="local-test", proofread=True)
             job = Job(load_book(source), settings, root / "jobs")
             client = Mock()
@@ -47,8 +47,8 @@ class UpdateTests(unittest.TestCase):
             engine.run()
             client.translate.assert_called_once_with("Word")
             client.check.assert_called_once_with("Word", "Translated")
-            self.assertEqual(len([e for e in events if e.get("status") == "Skipped"]), 6)
-            for index in range(6):
+            self.assertEqual(len([e for e in events if e.get("status") == "Skipped"]), 8)
+            for index in range(8):
                 self.assertEqual(job.chunk_path(index).read_bytes(), b"")
                 self.assertFalse(job.check_path(index).exists())
                 self.assertEqual(job.read_translation(index), "")
@@ -58,7 +58,7 @@ class UpdateTests(unittest.TestCase):
             self.assertEqual(client.check.call_count, 1)
             out = root / "out.txt"
             job.export(out)
-            self.assertEqual(out.read_text(), " \n\n\n\n\n\nTranslated\n")
+            self.assertEqual(out.read_text(), " \n\n\n\n\n\n\n\nTranslated\n")
 
     def model_server(self, routes):
         requests = []

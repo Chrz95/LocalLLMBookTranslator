@@ -15,7 +15,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from extractors import load_book
-from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT
+from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT, TRANSLATION_OUTPUT_RULE
 from settings_manager import Settings
 from translator import Job, MAX_CHARS, TranslationEngine, split_unit
 
@@ -329,7 +329,7 @@ class ApplicationTests(unittest.TestCase):
             self.assertEqual(set(payload), {"model", "messages"})
             self.assertEqual(payload["messages"][1], {"role": "user", "content": "Hallo"})
             self.assertEqual(payload["messages"][0]["content"], TRANSLATION_PROMPT.replace(
-                "<input_lang>", "German").replace("<output_lang>", "English"))
+                "<input_lang>", "German").replace("<output_lang>", "English") + "\n\n" + TRANSLATION_OUTPUT_RULE)
             with self.assertRaises(APIError):
                 client.translate("Hallo")
             self.assertEqual(client.check("Hallo", "Hello"), {"issues": []})

@@ -34,6 +34,17 @@ class BookmarkTests(unittest.TestCase):
         self.engine.set_bookmarks([2], remove=True)
         self.assertEqual(self.job.get_bookmarks(), {})
 
+    def test_delete_multiple_bookmarks_preserves_chunks_and_remaining_labels(self):
+        self.engine.run()
+        before = {i: self.job.chunk_path(i).read_bytes() for i in range(3)}
+        self.engine.set_bookmarks([0, 1, 2], 'Keep label')
+        self.assertEqual(self.engine.set_bookmarks([0, 2], remove=True), {1: 'Keep label'})
+        reopened = Job(load_book(self.source), self.settings, self.root/'jobs')
+        self.assertEqual(reopened.get_bookmarks(), {1: 'Keep label'})
+        self.assertEqual(before, {i: reopened.chunk_path(i).read_bytes() for i in range(3)})
+        self.assertEqual(self.engine.set_bookmarks([1], remove=True), {})
+        self.assertEqual(self.job.get_bookmarks(), {})
+
     def test_bookmarks_do_not_skip_translation_and_survive_edits_retranslation(self):
         self.engine.set_bookmarks([1])
         self.assertFalse(self.job.chunk_path(1).exists())

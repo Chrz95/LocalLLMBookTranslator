@@ -11,13 +11,14 @@ import unicodedata
 import uuid
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Callable, Iterator
 
 from extractors import Book, valid_xml_character
 from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT
 from settings_manager import Settings, atomic_write
+from quality import QualityProfile, build_context
 
 MAX_CHARS = 4000
 CHUNK_VERSION = "lossless-text-nodes-v1"
@@ -165,7 +166,26 @@ class Job:
                 self.chunks.append(Chunk(index, unit_index, text, prefix, suffix))
                 self.unit_chunks[unit_index].append(index)
         self.index_map = {chunk.index: chunk.unit_index for chunk in self.chunks}
+        self.paragraphs: dict[tuple, list[Chunk]] = {}
+        for chunk in self.chunks:
+            self.paragraphs.setdefault(self.paragraph_key(chunk), []).append(chunk)
         self.remember()
+
+    def paragraph_key(self, chunk: Chunk) -> tuple:
+        unit = self.book.units[chunk.unit_index]
+        return (unit.member, unit.paragraph) if unit.member and unit.paragraph >= 0 else ("unit", chunk.unit_index)
+
+    def quality_profile(self) -> QualityProfile:
+        return QualityProfile.load(self.directory / "quality.json")
+
+    def empty_translations(self) -> list[tuple[int, str]]:
+        results = []
+        for chunk in self.chunks:
+            if should_skip(chunk.text):
+                results.append((chunk.index, "Skipped: short or punctuation-only source"))
+            elif self.chunk_path(chunk.index).exists() and not self.read_translation(chunk.index).strip():
+                results.append((chunk.index, "Saved empty translation (model or manual edit)"))
+        return results
 
     def remember(self) -> None:
         """Retain the source for offline reopening, with no progress in the catalog."""
@@ -320,6 +340,105 @@ class TranslationEngine:
         self._cancel = threading.Event()
         self._operation_lock = threading.Lock()
         self.log = logging.getLogger(__name__)
+        self.profile = job.quality_profile()
+
+    def reference(self, index: int) -> dict:
+        context = build_context(self.job.book, self.job.chunks, index, self.profile,
+                                self.job.paragraphs[self.job.paragraph_key(self.job.chunks[index])])
+        text = self.job.chunks[index].text + " " + " ".join(c["text"] for c in context.get("source_segments", []))
+        guidance = self.profile.guidance(text)
+        if any(guidance.values()):
+            context["book_guidance"] = guidance
+        return context
+
+    def save_quality_profile(self, profile: QualityProfile) -> None:
+        with self.operation():
+            profile.save(self.job.directory / "quality.json")
+            self.profile = profile
+
+    def approve_example(self, index: int) -> None:
+        source = self.job.chunks[index].text
+        translation = self.job.read_translation(index)
+        if not source.strip() or not translation.strip():
+            raise ValueError("Approved examples need nonempty source and translation.")
+        with self.operation():
+            current = self.job.quality_profile()
+            entries = [e for e in current.examples if e["source"] != source]
+            profile = replace(current, examples=(entries + [{"source": source, "translation": translation}])[-200:])
+            profile.save(self.job.directory / "quality.json")
+            self.profile = profile
+
+    def propose_revision(self, index: int, model: str = "") -> dict:
+        with self.operation():
+            source = self.job.chunks[index].text
+            if should_skip(source):
+                raise ValueError("Skipped source chunks cannot be revised.")
+            before = self.job.read_translation(index)
+            client = LMStudioClient(replace(self.job.settings, model=model or self.job.settings.model))
+            after = self._request(index, lambda: client.revise(source, before, self.reference(index)))
+            return self._proposal(index, before, after, client.settings.model)
+
+    def compare_models(self, index: int, models: list[str]) -> list[dict]:
+        if len(models) != 2 or any(not isinstance(m, str) or not m.strip() for m in models):
+            raise ValueError("Choose two model IDs.")
+        with self.operation():
+            source = self.job.chunks[index].text
+            if should_skip(source):
+                raise ValueError("Skipped source chunks cannot be compared.")
+            before = self.job.read_translation(index) if self.job.chunk_path(index).exists() else None
+            proposals = []
+            for model in models:
+                client = LMStudioClient(replace(self.job.settings, model=model.strip()))
+                after = self._request(index, lambda: client.translate(source, context=self.reference(index)))
+                proposals.append(self._proposal(index, before, after, model.strip()))
+            # Shuffle display order so candidate A is not always the first model.
+            import secrets
+            secrets.SystemRandom().shuffle(proposals)
+            return proposals
+
+    def _proposal(self, index: int, before: str | None, after: str, model: str) -> dict:
+        self._validate_edit(index, after)
+        proposal = {"job_directory": str(self.job.directory.resolve()), "index": index,
+                    "source": self.job.chunks[index].text, "before": before, "after": after, "model": model}
+        atomic_write(self.job.directory / "proposals" / f"{uuid.uuid4().hex}.json",
+                     json.dumps(proposal, ensure_ascii=False, indent=2))
+        return proposal
+
+    def apply_proposal(self, proposal: dict) -> None:
+        index = proposal["index"]
+        self._validate_edit(index, proposal["after"])
+        with self.operation():
+            if (proposal["job_directory"] != str(self.job.directory.resolve())
+                or self.job.chunks[index].text != proposal["source"]):
+                raise ValueError("Proposal belongs to another book or source chunk.")
+            current = self.job.read_translation(index) if self.job.chunk_path(index).exists() else None
+            if current != proposal["before"]:
+                raise ValueError("Translation changed since this proposal; generate a new proposal.")
+            self._validate_edit(index, proposal["after"])
+            self._write_edit(index, proposal["after"])
+            self._edited_event(index, proposal["after"], "Accepted translation proposal")
+
+    def check_chunks(self, indices: list[int]) -> None:
+        if not indices or any(type(i) is not int or not 0 <= i < len(self.job.chunks) for i in indices):
+            raise ValueError("Select valid chunks to check.")
+        def check(index):
+            try:
+                self.checkpoint()
+                translation = self.job.read_translation(index)
+                if not translation.strip():
+                    self.emit({"type": "check", "index": index, "check": "Not checked",
+                               "detail": "Empty translation; review or retry with context."})
+                else:
+                    self._check(self.job.chunks[index], translation, force=True)
+            except Exception as exc:
+                self.emit({"type": "check", "index": index, "check": "Not checked" if isinstance(exc, Cancelled) else "Check error",
+                           "detail": str(exc)})
+        with self.operation():
+            try:
+                with ThreadPoolExecutor(max_workers=self.job.settings.max_workers) as pool:
+                    list(pool.map(check, sorted(set(indices))))
+            finally:
+                self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
 
     def event(self, index: int, status: str, detail: str = "", **extra) -> None:
         self.emit({"type": "chunk", "index": index, "status": status,
@@ -379,8 +498,70 @@ class TranslationEngine:
                 self.log.info("Job finished; cancelled=%s", self._cancel.is_set())
                 self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
 
+    def _work_items(self, selected: list[Chunk], force: bool) -> list[list[Chunk]]:
+        grouped: dict[tuple, list[Chunk]] = {}
+        items = []
+        for chunk in selected:
+            if (self.job.book.kind == "epub" and self.profile.use_context
+                and isinstance(self.client, LMStudioClient) and not should_skip(chunk.text)
+                and (force or not self.job.chunk_path(chunk.index).exists())):
+                grouped.setdefault(self.job.paragraph_key(chunk), []).append(chunk)
+            else:
+                items.append([chunk])
+        for chunks in grouped.values():
+            batch, size = [], 0
+            for chunk in chunks:
+                if batch and size + len(chunk.text) > MAX_CHARS:
+                    items.append(batch)
+                    batch, size = [], 0
+                batch.append(chunk)
+                size += len(chunk.text)
+            if batch:
+                items.append(batch)
+        return sorted(items, key=lambda group: group[0].index)
+
+    def _process_group(self, chunks: list[Chunk], force: bool) -> None:
+        if len(chunks) == 1:
+            self._process(chunks[0], force)
+            return
+        saved = set()
+        try:
+            self.checkpoint()
+            targets = {chunk.index: chunk.text for chunk in chunks}
+            reference = self.reference(chunks[0].index)
+            reference["source_segments"] = [c for c in reference.get("source_segments", [])
+                                             if c["chunk_id"] not in targets]
+            for chunk in chunks:
+                self.event(chunk.index, "Pending", "Translating paragraph in context")
+            translations = self._request(chunks[0].index,
+                lambda: self.client.translate_segments(targets, reference))
+            for index, value in translations.items():
+                self._validate_edit(index, value)
+            for chunk in chunks:
+                self.checkpoint()
+                value = translations[chunk.index]
+                if force:
+                    self._write_edit(chunk.index, value)
+                else:
+                    atomic_write(self.job.chunk_path(chunk.index), value)
+                self.job.check_path(chunk.index).unlink(missing_ok=True)
+                saved.add(chunk.index)
+                self.emit({"type": "check", "index": chunk.index, "check": "", "detail": ""})
+                self.event(chunk.index, "Retranslated" if force else "Completed",
+                           "Empty translation returned by model" if not value else "Paragraph translated in context",
+                           preview=value)
+                if self.job.settings.proofread and value:
+                    self._check(chunk, value)
+        except Exception as exc:
+            for chunk in chunks:
+                if chunk.index not in saved:
+                    self.event(chunk.index, "Pending" if isinstance(exc, Cancelled) else "Error", str(exc))
+            if not isinstance(exc, Cancelled):
+                self.log.exception("Paragraph translation failed")
+
     def _parallel(self, chunks: list[Chunk] | None = None, force: bool = False) -> None:
-        pending = iter(self.job.chunks if chunks is None else chunks)
+        selected = self.job.chunks if chunks is None else chunks
+        pending = iter(self._work_items(selected, force))
         futures = set()
         with ThreadPoolExecutor(max_workers=self.job.settings.max_workers,
                                 thread_name_prefix="translator") as pool:
@@ -389,14 +570,15 @@ class TranslationEngine:
                 while (not exhausted and not self._cancel.is_set()
                        and self._pause_gate.is_set()
                        and len(futures) < self.job.settings.max_workers):
-                    chunk = next(pending, None)
-                    if chunk is None:
+                    group = next(pending, None)
+                    if group is None:
                         exhausted = True
                     else:
-                        futures.add(pool.submit(self._process, chunk, force))
+                        futures.add(pool.submit(self._process_group, group, force))
                 if self._cancel.is_set():
-                    for chunk in pending:
-                        self.event(chunk.index, "Pending", "Cancelled before processing")
+                    for group in pending:
+                        for chunk in group:
+                            self.event(chunk.index, "Pending", "Cancelled before processing")
                     exhausted = True
                 if futures:
                     done, futures = wait(futures, timeout=0.1, return_when=FIRST_COMPLETED)
@@ -437,6 +619,9 @@ class TranslationEngine:
             raise ValueError("The edit contains characters that are invalid in EPUB/XML.")
 
     def _write_edit(self, index: int, text: str) -> None:
+        path = self.job.chunk_path(index)
+        if path.exists() and path.read_bytes() != text.encode("utf-8"):
+            atomic_write(self.job.directory / "history" / str(index) / f"{uuid.uuid4().hex}.txt", path.read_bytes())
         atomic_write(self.job.chunk_path(index), text)
         self.job.check_path(index).unlink(missing_ok=True)
 
@@ -551,8 +736,13 @@ class TranslationEngine:
                 status = "Resumed"
             else:
                 self.event(index, "Pending", "Retranslating" if force else "Translating")
-                translation = self._request(index, lambda: self.client.translate(chunk.text))
-                atomic_write(path, translation)
+                translation = self._request(index, lambda: self.client.translate(chunk.text, context=self.reference(index))
+                    if isinstance(self.client, LMStudioClient) else self.client.translate(chunk.text))
+                self._validate_edit(index, translation)
+                if force:
+                    self._write_edit(index, translation)
+                else:
+                    atomic_write(path, translation)
                 self.job.check_path(index).unlink(missing_ok=True)
                 self.emit({"type": "check", "index": index, "check": "", "detail": ""})
                 status = "Retranslated" if force else "Completed"
@@ -566,23 +756,29 @@ class TranslationEngine:
             self.log.exception("Chunk %s failed", index)
             self.event(index, "Error", str(exc))
 
-    def _check(self, chunk: Chunk, translation: str) -> None:
+    def _check(self, chunk: Chunk, translation: str, force: bool = False) -> None:
         fingerprint = hashlib.sha256(translation.encode("utf-8")).hexdigest()
+        reference = self.reference(chunk.index)
+        guidance_hash = hashlib.sha256(json.dumps(reference, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         path = self.job.check_path(chunk.index)
         try:
             report = None
-            if path.exists():
+            if path.exists() and not force:
                 try:
                     saved = json.loads(path.read_text(encoding="utf-8"))
                     if (saved.get("translation_sha256") == fingerprint
+                        and saved.get("reference_sha256") == guidance_hash
+                        and saved.get("model") == self.job.settings.model
                         and isinstance(saved.get("issues"), list)):
                         report = saved
                 except (ValueError, OSError, AttributeError):
                     self.log.warning("Ignoring invalid check file for %s", chunk.index)
             if report is None:
                 report = self._request(chunk.index, lambda: self.client.check(
-                    chunk.text, translation), checking=True)
-                report = {**report, "translation_sha256": fingerprint,
+                    chunk.text, translation, context=reference)
+                    if isinstance(self.client, LMStudioClient) else self.client.check(chunk.text, translation), checking=True)
+                report = {**report, "translation_sha256": fingerprint, "reference_sha256": guidance_hash,
+                          "model": self.job.settings.model,
                           "chunk_index": chunk.index}
                 atomic_write(path, json.dumps(report, ensure_ascii=False, indent=2))
             self.emit({"type": "check", "index": chunk.index,

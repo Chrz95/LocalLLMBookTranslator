@@ -1,0 +1,1 @@
+python benchmark.py --models "qwen/qwen2.5-vl-7b" "qwen/qwen2.5-vl-7b" "qwen/qwen3.8-27b"

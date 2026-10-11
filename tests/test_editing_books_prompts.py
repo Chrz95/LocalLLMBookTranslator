@@ -176,7 +176,11 @@ class EditingBookPromptTests(unittest.TestCase):
         engine.run()
         custom.complete.assert_not_called()
         engine.retranslate_chunks([1])
-        custom.complete.assert_called_once_with('My custom instructions' + '\n\n' + TRANSLATION_OUTPUT_RULE, 'Second paragraph.')
+        self.assertEqual(custom.complete.call_count, 1)
+        sent_prompt, sent_content = custom.complete.call_args.args
+        self.assertTrue(sent_prompt.startswith('My custom instructions' + '\n\n' + TRANSLATION_OUTPUT_RULE))
+        self.assertEqual(json.loads(sent_content)['target_text'], 'Second paragraph.')
+        self.assertEqual(json.loads(sent_content)['reference']['source_segments'][0]['text'], 'First paragraph.')
         self.assertEqual(updated.read_translation(0), 'Old translation')
         self.assertEqual(updated.read_translation(1), 'Custom result')
         other_language = self.job(replace(settings, output_lang='Greek'))

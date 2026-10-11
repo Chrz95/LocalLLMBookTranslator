@@ -16,6 +16,7 @@ from extractors import load_book
 from lmstudio import LMStudioClient, TRANSLATION_PROMPT, launch_lm_studio
 from settings_manager import Settings, PromptStore, load_settings, save_settings
 from translator import Job, TranslationEngine, parse_chunk_selection, saved_books, should_skip
+from quality_gui import QualityWindows
 
 
 def queue_view(rows: list[dict], status: str = "All", review: str = "All",
@@ -57,6 +58,7 @@ class TranslatorGUI:
         self.queue_sort = "#0"
         self.queue_descending = False
         self.queue_refresh_after = None
+        self.quality_windows = QualityWindows(self)
         try:
             settings = load_settings(self.settings_path)
         except (OSError, ValueError, TypeError) as exc:
@@ -113,6 +115,7 @@ class TranslatorGUI:
         style.configure("TFrame", background=palette["background"])
         style.configure("Card.TFrame", background=palette["surface"])
         style.configure("Header.TFrame", background=palette["navy"])
+        style.configure("Icon.TLabel", background=palette["navy"])
         style.configure("TLabel", background=palette["background"])
         style.configure("Card.TLabel", background=palette["surface"])
         style.configure("Muted.TLabel", foreground=palette["muted"], background=palette["surface"])
@@ -152,11 +155,19 @@ class TranslatorGUI:
 
     def _build(self) -> None:
         self.root.title("Literary Translator | Local workspace")
+        try:
+            icon_path = Path(__file__).resolve().parent / "assets" / "app_icon_64.png"
+            self.app_icon = tk.PhotoImage(file=str(icon_path))
+            self.root.iconphoto(True, self.app_icon)
+        except (OSError, tk.TclError):
+            logging.getLogger(__name__).warning("Application icon could not be loaded", exc_info=True)
         self.root.geometry("1360x900")
         self.root.minsize(1100, 760)
         self._style()
         header = ttk.Frame(self.root, style="Header.TFrame", padding=(24, 18))
         header.pack(fill="x")
+        if hasattr(self, "app_icon"):
+            ttk.Label(header, image=self.app_icon, style="Icon.TLabel").pack(side="left", padx=(0, 16))
         heading = ttk.Frame(header, style="Header.TFrame")
         heading.pack(side="left")
         ttk.Label(heading, text="Literary Translator", style="Title.TLabel").pack(anchor="w")
@@ -264,7 +275,7 @@ class TranslatorGUI:
         self.check_option = ttk.Checkbutton(parent, text="Proofread after translation", variable=self.proofread)
         self.check_option.grid(row=16, column=0, sticky="w", pady=(15, 10))
         ttk.Separator(parent).grid(row=17, column=0, sticky="ew", pady=8)
-        ttk.Label(parent, text="Empty, single-character and punctuation-only chunks are skipped automatically.",
+        ttk.Label(parent, text="Chunks shorter than 4 characters and punctuation-only chunks are skipped automatically.",
                   style="Muted.TLabel", wraplength=270).grid(row=18, column=0, sticky="w", pady=(5, 0))
 
         ttk.Label(parent, text="Translation prompt", style="Section.TLabel").grid(
@@ -333,6 +344,8 @@ class TranslatorGUI:
             self.buttons[name].pack(side="left", padx=(0, 6))
         self.buttons["Replace words"] = ttk.Button(bookmark_actions, text="Replace words…", command=self.replace_words)
         self.buttons["Replace words"].pack(side="right")
+        self.buttons["Quality tools"] = ttk.Button(bookmark_actions, text="Quality tools…", command=self.quality_windows.open)
+        self.buttons["Quality tools"].pack(side="left", padx=(0, 6))
         filters = ttk.Frame(list_card, style="Card.TFrame")
         filters.pack(fill="x", pady=(0, 8))
         self.queue_status = tk.StringVar(value="All")
@@ -903,7 +916,7 @@ class TranslatorGUI:
         rows = ttk.Frame(panel)
         rows.grid(row=4, column=0, sticky="nsew")
         tree = ttk.Treeview(rows, columns=("chunk", "count", "before", "after"), show="headings", selectmode="browse", height=7)
-        for column, title, width in (("chunk", "Chunk", 65), ("count", "Replacements", 100),
+        for column, title, width in (("chunk", "Chunk", 65), ("count", "Replacements", 140),
                                     ("before", "Before", 390), ("after", "After", 390)):
             tree.heading(column, text=title)
             tree.column(column, width=width, stretch=column in ("before", "after"))

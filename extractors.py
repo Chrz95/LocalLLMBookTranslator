@@ -29,6 +29,7 @@ class Unit:
     member: str = ""
     start: int = 0
     end: int = 0
+    paragraph: int = -1
 
 
 @dataclass
@@ -113,12 +114,17 @@ class TextSpans(HTMLParser):
         self.offsets.extend(match.end() for match in re.finditer("\n", source))
         self.stack: list[str] = []
         self.spans: list[tuple[int, int]] = []
+        self.groups: dict[int, int] = {}
+        self.blocks: list[tuple[str, int]] = []
 
     def position(self) -> int:
         row, column = self.getpos()
         return self.offsets[row - 1] + column
 
     def handle_starttag(self, tag: str, attrs: list) -> None:
+        if tag.split(":")[-1] in ("p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "div",
+                                  "blockquote", "td", "th", "figcaption", "pre", "body", "section", "title"):
+            self.blocks.append((tag, self.position()))
         if tag not in ("area", "base", "br", "col", "embed", "hr", "img", "input",
                        "link", "meta", "param", "source", "track", "wbr"):
             self.stack.append(tag)
@@ -127,6 +133,9 @@ class TextSpans(HTMLParser):
         pass  # No stack change for XML empty elements.
 
     def handle_endtag(self, tag: str) -> None:
+        matching = [i for i, block in enumerate(self.blocks) if block[0] == tag]
+        if matching:
+            del self.blocks[matching[-1]:]
         if tag in self.stack:
             del self.stack[len(self.stack) - 1 - self.stack[::-1].index(tag):]
 
@@ -145,6 +154,7 @@ class TextSpans(HTMLParser):
             self.spans[-1] = (self.spans[-1][0], end)
         else:
             self.spans.append((start, end))
+            self.groups[start] = self.blocks[-1][1] if self.blocks else -1
 
     def handle_entityref(self, name: str) -> None:
         start = self.position()
@@ -245,7 +255,8 @@ def load_epub(path: Path, data: bytes) -> Book:
             for start, end in parser.spans:
                 value = html.unescape(text[start:end])
                 if value.strip():
-                    book.units.append(Unit(value, f"{name} · text {len(book.units)}", name, start, end))
+                    book.units.append(Unit(value, f"{name} · text {len(book.units)}", name, start, end,
+                                           parser.groups.get(start, -1)))
     return book
 
 

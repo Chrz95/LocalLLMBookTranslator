@@ -101,6 +101,10 @@ literary_translator/
   settings_manager.py     Validated settings and atomic file writes
   gui.py                  Tkinter UI with thread-safe event queue
   lmstudio.py             Local HTTP client and exact translation prompt
+  quality.py              Book guidance and bounded source context
+  quality_gui.py          Guidance, revision, comparison and history dialogs
+  benchmark.py            Local model accuracy benchmark and HTML review report
+  benchmark_suite.json    Authored German-source accuracy probes
   requirements.txt        pypdf dependency (other runtime modules use stdlib)
   tests/test_application.py
   tests/test_updates.py
@@ -110,6 +114,8 @@ literary_translator/
   tests/test_search.py
   tests/test_bookmarks.py
   tests/test_queue_view.py
+  tests/test_quality.py
+  tests/test_benchmark.py
   tests/test_replacement.py
   tests/test_launch_and_model_switch.py
   README.md
@@ -124,7 +130,7 @@ literary_translator/
       replacement_backups/<id>/  Originals from each applied replacement batch
       chunks/0.txt        Translated chunk; existence is the resume marker
       chunks/1.txt
-      checks/0.json       Optional proofreading result and translation hash
+      checks/0.json       Optional proofreading result and translation/context hashes
 ```
 
 `chunks/` and `checks/` are created automatically within each job. The job key
@@ -236,14 +242,19 @@ The exact requested prompt is included in `lmstudio.py`. A prompt cannot
 ensure perfect literary accuracy: results depend on the local model. Review
 names, idioms, ambiguities, omissions and tone, even after automated checking.
 
-To guarantee original HTML structure, each text node is a separate unit.
-Inline tags can split a sentence into fragments; those fragments are translated
-independently, without surrounding chapter context. This preserves the requested
-element structure but can reduce fluency, grammatical agreement and cross-chunk
-consistency. No automatic alignment or rewrite moves text across inline tags.
+Each text node remains a separate unit to preserve original HTML structure.
+With source context enabled (the default), requested fragments from the same EPUB
+paragraph are translated jointly through a JSON mapping of original chunk IDs.
+Only text-node spans are replaced; missing, duplicate or additional IDs and
+non-string values are rejected before any target chunk is written. Paragraph
+requests contain at most 4,000 target characters, with additional bounded source
+context and book guidance. Larger paragraphs are processed in bounded groups.
+Mapping validation checks structure, not semantic alignment; review is still
+needed because retaining meaning in separate inline nodes can limit natural
+word reordering. Disable context in Quality tools for independent requests.
 Long units are split at sentence/whitespace boundaries where possible, otherwise
 at 4,000 characters. Each translation request contains at most 4,000 source
-characters. Character limits are not token limits: configure a sufficiently
+target characters, excluding additional source context and guidance. Character limits are not token limits: configure a sufficiently
 large context/output budget in LM Studio. Truncated completions and malformed responses are rejected and can be retried.
 Normally finished empty translation replies are accepted and saved.
 
@@ -530,3 +541,203 @@ API references:
 - https://lmstudio.ai/docs/developer/openai-compat/models
 - https://lmstudio.ai/docs/developer/openai-compat
 - https://pypdf.readthedocs.io/en/6.7.0/user/extract-text.html
+
+## App icon and screenshots
+
+The app loads `assets/app_icon_64.png` as its window icon and displays it in the
+header. Keep the `assets/` folder beside the Python files. Larger PNG, SVG and
+Windows ICO versions are included; use `assets/app_icon.ico` as a shortcut icon
+when creating a Windows shortcut. An ICO file does not turn Python into a standalone
+executable. The app runs with the installation steps above.
+
+See `APP_DESCRIPTION.md` for a product description and the `screenshots/` folder
+for real captures of the Tkinter interface using sample book data.
+
+## Translation quality tools
+
+Open a book, then click **Quality tools…** beside the bookmark actions.
+All book guidance is saved in the job's `quality.json`; it is an annotation,
+not a progress file. Chunk files remain the sole resume markers. Existing
+chunk IDs, book recognition and saved translations remain compatible.
+
+### Source context and EPUB paragraphs
+
+**Book glossary, characters, style and examples → Context** enables source
+context by default, with two neighboring chunks per side and an 8,000-character
+context budget. Choose 0–5 neighbors and 1,000–24,000 context characters.
+EPUB context never crosses an HTML/XHTML member. Source fragments from the same
+paragraph are prioritized with nearby chunks; context is clipped when necessary
+and flagged in the request. It never relies on unfinished neighboring translations.
+Every fragment carries a chunk ID so the target's position remains explicit.
+
+Multiple requested EPUB fragments from one paragraph use a validated JSON output
+mapping, with at most 4,000 target characters per request. Existing saved chunks
+provide source context but are not translated again. Selected retranslation
+requests only selected IDs. If your model cannot follow the mapping format,
+its response surfaces as an error and the previous target files remain intact;
+use a more capable model or disable context. Mapping validation cannot prove
+that every translated word belongs in the correct text node.
+
+Context adds input tokens beyond the 4,000 target-character limit. Relevant
+terms and examples each have a separate 6,000-character budget; character notes
+and style guidance can each add another 6,000 characters. Set a sufficient
+model context window in LM Studio or lower the budgets/guidance size.
+
+### Glossary, character notes and style guide
+
+The **Glossary** tab supports adding, editing and deleting source terms, preferred
+translations and usage notes. Specify allowed grammatical inflections, especially
+for Greek. Terms are matched case-insensitively at word boundaries against the
+current source and its context; only relevant entries are sent. This is prompt
+guidance rather than a guarantee that a model will choose the requested term.
+
+**Characters & style** stores names, pronouns, relationships, dialogue speakers,
+narrative register, dialect and punctuation preferences. Changes affect future
+requests; retranslate existing chunks to apply them. Guidance survives reopening
+and model switching within the same book/language job.
+
+### Learn from approved translations
+
+Select an edited or reviewed chunk in the queue. In **Approved examples**, click
+**Approve selected queue chunk**, then **Save book guidance**. Up to 200 examples
+can be retained; approving the same source replaces its prior example. Remove
+examples from the same tab. Future requests retrieve up to three relevant
+examples within a bounded budget. They guide wording and voice; similar text
+is never silently reused as a completed translation. Empty translations cannot
+be approved as examples. Save edits first, then approve the corrected chunk.
+
+### Check meaning explicitly
+
+Select one or more chunks and choose **Check selected chunks for lost meaning**.
+This runs proofreading even when the automatic proofreading checkbox is off.
+It checks lost/added clauses, negation, numbers, tense, subject/object roles,
+speaker attribution and pronoun references against source context and guidance.
+Issue descriptions request quoted evidence and specific corrections. Review
+findings in the normal preview; checking never rewrites translations.
+Check caches include the translation, reference context/guidance and model;
+changing relevant guidance or the checking model invalidates the cache.
+The model's judgments can still be wrong and need human assessment.
+
+### Revisions, model comparisons and history
+
+Select exactly one meaningful chunk. **Propose revision for selected chunk**
+uses its source, current translation and guidance to generate a revision with
+an independently selectable local model. Changes are highlighted beside the
+current draft. Nothing changes until **Accept revision**. A blank revision is
+allowed; accepting it deliberately clears the translated text.
+
+**Compare two models on selected chunk** generates two translations using the
+same source, selected prompt and reference context. Enter or select two local
+model IDs, then click **Compare models**. Candidates appear in randomized order
+and their model names stay hidden until **Reveal models**. Accept either candidate
+explicitly or close without changing the saved translation. Repeat on several
+representative passages (dialogue, narration, idioms) to compare models for your
+language pair. This is a manual comparison workflow, not an automatic quality score.
+Both models must be accessible in LM Studio; automatic model loading depends on
+its configuration. Comparison and revision use the currently selected prompt.
+
+Proposals are retained in `proposals/` for inspection. Acceptance verifies that
+the book, source chunk and saved translation still match the proposal. A stale
+proposal cannot overwrite a later edit. Earlier text is retained in
+`history/<chunk ID>/` when editing, accepting proposals or forcing retranslation.
+**View / restore selected chunk's history** previews previous text and restores
+it through the normal validated edit path, saving the current version first.
+Existing old versions from before this release cannot be recovered retroactively.
+
+### Review empty translations
+
+**Review empty translations** lists short/punctuation-only source chunks and
+saved empty translations. Open a listed chunk, select several and retry with
+context, or save a text report for export review. Retry enables source context
+for this book. The source-under-four-characters rule still applies and never
+calls the model, even on retry. Meaningful source with a saved empty translation
+can be retried. A reopened empty file alone cannot distinguish a model's blank
+reply from a manual blank edit; the UI does not invent provenance or create
+additional resume markers. Empty exports still preserve EPUB tags and original
+boundary whitespace.
+
+The added tools improve the information available to the model and the review
+workflow; they do not guarantee higher literary quality for every language/model.
+The automated tests use mocked inference responses, and GUI validation uses
+sample data. No real local model or human-rated quality benchmark was available
+in the development environment.
+
+## Run a real model benchmark
+
+Run this on the computer hosting LM Studio. Enable its local server, then list
+the available identifiers:
+
+```bash
+python benchmark.py --list-models
+```
+
+Copy an exact identifier from that output. To compare two models with and
+without context, using English as the target:
+
+```bash
+python benchmark.py --models "first-model-id" "second-model-id"
+```
+
+The quoted IDs above must be replaced with actual IDs from your model list.
+To test Greek instead, add `--to-lang Greek`. Both models must be accessible
+in LM Studio. No models are downloaded, and the runner does not configure
+automatic loading. Keep LM Studio generation parameters consistent; record
+temperature, seed (if supported), context window, model quantization and
+server version separately. Model generation settings are inherited from the
+server rather than overridden by this benchmark.
+
+The included 16 authored German-source probes cover grammatical roles,
+negation, timeline, counterfactuals, pronouns, inline fragments, ambiguity,
+idioms, voice, expressive spelling, numbers, register, dialogue resembling
+instructions, unclear source, and the mandatory short/punctuation skips.
+The English references are illustrative review examples, not definitive gold
+translations, and are never sent to the translation model. Review criteria
+are likewise withheld. A different target language needs a reviewer who knows
+that language; references remain labeled English in the report.
+
+Each run creates a new directory in `benchmark_runs/` with `results.json` and
+`report.html`, saved after every request. Open the HTML file in a browser.
+It contains source, source context, review criteria, candidate outputs,
+errors and duration. Interrupting with Ctrl+C retains completed outputs.
+Benchmark files are separate from saved books and never overwrite chunks.
+There is no resume-progress file or hidden automatic benchmark reuse.
+
+Optional arguments:
+
+- `--mode plain` or `--mode context`: test only one request mode.
+- `--profile "path/to/quality.json"`: include an existing book's glossary,
+  character notes, style guide and approved examples in contextual requests.
+  The chosen benchmark mode controls context, regardless of the saved toggle.
+  Plain mode excludes all reference guidance, so this comparison assesses
+  context plus guidance when a profile is supplied.
+- `--prompt-file "path/to/prompt.txt"`: test a custom translation prompt;
+  the application's empty-output rule still applies.
+- `--check-model "model-id"`: optionally request model proofreading of
+  nonempty translations. It adds inference calls; its findings remain
+  unverified and require human assessment. Duration includes checking.
+- `--timeout 300`: allow more time for each request.
+- `--suite "path/to/suite.json"`: use your own representative book excerpts.
+  Follow the included JSON schema, specify the source language, and keep each
+  target at or below 4,000 characters. Supply optional `before`/`after` source
+  context and review notes identifying the meanings that must survive.
+- `--report-from "path/to/results.json"`: regenerate HTML without inference.
+- `--output-dir "path/to/runs"`: choose the result directory.
+- `--endpoint "http://localhost:1234/v1/chat/completions"`: choose your local
+  server endpoint. If authentication is enabled, use the `LMSTUDIO_API_KEY`
+  environment variable. Credentials are not saved in results.
+
+Assess each passage for major meaning errors first: omissions, additions,
+reversed actors, wrong negation or tense, invented ambiguity resolution, and
+incorrect numbers. Then assess minor errors, register, pacing and fluency.
+Track errors per passage and apply the same criteria to every candidate.
+Do not equate an empty output on a meaningful passage with success: inspect
+whether context made it clear. Short/punctuation source is intentionally empty.
+There is no automatic literary-quality score or exact-reference pass/fail test.
+For a credible model choice, also test passages from your actual book and have
+a competent bilingual reader review them. This runner evaluates individual
+targets; use the application's comparison/review tools to assess full chapters
+and EPUB segment placement as well.
+
+The runner's transport, report safety, reference isolation and skip rules were
+tested with a controlled HTTP server. Real model testing could not run in the
+development environment because no LM Studio server was reachable there.

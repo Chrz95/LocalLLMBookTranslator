@@ -47372,3 +47372,40 @@ ValueError: Chunk 448 is missing; finish translation first.
 2026-10-08 21:04:00,374 INFO translator: Retranslating 1 selected chunks
 2026-10-08 21:04:15,747 INFO translator: Retranslating 1 selected chunks
 2026-10-08 21:04:45,702 INFO translator: Saved manual edit for chunk 450
+2026-10-08 21:17:23,844 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:17:31,808 INFO translator: Starting job f1c4c0dae53b785744c267ee68c2275bb3a6fdb2cde3c981b9538c75b7ed3b93 with 4278 chunks and 3 workers
+2026-10-08 21:17:32,792 INFO translator: Job finished; cancelled=False
+2026-10-08 21:17:43,515 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:18:33,225 INFO translator: Saved manual edit for chunk 248
+2026-10-08 21:19:22,857 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:20:02,252 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:20:13,996 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:20:27,095 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:20:34,924 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:20:48,881 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:21:17,834 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:21:34,900 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:21:55,265 INFO translator: Saved manual edit for chunk 507
+2026-10-08 21:22:22,395 INFO translator: Retranslating 1 selected chunks
+2026-10-08 21:22:47,571 INFO translator: Retranslating 1 selected chunks
+2026-10-08 22:20:06,933 INFO translator: Starting job 0a052d1aa7dea433a487ea0af30a735537fef9f8d6fff31f19ea0e03b724a15f with 4016 chunks and 3 workers
+2026-10-09 00:28:42,553 INFO translator: Job finished; cancelled=True
+2026-10-09 12:17:57,045 WARNING gui: Model discovery failed: Cannot reach LM Studio: timed out
+2026-10-09 12:19:34,975 INFO translator: Starting job 0a052d1aa7dea433a487ea0af30a735537fef9f8d6fff31f19ea0e03b724a15f with 4016 chunks and 3 workers
+2026-10-09 13:28:26,628 INFO translator: Job finished; cancelled=False
+2026-10-09 13:30:43,943 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 541, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 601, in action
+    book = load_book(filename)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\extractors.py", line 265, in load_book
+    from pypdf import PdfReader
+ModuleNotFoundError: No module named 'pypdf'
+2026-10-09 13:31:03,484 INFO translator: Starting job 7b0f45208428ef6225154136a5c3f40eb860c4d567d11ab63a9c9c2e3c9131d6 with 3646 chunks and 3 workers
+2026-10-09 15:37:47,086 INFO translator: Job finished; cancelled=False
+2026-10-09 16:29:35,787 INFO translator: Starting job 0f6c930266994018fb9067dbfe038753e93b43ed6dcf5f4b32f5248721e9d215 with 3586 chunks and 3 workers
+2026-10-09 17:46:23,168 INFO translator: Job finished; cancelled=True
+2026-10-09 20:02:12,128 INFO translator: Starting job 0f6c930266994018fb9067dbfe038753e93b43ed6dcf5f4b32f5248721e9d215 with 3586 chunks and 3 workers
+2026-10-09 20:45:05,180 INFO translator: Job finished; cancelled=False

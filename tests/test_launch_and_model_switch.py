@@ -13,10 +13,10 @@ from translator import Job, TranslationEngine, saved_books
 
 class LaunchAndModelSwitchTests(unittest.TestCase):
     def test_default_launch_preference_and_disable_persist_without_model(self):
-        self.assertTrue(Settings().start_lm_studio)
+        self.assertTrue(Settings(analyze_novel=False, ).start_lm_studio)
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'settings.json'
-            settings=Settings(start_lm_studio=False, lmstudio_path='/custom/path')
+            settings=Settings(analyze_novel=False, start_lm_studio=False, lmstudio_path='/custom/path')
             save_settings(path, settings, require_model=False)
             self.assertEqual(load_settings(path),settings)
 
@@ -51,7 +51,7 @@ class LaunchAndModelSwitchTests(unittest.TestCase):
             root=Path(folder)
             source=root/'book.txt'
             source.write_text('First paragraph\nSecond paragraph\n',encoding='utf-8')
-            settings=Settings(model='original-model')
+            settings=Settings(analyze_novel=False, model='original-model')
             job=Job(load_book(source),settings,root/'data'/'jobs')
             initial=Mock()
             initial.translate.return_value='Old translation'

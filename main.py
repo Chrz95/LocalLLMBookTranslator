@@ -19,6 +19,8 @@ def main() -> int:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--timeout", type=float, default=180)
     parser.add_argument("--proofread", action="store_true")
+    parser.add_argument("--no-novel-analysis", action="store_true",
+                        help="Disable the default full-novel glossary analysis before translation")
     parser.add_argument("--retranslate", type=int, metavar="INDEX")
     args = parser.parse_args()
     if args.input and not args.output:
@@ -37,7 +39,7 @@ def main() -> int:
             settings = Settings(model=args.model, input_lang=args.from_lang,
                                 output_lang=args.to_lang, max_workers=args.workers,
                                 retries=args.retries, timeout=args.timeout,
-                                proofread=args.proofread)
+                                proofread=args.proofread, analyze_novel=not args.no_novel_analysis)
             job = Job(load_book(args.input), settings, args.data_dir / "jobs")
             errors = []
             def report(event):

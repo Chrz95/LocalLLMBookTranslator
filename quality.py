@@ -8,6 +8,12 @@ from pathlib import Path
 
 from settings_manager import atomic_write
 
+GLOSSARY_CATEGORIES = ("character", "title", "geography", "magical_ability", "faction",
+                       "invented_language", "recurring_metaphor", "other")
+GLOSSARY_CATEGORY_LABELS = ("Character names", "Titles & honorifics", "Geography", "Magical abilities",
+                            "Factions", "Invented languages", "Recurring metaphors", "Other special terms")
+MAX_GLOSSARY_ENTRIES = 5000
+
 
 @dataclass(frozen=True)
 class QualityProfile:
@@ -30,7 +36,8 @@ class QualityProfile:
             if not isinstance(text, str) or len(text) > 6000:
                 raise ValueError("Character notes and style guide must each be at most 6,000 characters.")
         for entries, required, allowed, maximum in (
-            (self.glossary, {"source", "target"}, {"source", "target", "notes"}, 500),
+            (self.glossary, {"source", "target"},
+             {"source", "target", "notes", "category", "evidence", "origin", "occurrences"}, MAX_GLOSSARY_ENTRIES),
             (self.examples, {"source", "translation"}, {"source", "translation"}, 200)):
             if not isinstance(entries, list) or len(entries) > maximum:
                 raise ValueError(f"Guidance must be a list of at most {maximum} entries.")
@@ -39,6 +46,11 @@ class QualityProfile:
                     or any(not isinstance(v, str) or len(v) > 8000 for v in entry.values())
                     or any(not entry[k].strip() for k in required)):
                     raise ValueError("Invalid glossary or approved-example entry.")
+        for entry in self.glossary:
+            if entry.get("category", "other") not in GLOSSARY_CATEGORIES:
+                raise ValueError("Invalid glossary category.")
+            if "occurrences" in entry and not entry["occurrences"].isdigit():
+                raise ValueError("Glossary occurrence counts must contain digits.")
         names = [entry["source"].strip().casefold() for entry in self.glossary]
         if len(set(names)) != len(names):
             raise ValueError("Glossary source terms must be unique.")
@@ -67,9 +79,11 @@ class QualityProfile:
         remaining = 6000
         for entry in self.glossary:
             if re.search(r"(?<!\w)" + re.escape(entry["source"]) + r"(?!\w)", source, re.I):
-                cost = len(json.dumps(entry, ensure_ascii=False))
+                # Evidence/provenance is for human review, not repeated in every request.
+                guidance = {k: v for k, v in entry.items() if k in ("source", "target", "notes", "category")}
+                cost = len(json.dumps(guidance, ensure_ascii=False))
                 if cost <= remaining:
-                    glossary.append(entry)
+                    glossary.append(guidance)
                     remaining -= cost
         words = set(re.findall(r"\w+", source.casefold()))
         ranked = sorted(enumerate(self.examples), key=lambda item: (

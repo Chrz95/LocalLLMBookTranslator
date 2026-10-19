@@ -75,7 +75,7 @@ class ApplicationTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
-        self.settings = Settings(model="offline-test", retries=1, timeout=2)
+        self.settings = Settings(analyze_novel=False, model="offline-test", retries=1, timeout=2)
 
     def text_job(self, text="eins\nzwei\ndrei\n", settings=None):
         path = self.root / "book.txt"

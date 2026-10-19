@@ -8,7 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 from tkinter import messagebox, ttk
 
-from quality import QualityProfile
+from quality import GLOSSARY_CATEGORIES, GLOSSARY_CATEGORY_LABELS, QualityProfile
 
 
 class QualityWindows:
@@ -49,6 +49,7 @@ class QualityWindows:
         ttk.Label(panel, text="Improve meaning, consistency and literary voice", style="Section.TLabel").pack(anchor="w", pady=8)
         ttk.Label(panel, text="Guidance affects future requests. Proposals require explicit acceptance.", wraplength=680).pack(anchor="w", pady=8)
         for label, action in (("Book glossary, characters, style and examples", self.profile),
+                              ("Reanalyze whole novel / refresh AI glossary", self.analyze),
                               ("Review empty translations", self.empty),
                               ("Check selected chunks for lost meaning", self.check_selected),
                               ("Propose revision for selected chunk", lambda: self.proposals(False)),
@@ -59,6 +60,14 @@ class QualityWindows:
                 action()
             ttk.Button(panel, text=label, command=launch).pack(fill="x", pady=3)
         ttk.Button(footer, text="Close", command=dialog.destroy).pack(side="right")
+
+    def analyze(self):
+        try:
+            engine = self.current_engine()
+        except (OSError, ValueError, RuntimeError) as exc:
+            messagebox.showerror("Cannot analyze novel", str(exc), parent=self.app.root)
+            return
+        self.app._background(lambda: engine.analyze_novel(force=True))
 
     def one_selected(self):
         index = self.app.selected()
@@ -97,37 +106,58 @@ class QualityWindows:
                   "Guidance and context increase the model's input size; allow enough context tokens in LM Studio.",
                   wraplength=900).pack(anchor="w", pady=20)
         entries = [dict(e) for e in current.glossary]
+        category_choices = dict(zip(GLOSSARY_CATEGORY_LABELS, GLOSSARY_CATEGORIES))
+        category_labels = dict(zip(GLOSSARY_CATEGORIES, GLOSSARY_CATEGORY_LABELS))
         glossary_tab = tabs["Glossary"]
         editor = ttk.Frame(glossary_tab)
         editor.pack(side="bottom", fill="x", pady=8)
-        tree = ttk.Treeview(glossary_tab, columns=("source", "target", "notes"), show="headings", selectmode="extended", height=9)
-        for column, label, width in (("source", "Source term", 220), ("target", "Preferred translation", 220),
-                                     ("notes", "Inflections / usage notes", 460)):
+        columns = ("source", "target", "category", "notes", "occurrences")
+        list_frame = ttk.Frame(glossary_tab)
+        list_frame.pack(fill="both", expand=True)
+        tree = ttk.Treeview(list_frame, columns=columns, show="headings", selectmode="extended", height=9)
+        for column, label, width in (("source", "Source term", 160), ("target", "Preferred translation", 160),
+                                     ("category", "Category", 140), ("notes", "Treatment / uncertainty", 260),
+                                     ("occurrences", "Exact matches", 90)):
             tree.heading(column, text=label)
             tree.column(column, width=width)
+        scroll = ttk.Scrollbar(list_frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
         tree.pack(fill="both", expand=True)
-        values = {key: tk.StringVar() for key in ("source", "target", "notes")}
-        for number, (key, label) in enumerate((("source", "Source"), ("target", "Target"), ("notes", "Notes"))):
+        values = {key: tk.StringVar(value=category_labels["other"] if key == "category" else "")
+                  for key in ("source", "target", "category", "notes", "evidence")}
+        for number, (key, label) in enumerate((("source", "Source"), ("target", "Target"),
+                                              ("category", "Category"), ("notes", "Notes"), ("evidence", "Source evidence"))):
             ttk.Label(editor, text=label).grid(row=number, column=0, sticky="w", padx=(0, 10), pady=4)
-            ttk.Entry(editor, textvariable=values[key]).grid(row=number, column=1, sticky="ew", pady=4)
+            field = (ttk.Combobox(editor, textvariable=values[key], values=GLOSSARY_CATEGORY_LABELS, state="readonly")
+                     if key == "category" else ttk.Entry(editor, textvariable=values[key]))
+            field.grid(row=number, column=1, sticky="ew", pady=4)
         editor.columnconfigure(1, weight=1)
         def reload_terms():
             tree.delete(*tree.get_children())
             for i, entry in enumerate(entries):
-                tree.insert("", "end", iid=str(i), values=tuple(entry.get(k, "") for k in values))
+                tree.insert("", "end", iid=str(i), values=tuple(category_labels[entry.get("category", "other")]
+                            if k == "category" else entry.get(k, "") for k in columns))
         def select_term(event=None):
             selection = tree.selection()
             if len(selection) == 1:
                 for key, variable in values.items():
-                    variable.set(entries[int(selection[0])].get(key, ""))
+                    entry = entries[int(selection[0])]
+                    variable.set(category_labels[entry.get("category", "other")] if key == "category" else entry.get(key, ""))
         def put_term(update=False):
             entry = {key: variable.get().strip() for key, variable in values.items()}
+            entry["category"] = category_choices[entry["category"]]
             try:
                 result = list(entries)
                 if update:
                     if len(tree.selection()) != 1:
                         raise ValueError("Select one glossary entry to update.")
-                    result[int(tree.selection()[0])] = entry
+                    index = int(tree.selection()[0])
+                    previous = entries[index]
+                    entry = dict(previous, **entry, origin="manual")
+                    if entry["source"] != previous["source"]:
+                        entry.pop("occurrences", None)
+                    result[index] = entry
                 else:
                     result.append(entry)
                 replace(current, glossary=result).validate()
@@ -141,11 +171,13 @@ class QualityWindows:
             entries[:] = [e for i, e in enumerate(entries) if i not in selected]
             reload_terms()
         controls = ttk.Frame(editor)
-        controls.grid(row=3, column=0, columnspan=2, sticky="ew", pady=6)
+        controls.grid(row=5, column=0, columnspan=2, sticky="ew", pady=6)
         for label, action in (("Add", put_term), ("Update selected", lambda: put_term(True)), ("Delete selected", delete_terms)):
             ttk.Button(controls, text=label, command=action).pack(side="left", padx=(0, 8))
         tree.bind("<<TreeviewSelect>>", select_term)
         reload_terms()
+        ttk.Label(glossary_tab, text="AI suggestions are applied before translation. Review names, proposed renderings and evidence. "
+                  "Exact matches count literal occurrences, not aliases or metaphor variants.", wraplength=900).pack(anchor="w", pady=6)
         notes_tab = tabs["Characters & style"]
         ttk.Label(notes_tab, text="Character facts: names, pronouns, relationships and who is speaking").pack(anchor="w")
         characters = self.text(notes_tab, current.character_notes, height=8)

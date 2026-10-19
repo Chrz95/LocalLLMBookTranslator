@@ -16,7 +16,7 @@ class SearchTests(unittest.TestCase):
         root = Path(self.temp.name)
         source = root/'book.txt'
         source.write_text('Alpha alpha [literal].\nA Greek phrase: Καλημέρα κόσμε.\nNo cached translation here.\n', encoding='utf-8')
-        self.job = Job(load_book(source), Settings(model='test'), root/'jobs')
+        self.job = Job(load_book(source), Settings(analyze_novel=False, model='test'), root/'jobs')
         self.job.chunk_path(0).write_text('Alpha in translation.', encoding='utf-8')
         self.job.chunk_path(1).write_text('Good morning world.', encoding='utf-8')
 

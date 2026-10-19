@@ -71,6 +71,7 @@ class TranslatorGUI:
         self.start_lm_studio = tk.BooleanVar(value=settings.start_lm_studio)
         self.lmstudio_path = settings.lmstudio_path
         self.proofread = tk.BooleanVar(value=settings.proofread)
+        self.analyze_novel = tk.BooleanVar(value=settings.analyze_novel)
         self.use_custom_prompt = tk.BooleanVar(value=settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
         prompt_path = data_directory / "prompts.json"
@@ -272,8 +273,13 @@ class TranslatorGUI:
         key = ttk.Entry(parent, textvariable=self.values["api_key"], show="•")
         key.grid(row=15, column=0, sticky="ew")
         self.option_widgets.append(key)
-        self.check_option = ttk.Checkbutton(parent, text="Proofread after translation", variable=self.proofread)
-        self.check_option.grid(row=16, column=0, sticky="w", pady=(15, 10))
+        checks = ttk.Frame(parent, style="Card.TFrame")
+        checks.grid(row=16, column=0, sticky="ew", pady=(15, 10))
+        self.analysis_option = ttk.Checkbutton(checks, text="Analyze novel before translation",
+                                              variable=self.analyze_novel, command=self.save_analysis_preference)
+        self.analysis_option.pack(anchor="w", pady=(0, 8))
+        self.check_option = ttk.Checkbutton(checks, text="Proofread after translation", variable=self.proofread)
+        self.check_option.pack(anchor="w")
         ttk.Separator(parent).grid(row=17, column=0, sticky="ew", pady=8)
         ttk.Label(parent, text="Chunks shorter than 4 characters and punctuation-only chunks are skipped automatically.",
                   style="Muted.TLabel", wraplength=270).grid(row=18, column=0, sticky="w", pady=(5, 0))
@@ -430,6 +436,13 @@ class TranslatorGUI:
         except (OSError, ValueError, TypeError) as exc:
             messagebox.showerror("Cannot save launch option", str(exc), parent=self.root)
 
+    def save_analysis_preference(self) -> None:
+        try:
+            settings = replace(load_settings(self.settings_path), analyze_novel=self.analyze_novel.get())
+            save_settings(self.settings_path, settings, require_model=False)
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showerror("Cannot save analysis option", str(exc), parent=self.root)
+
     def choose_studio_path(self) -> None:
         path = filedialog.askopenfilename(parent=self.root, title="Choose LM Studio executable (or select a file inside its macOS .app)")
         if path:
@@ -507,7 +520,7 @@ class TranslatorGUI:
     def _controls(self, busy: bool) -> None:
         self.busy = busy
         self.refresh_button.configure(state="disabled" if busy or self.models_loading else "normal")
-        for widget in [self.browse, self.source_entry, self.check_option, self.open_button,
+        for widget in [self.browse, self.source_entry, self.check_option, self.analysis_option, self.open_button,
                        self.open_saved_button, self.launch_option, self.launch_path_button, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         self.saved_combo.configure(state="disabled" if busy else "readonly")
@@ -532,7 +545,7 @@ class TranslatorGUI:
                             max_workers=int(self.values["max_workers"].get()),
                             retries=int(self.values["retries"].get()),
                             timeout=float(self.values["timeout"].get()),
-                            proofread=self.proofread.get(), custom_prompt=self.custom_prompt,
+                            proofread=self.proofread.get(), analyze_novel=self.analyze_novel.get(), custom_prompt=self.custom_prompt,
                             use_custom_prompt=self.use_custom_prompt.get(),
                             start_lm_studio=self.start_lm_studio.get(), lmstudio_path=self.lmstudio_path)
         if validate:
@@ -580,6 +593,7 @@ class TranslatorGUI:
                 variable.set(str(getattr(settings, name)))
         self.model_selection.set(settings.model)
         self.proofread.set(settings.proofread)
+        self.analyze_novel.set(settings.analyze_novel)
         self.use_custom_prompt.set(settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
         if not settings.use_custom_prompt:
@@ -616,6 +630,7 @@ class TranslatorGUI:
                 if book.digest != match.digest:
                     raise ValueError("Saved source is damaged or changed; open the original file.")
                 chosen = replace(match.settings, api_key=settings.api_key,
+                                 analyze_novel=settings.analyze_novel,
                                  start_lm_studio=settings.start_lm_studio, lmstudio_path=settings.lmstudio_path)
             chosen.validate()
             job = Job(book, chosen, self.data_directory / "jobs")
@@ -1382,6 +1397,13 @@ class TranslatorGUI:
             self._models_received(event)
         elif kind == "loaded":
             self._loaded(event)
+        elif kind == "analysis":
+            self.summary.set(event["detail"])
+            if event.get("ready"):
+                self.progress.configure(maximum=len(self.statuses), value=sum(
+                    status in ("Completed", "Resumed", "Retranslated", "Skipped") for status in self.statuses.values()))
+            elif event.get("total"):
+                self.progress.configure(maximum=event["total"], value=event["completed"])
         elif kind in ("chunk", "check"):
             index = event["index"]
             if kind == "chunk":
@@ -1406,6 +1428,7 @@ class TranslatorGUI:
         elif kind == "exported":
             self.summary.set(f"Saved {event['path']}")
         elif kind == "finished":
+            self.progress.configure(maximum=len(self.statuses))
             self._update_counts("Cancelled. " if event["cancelled"] else "Run finished. ")
         elif kind == "idle":
             self._controls(False)

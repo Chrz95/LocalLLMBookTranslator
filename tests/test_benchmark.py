@@ -96,7 +96,7 @@ class BenchmarkTests(unittest.TestCase):
         suite["cases"][0]["review_notes"] = "SECRET_CRITERIA"
         suite["cases"][0]["before"] = "Previous source sentence."
         endpoint = f"http://127.0.0.1:{server.server_port}/v1/chat/completions"
-        settings = Settings(input_lang="German", output_lang="English", api_key="not-saved")
+        settings = Settings(analyze_novel=False, input_lang="German", output_lang="English", api_key="not-saved")
         results = run_benchmark(suite, settings, ["local-model"], self.root, endpoint)
         self.assertEqual(results["status"], "completed")
         self.assertEqual(len(requests), 2)

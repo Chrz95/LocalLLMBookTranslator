@@ -20,6 +20,9 @@ extracted as text and export to TXT; PDF extraction requires a text layer.
 - Retranslate specific chunks or ranges using the default literary prompt or a saved custom prompt.
 - Create, edit, delete and select your own prompt templates.
 - Optionally proofread translations and inspect reported issues.
+- Analyze the whole novel before translation, enabled by default, to build an
+  editable glossary of character names, titles, geography, magical abilities,
+  factions, invented languages, recurring metaphors and other special terms.
 - Sort the queue and combine status, review, bookmark and text filters.
 - Search source and translated chunks, and jump directly to matches.
 - Bookmark chunks, add labels and delete one or multiple bookmarks.
@@ -41,6 +44,12 @@ flag potential omissions and role/tense changes. Revision proposals and two-mode
 comparisons remain separate from saved translations until accepted, with stale
 result checks and previous-version history. An empty-translation review window
 supports context retries and reports while retaining the short-source skip rule.
+
+The pretranslation analysis reads every extracted source passage in bounded
+passes. Suggestions include a category, proposed target rendering, treatment
+notes, source evidence and exact-match counts. Existing glossary choices are
+preserved, analysis can be paused or cancelled, and completed analysis passes
+are retained for reuse. AI suggestions need review for meaning and consistency.
 
 The included command-line benchmark compares local models on 16 authored
 accuracy probes, with and without source context. It saves model outputs and

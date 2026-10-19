@@ -16,7 +16,7 @@ class BookmarkTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.source = self.root/'book.txt'
         self.source.write_text('First paragraph\nSecond paragraph\nThird paragraph\n', encoding='utf-8')
-        self.settings = Settings(model='test')
+        self.settings = Settings(analyze_novel=False, model='test')
         self.job = Job(load_book(self.source), self.settings, self.root/'jobs')
         self.client = Mock()
         self.client.translate.return_value = 'Translated text'

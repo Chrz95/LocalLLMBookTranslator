@@ -1,0 +1,20 @@
+{
+  "digest": "b37750f60403330407ae07187337beeb8f991cd428b87a5e489cc052bd1de6b1",
+  "kind": "txt",
+  "title": "book.txt",
+  "settings": {
+    "model": "offline-test",
+    "input_lang": "German",
+    "output_lang": "English",
+    "max_workers": 2,
+    "retries": 1,
+    "timeout": 2,
+    "proofread": false,
+    "custom_prompt": "",
+    "use_custom_prompt": false,
+    "start_lm_studio": true,
+    "lmstudio_path": "",
+    "analyze_novel": false
+  },
+  "last_model": "offline-test"
+}

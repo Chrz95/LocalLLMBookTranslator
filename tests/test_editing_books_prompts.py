@@ -19,7 +19,7 @@ class EditingBookPromptTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.source = self.root / 'original.txt'
         self.source.write_text('First paragraph.\nSecond paragraph.\n', encoding='utf-8')
-        self.settings = Settings(model='test-model')
+        self.settings = Settings(analyze_novel=False, model='test-model')
         self.workspace = self.root / 'data' / 'jobs'
 
     def job(self, settings=None):

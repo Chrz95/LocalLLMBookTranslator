@@ -16,7 +16,7 @@ class ReplacementTests(unittest.TestCase):
         self.root=Path(self.temp.name)
         source=self.root/'book.txt'
         source.write_text('First paragraph\nSecond paragraph\nUnchanged paragraph\n', encoding='utf-8')
-        self.job=Job(load_book(source), Settings(model='test'), self.root/'jobs')
+        self.job=Job(load_book(source), Settings(analyze_novel=False, model='test'), self.root/'jobs')
         for index, text in enumerate(('Cat cat caterpillar.', 'The cat rests.', 'Other text.')):
             self.job.chunk_path(index).write_text(text, encoding='utf-8')
             self.job.check_path(index).write_text('{"issues": []}', encoding='utf-8')

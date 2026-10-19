@@ -25,6 +25,7 @@ class Settings:
     use_custom_prompt: bool = False
     start_lm_studio: bool = True
     lmstudio_path: str = ""
+    analyze_novel: bool = True
 
     def validate(self, require_model: bool = True) -> None:
         for name in ("model", "input_lang", "output_lang"):
@@ -47,6 +48,8 @@ class Settings:
             raise ValueError("Enter a custom prompt or disable the custom prompt option.")
         if type(self.start_lm_studio) is not bool or not isinstance(self.lmstudio_path, str):
             raise ValueError("Invalid LM Studio launch preference.")
+        if type(self.analyze_novel) is not bool:
+            raise ValueError("Novel analysis preference must be a boolean.")
 
 
 def atomic_write(path: Path, data: str | bytes) -> None:

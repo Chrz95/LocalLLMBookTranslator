@@ -24,7 +24,7 @@ class QualityTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.source = self.root/'book.txt'
         self.source.write_text('Mara opens the door.\nShe hears a distant voice.\nThe lighthouse is quiet.\n', encoding='utf-8')
-        self.settings = Settings(model='model-one', retries=0)
+        self.settings = Settings(analyze_novel=False, model='model-one', retries=0)
         self.job = Job(load_book(self.source), self.settings, self.root/'jobs')
         self.client = LMStudioClient(self.settings)
         self.client.complete = Mock(return_value='Translation')
@@ -154,7 +154,7 @@ class ParagraphTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.source = self.root/'book.epub'
         self.members = make_epub(self.source)
-        self.job = Job(load_book(self.source), Settings(model='test', retries=0), self.root/'jobs')
+        self.job = Job(load_book(self.source), Settings(analyze_novel=False, model='test', retries=0), self.root/'jobs')
         self.client = LMStudioClient(self.job.settings)
         self.client.complete = Mock(side_effect=self.reply)
         self.events = []

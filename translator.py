@@ -19,6 +19,7 @@ from extractors import Book, valid_xml_character
 from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT
 from settings_manager import Settings, atomic_write
 from quality import QualityProfile, build_context
+from novel_analysis import NovelAnalyzer
 
 MAX_CHARS = 4000
 CHUNK_VERSION = "lossless-text-nodes-v1"
@@ -356,6 +357,26 @@ class TranslationEngine:
             profile.save(self.job.directory / "quality.json")
             self.profile = profile
 
+    def analyze_novel(self, force: bool = True) -> dict:
+        """Explicit full-book analysis, also usable independently of translation."""
+        with self.operation():
+            try:
+                if not any(not should_skip(chunk.text) for chunk in self.job.chunks):
+                    self.emit({"type": "analysis", "detail": "No translatable source; analysis skipped.", "ready": True})
+                    return {"skipped": True}
+                return NovelAnalyzer(self).run(force=force)
+            except Cancelled:
+                self.log.info("Novel analysis cancelled; completed analysis passages retained")
+                return {"cancelled": True}
+            finally:
+                self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
+
+    def _prepare_translation(self, selected: list[Chunk], force: bool = False) -> None:
+        needs_model = any(not should_skip(chunk.text) and
+                          (force or not self.job.chunk_path(chunk.index).exists()) for chunk in selected)
+        if self.job.settings.analyze_novel and needs_model:
+            NovelAnalyzer(self).run()
+
     def approve_example(self, index: int) -> None:
         source = self.job.chunks[index].text
         translation = self.job.read_translation(index)
@@ -493,7 +514,10 @@ class TranslationEngine:
                           self.job.directory.name, len(self.job.chunks),
                           self.job.settings.max_workers)
             try:
+                self._prepare_translation(self.job.chunks)
                 self._parallel()
+            except Cancelled:
+                self.log.info("Cancelled during novel analysis")
             finally:
                 self.log.info("Job finished; cancelled=%s", self._cancel.is_set())
                 self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
@@ -692,11 +716,14 @@ class TranslationEngine:
         with self.operation():
             self.log.info("Retranslating %s selected chunks", len(selected))
             try:
+                self._prepare_translation(selected, force=True)
                 self._parallel(selected, force=True)
+            except Cancelled:
+                self.log.info("Cancelled during novel analysis")
             finally:
                 self.emit({"type": "finished", "cancelled": self._cancel.is_set()})
 
-    def _request(self, index: int, action: Callable, checking: bool = False):
+    def _request(self, index: int, action: Callable, checking: bool = False, analyzing: bool = False):
         for attempt in range(self.job.settings.retries + 1):
             self.checkpoint()
             try:
@@ -706,7 +733,10 @@ class TranslationEngine:
             except APIError as exc:
                 if not exc.retryable or attempt == self.job.settings.retries:
                     raise
-                if checking:
+                if analyzing:
+                    self.emit({"type": "analysis", "detail": f"Novel analysis retry {attempt + 2}: {exc}",
+                               "completed": 0, "total": 0})
+                elif checking:
                     self.emit({"type": "check", "index": index,
                                "check": "Retry", "detail": str(exc)})
                 else:

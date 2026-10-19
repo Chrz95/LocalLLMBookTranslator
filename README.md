@@ -103,6 +103,7 @@ literary_translator/
   lmstudio.py             Local HTTP client and exact translation prompt
   quality.py              Book guidance and bounded source context
   quality_gui.py          Guidance, revision, comparison and history dialogs
+  novel_analysis.py       Full-source pretranslation terminology analysis
   benchmark.py            Local model accuracy benchmark and HTML review report
   benchmark_suite.json    Authored German-source accuracy probes
   requirements.txt        pypdf dependency (other runtime modules use stdlib)
@@ -115,6 +116,8 @@ literary_translator/
   tests/test_bookmarks.py
   tests/test_queue_view.py
   tests/test_quality.py
+  tests/test_novel_analysis.py
+  tests/test_novel_analysis_gui.py
   tests/test_benchmark.py
   tests/test_replacement.py
   tests/test_launch_and_model_switch.py
@@ -741,3 +744,96 @@ and EPUB segment placement as well.
 The runner's transport, report safety, reference isolation and skip rules were
 tested with a controlled HTTP server. Real model testing could not run in the
 development environment because no LM Studio server was reachable there.
+
+
+## Analyze the novel before translation (enabled by default)
+
+The sidebar's **Analyze novel before translation** checkbox defaults to on,
+including when loading older settings that lack this option. Its value is saved
+immediately and is used when opening a saved book. It does not change book
+identity, chunk IDs, existing translations, prompts or EPUB structure.
+
+Before translating any pending source or forcing a selected retranslation,
+the application visits the **entire extracted novel**, not just an opening
+sample. Source fragments are grouped in reading order into analysis passages
+of at most 4,000 characters. Analysis uses the selected local LM Studio model
+with a dedicated terminology prompt; your chosen literary translation prompt
+is still used for the subsequent translation. This pass adds inference time
+before the first translation; the progress bar and status show its progress.
+
+The AI looks for eight kinds of special treatment:
+
+- Character names and aliases.
+- Titles, ranks and honorifics.
+- Geography and place names.
+- Magical abilities, systems and spell names.
+- Factions, orders and organizations.
+- Invented languages and expressions.
+- Recurring metaphors and motifs.
+- Other terms requiring a consistent literary treatment.
+
+Each suggestion contains an exact source term, a proposed target rendering,
+category, treatment/uncertainty notes and a source quotation. The application
+validates the response schema and verifies that the term and quotation appear
+in the analyzed passage. Up to 60 previously identified terms, within a
+6,000-character budget, help the next passage recognize names and recurring
+motifs. The model cannot retain the full novel in one request; every passage
+is visited, but extraction and semantic recurrence detection remain fallible.
+
+After the full scan succeeds, new terms are merged into the book's editable
+`quality.json`. Existing source-term choices are never overwritten, even if
+they originated as AI suggestions and were later edited. Up to 5,000 glossary
+entries can be retained. The usual relevance matching and 6,000-character
+retrieval budget keep the whole glossary from being sent with every translation.
+Source quotations and provenance are available for review, without consuming
+that translation-guidance budget. Character-name suggestions retain source
+spelling unless the source establishes another form; verify all renderings.
+
+Open **Quality tools… → Book glossary, characters, style and examples → Glossary**
+to review suggestions, select a category, inspect evidence, edit preferred
+translations/notes, or delete entries. **Exact matches** counts case-insensitive
+word-boundary occurrences across extracted text. This does not count all
+inflections, aliases, image text, or paraphrased metaphor variants, and is not
+proof that an AI-labeled metaphor actually recurs. AI categories, interpretations
+and target renderings require human review; source grounding alone cannot
+establish their correctness. Suggested glossary translations guide future
+requests and are not guaranteed to be followed by the model.
+
+**Pause**, **Resume** and **Cancel** also apply during analysis. An in-flight
+HTTP request must return or time out before its cancellation can be observed.
+No new glossary is committed until the full scan succeeds. Completed analysis
+responses are retained under the job's `analysis/passages/`; a completed
+`analysis/report.json` records analysis coverage and model identity. These are
+analysis caches, not translation progress. Translation resume still depends
+only on `chunks/<index>.txt`; no resume-progress JSON is created.
+
+A completed scan is reused when reopening the same book/language/model job,
+using the current edited glossary. Deleted terms stay deleted during normal
+cached reuse. Changing the runtime model causes analysis with that model before
+new translation, while older analysis responses remain available in the cache.
+Fully resumed runs and selections consisting solely of skipped source make no
+analysis requests. A novel containing meaningful source may include short names
+within larger analysis passages; individual translation chunks under four
+characters still produce empty translations without translation inference.
+
+To deliberately scan again, choose **Quality tools… → Reanalyze whole novel /
+refresh AI glossary**. This reruns analysis and can rediscover deleted terms,
+but preserves all existing choices and leaves saved translations untouched.
+Manual reanalysis works even when automatic analysis is disabled.
+If the model times out, returns invalid JSON or invents unsupported quotations,
+analysis stops before translation. The app's configured retries apply. Select
+a capable local model, correct the problem and retry, or turn the checkbox off
+to proceed with the current glossary. Turning it off does not remove guidance.
+
+The command-line equivalent is enabled automatically. Use
+`python main.py --input book.epub --output translated.epub --model MODEL_ID --no-novel-analysis`
+to disable it for a headless run, replacing MODEL_ID with your actual model ID.
+The separate benchmark runner does not automatically analyze its probe suite;
+pass a saved book's `quality.json` with `--profile` to test that guidance.
+
+Validation for this feature covers full-scan ordering, all eight categories,
+source grounding, schema failures, cancellation and cache reuse, glossary edits
+and deletion, manual reanalysis, skips, EPUB preservation, settings migration
+and headless GUI-controller behavior. Inference responses are controlled test
+responses. No live LM Studio model or graphical display was available for this
+release's development checks; included screenshots predate these new controls.

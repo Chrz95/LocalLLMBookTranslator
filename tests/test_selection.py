@@ -21,7 +21,7 @@ class SelectionTests(unittest.TestCase):
             root = Path(directory)
             source = root / 'book.txt'
             source.write_text('First\nSecond\nThird\nFourth\n', encoding='utf-8')
-            job = Job(load_book(source), Settings(model='test'), root / 'jobs')
+            job = Job(load_book(source), Settings(analyze_novel=False, model='test'), root / 'jobs')
             for index in range(4):
                 job.chunk_path(index).write_text(f'old-{index}', encoding='utf-8')
             client = Mock()

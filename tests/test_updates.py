@@ -34,7 +34,7 @@ class UpdateTests(unittest.TestCase):
             root = Path(directory)
             source = root / "source.txt"
             source.write_text(" \nA\n.\n,\n…?!\ne\u0301\nHi\nabc\nWord\n", encoding="utf-8")
-            settings = Settings(model="local-test", proofread=True)
+            settings = Settings(analyze_novel=False, model="local-test", proofread=True)
             job = Job(load_book(source), settings, root / "jobs")
             client = Mock()
             client.translate.return_value = "Translated"
@@ -81,7 +81,7 @@ class UpdateTests(unittest.TestCase):
             server.server_close()
             thread.join()
         self.addCleanup(stop)
-        client = LMStudioClient(Settings(api_key="test-token"),
+        client = LMStudioClient(Settings(analyze_novel=False, api_key="test-token"),
                                 f"http://127.0.0.1:{server.server_port}/v1/chat/completions")
         return client, requests
 

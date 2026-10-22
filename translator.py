@@ -20,6 +20,7 @@ from lmstudio import APIError, LMStudioClient, TRANSLATION_PROMPT
 from settings_manager import Settings, atomic_write
 from quality import QualityProfile, build_context
 from novel_analysis import NovelAnalyzer
+from providers import client_identity, create_client, provider_label
 
 MAX_CHARS = 4000
 CHUNK_VERSION = "lossless-text-nodes-v1"
@@ -89,10 +90,11 @@ class SavedBook:
     saved_chunks: int
     directory: Path
     last_model: str = ""
+    last_provider: str = ""
 
     @property
     def label(self) -> str:
-        return (f"{self.title} · {self.settings.output_lang} · {self.last_model or self.settings.model} "
+        return (f"{self.title} · {self.settings.output_lang} · {provider_label(self.last_provider or self.settings.provider)} · {self.last_model or self.settings.model} "
                 f"· {self.saved_chunks} saved · {self.directory.name[:8]}")
 
 
@@ -107,14 +109,29 @@ def saved_books(workspace: Path) -> list[SavedBook]:
                 raise ValueError("Invalid book catalog")
             settings = Settings(**data["settings"])
             settings.validate()
+            if data.get("last_provider", settings.provider) not in ("lmstudio", "ollama"):
+                raise ValueError("Invalid saved provider")
             source = Path(workspace).parent / "books" / f"{digest}.{kind}"
             if source.is_file():
                 results.append(SavedBook(source, digest, settings, str(data["title"]),
                                          len(list((path.parent / "chunks").glob("[0-9]*.txt"))), path.parent,
-                                         str(data.get("last_model", settings.model))))
+                                         str(data.get("last_model", settings.model)),
+                                         str(data.get("last_provider", settings.provider))))
         except (OSError, ValueError, KeyError, TypeError):
             logging.getLogger(__name__).warning("Ignoring invalid book catalog: %s", path)
     return results
+
+
+def matching_saved_book(entries: list[SavedBook], digest: str, settings: Settings,
+                        opened_directory: Path | None = None, restore_languages: bool = False) -> SavedBook | None:
+    matches = [entry for entry in entries if entry.digest == digest]
+    compatible = [entry for entry in matches if entry.settings.input_lang == settings.input_lang
+                  and entry.settings.output_lang == settings.output_lang]
+    opened = next((entry for entry in compatible if entry.directory == opened_directory), None)
+    preferred = next((entry for entry in compatible if
+                      (entry.last_provider or entry.settings.provider) == settings.provider and
+                      (entry.last_model or entry.settings.model) == settings.model), None)
+    return opened or preferred or next(iter(compatible), None) or (next(iter(matches), None) if restore_languages else None)
 
 
 def should_skip(text: str) -> bool:
@@ -149,8 +166,12 @@ class Job:
         self.book = book
         self.settings = settings
         self.identity_model = settings.model
-        identity = json.dumps([book.digest, settings.model, settings.input_lang,
-                               settings.output_lang, TRANSLATION_PROMPT, CHUNK_VERSION],
+        self.identity_provider = settings.provider
+        identity_values = [book.digest, settings.model, settings.input_lang,
+                           settings.output_lang, TRANSLATION_PROMPT, CHUNK_VERSION]
+        if settings.provider != "lmstudio":
+            identity_values.append(settings.provider)
+        identity = json.dumps(identity_values,
                               ensure_ascii=False).encode("utf-8")
         self.directory = Path(workspace) / hashlib.sha256(identity).hexdigest()
         self.recognized = self.directory.exists()
@@ -199,6 +220,7 @@ class Job:
         settings = asdict(self.settings)
         settings.pop("api_key")
         settings["model"] = self.identity_model
+        settings["provider"] = self.identity_provider
         title = next(iter(self.book.metadata.get("title", [])), self.book.path.name)
         catalog = self.directory / "book.json"
         if catalog.exists():
@@ -210,6 +232,7 @@ class Job:
             "digest": self.book.digest, "kind": self.book.kind,
             "title": title, "settings": settings,
             "last_model": self.settings.model,
+            "last_provider": self.settings.provider,
         }, ensure_ascii=False, indent=2))
 
     def configure_translation(self, settings: Settings) -> None:
@@ -334,7 +357,7 @@ class TranslationEngine:
     def __init__(self, job: Job, emit: Callable[[dict], None] | None = None,
                  client: LMStudioClient | None = None):
         self.job = job
-        self.client = client or LMStudioClient(job.settings)
+        self.client = client or create_client(job.settings)
         self.emit = emit or (lambda event: None)
         self._pause_gate = threading.Event()
         self._pause_gate.set()
@@ -395,7 +418,7 @@ class TranslationEngine:
             if should_skip(source):
                 raise ValueError("Skipped source chunks cannot be revised.")
             before = self.job.read_translation(index)
-            client = LMStudioClient(replace(self.job.settings, model=model or self.job.settings.model))
+            client = create_client(replace(self.job.settings, model=model or self.job.settings.model))
             after = self._request(index, lambda: client.revise(source, before, self.reference(index)))
             return self._proposal(index, before, after, client.settings.model)
 
@@ -409,7 +432,7 @@ class TranslationEngine:
             before = self.job.read_translation(index) if self.job.chunk_path(index).exists() else None
             proposals = []
             for model in models:
-                client = LMStudioClient(replace(self.job.settings, model=model.strip()))
+                client = create_client(replace(self.job.settings, model=model.strip()))
                 after = self._request(index, lambda: client.translate(source, context=self.reference(index)))
                 proposals.append(self._proposal(index, before, after, model.strip()))
             # Shuffle display order so candidate A is not always the first model.
@@ -420,7 +443,8 @@ class TranslationEngine:
     def _proposal(self, index: int, before: str | None, after: str, model: str) -> dict:
         self._validate_edit(index, after)
         proposal = {"job_directory": str(self.job.directory.resolve()), "index": index,
-                    "source": self.job.chunks[index].text, "before": before, "after": after, "model": model}
+                    "source": self.job.chunks[index].text, "before": before, "after": after, "model": model,
+                    **client_identity(self.job.settings)}
         atomic_write(self.job.directory / "proposals" / f"{uuid.uuid4().hex}.json",
                      json.dumps(proposal, ensure_ascii=False, indent=2))
         return proposal
@@ -799,6 +823,8 @@ class TranslationEngine:
                     if (saved.get("translation_sha256") == fingerprint
                         and saved.get("reference_sha256") == guidance_hash
                         and saved.get("model") == self.job.settings.model
+                        and saved.get("provider", "lmstudio") == self.job.settings.provider
+                        and saved.get("server_url", "http://localhost:1234") == client_identity(self.job.settings)["server_url"]
                         and isinstance(saved.get("issues"), list)):
                         report = saved
                 except (ValueError, OSError, AttributeError):
@@ -809,6 +835,7 @@ class TranslationEngine:
                     if isinstance(self.client, LMStudioClient) else self.client.check(chunk.text, translation), checking=True)
                 report = {**report, "translation_sha256": fingerprint, "reference_sha256": guidance_hash,
                           "model": self.job.settings.model,
+                          **client_identity(self.job.settings),
                           "chunk_index": chunk.index}
                 atomic_write(path, json.dumps(report, ensure_ascii=False, indent=2))
             self.emit({"type": "check", "index": chunk.index,

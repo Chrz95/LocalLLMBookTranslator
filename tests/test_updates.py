@@ -125,6 +125,8 @@ class UpdateTests(unittest.TestCase):
         interpreter = tk.Tcl()  # No display needed for StringVar and event-state tests.
         gui = TranslatorGUI.__new__(TranslatorGUI)
         gui.models_loading = True
+        gui.active_provider = "lmstudio"
+        gui.discovery_generation = 0
         gui.busy = False
         gui.model_choices = {}
         gui.model_combo = Mock()

@@ -7,6 +7,7 @@ import re
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 last_input_file = ""
 
@@ -23,9 +24,13 @@ class Settings:
     api_key: str = ""
     custom_prompt: str = ""
     use_custom_prompt: bool = False
-    start_lm_studio: bool = True
+    start_lm_studio: bool = False
     lmstudio_path: str = ""
-    analyze_novel: bool = True
+    analyze_novel: bool = False
+    analysis_preference_version: int = 2
+    provider: str = "lmstudio"
+    lmstudio_url: str = "http://localhost:1234"
+    ollama_url: str = "http://localhost:11434"
 
     def validate(self, require_model: bool = True) -> None:
         for name in ("model", "input_lang", "output_lang"):
@@ -50,6 +55,18 @@ class Settings:
             raise ValueError("Invalid LM Studio launch preference.")
         if type(self.analyze_novel) is not bool:
             raise ValueError("Novel analysis preference must be a boolean.")
+        if self.provider not in ("lmstudio", "ollama"):
+            raise ValueError("Choose LM Studio or Ollama as the provider.")
+        if type(self.analysis_preference_version) is not int or self.analysis_preference_version != 2:
+            raise ValueError("Unsupported analysis preference version.")
+        for value in (self.lmstudio_url, self.ollama_url):
+            if not isinstance(value, str):
+                raise ValueError("Server URL must be text.")
+            address = urlsplit(value)
+            if (any(char.isspace() for char in value) or address.scheme not in ("http", "https") or not address.hostname
+                    or address.username or address.password or address.query or address.fragment
+                    or address.path not in ("", "/") or address.port == 0):
+                raise ValueError("Use an HTTP(S) server base URL, without credentials or an API path.")
 
 
 def atomic_write(path: Path, data: str | bytes) -> None:
@@ -71,6 +88,7 @@ def atomic_write(path: Path, data: str | bytes) -> None:
 def save_settings(path: Path, settings: Settings, require_model: bool = True) -> None:
     settings.validate(require_model=require_model)
     values = asdict(settings)
+    values["start_lm_studio"] = False
     values.pop("api_key")  # Credentials stay in memory, never in settings/logs.
     values["last_input_file"] = last_input_file
     atomic_write(path, json.dumps(values, ensure_ascii=False, indent=2))
@@ -84,9 +102,12 @@ def load_settings(path: Path) -> Settings:
     if not isinstance(values, dict):
         raise ValueError("Settings must be a JSON object.")
     last_input_file = str(values.pop("last_input_file", ""))
+    if "analysis_preference_version" not in values:
+        # Previous builds persisted the old default as true; migrate it off once.
+        values["analyze_novel"] = False
+    values["start_lm_studio"] = False
     settings = Settings(**values)
-    if settings.model:
-        settings.validate()
+    settings.validate(require_model=False)
     return settings
 
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import queue
+import json
 import threading
 import tkinter as tk
 from dataclasses import replace
@@ -9,6 +10,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 
 from quality import GLOSSARY_CATEGORIES, GLOSSARY_CATEGORY_LABELS, QualityProfile
+from novel_analysis import excluded_suggestions
 
 
 class QualityWindows:
@@ -45,11 +47,12 @@ class QualityWindows:
     def open(self):
         if self.app.busy or self.app.job is None:
             return
-        dialog, panel, footer = self.dialog("Translation quality tools", 740, 480)
+        dialog, panel, footer = self.dialog("Translation quality tools", 740, 560)
         ttk.Label(panel, text="Improve meaning, consistency and literary voice", style="Section.TLabel").pack(anchor="w", pady=8)
         ttk.Label(panel, text="Guidance affects future requests. Proposals require explicit acceptance.", wraplength=680).pack(anchor="w", pady=8)
         for label, action in (("Book glossary, characters, style and examples", self.profile),
                               ("Reanalyze whole novel / refresh AI glossary", self.analyze),
+                              ("Review excluded glossary suggestions", self.excluded),
                               ("Review empty translations", self.empty),
                               ("Check selected chunks for lost meaning", self.check_selected),
                               ("Propose revision for selected chunk", lambda: self.proposals(False)),
@@ -68,6 +71,42 @@ class QualityWindows:
             messagebox.showerror("Cannot analyze novel", str(exc), parent=self.app.root)
             return
         self.app._background(lambda: engine.analyze_novel(force=True))
+
+    def excluded(self):
+        try:
+            rows = excluded_suggestions(self.app.job.directory)
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showerror("Cannot read excluded suggestions", str(exc), parent=self.app.root)
+            return
+        dialog, panel, footer = self.dialog("Excluded glossary suggestions", 1100, 740)
+        ttk.Label(panel, text=f"{len(rows):,} excluded suggestions · not used for translation",
+                  style="Section.TLabel").pack(anchor="w", pady=6)
+        ttk.Label(panel, text="These candidates failed validation. Includes earlier scans/models. "
+                  "Select a row to inspect its source passage and model suggestion. "
+                  "Verified entries remain in Book glossary.", wraplength=1000).pack(anchor="w", pady=6)
+        frame = ttk.Frame(panel)
+        frame.pack(fill="both", expand=True, pady=6)
+        tree = ttk.Treeview(frame, columns=("passage", "entry", "model", "reason"), show="headings", height=9)
+        for key, label, width in (("passage", "Passage", 70), ("entry", "Entry", 65),
+                                  ("model", "Model", 220), ("reason", "Reason excluded", 580)):
+            tree.heading(key, text=label)
+            tree.column(key, width=width, stretch=key in ("model", "reason"))
+        scroll = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+        tree.pack(fill="both", expand=True)
+        for index, row in enumerate(rows):
+            tree.insert("", "end", iid=str(index), values=(row["passage_number"], row.get("entry_number", ""),
+                                                          row["model"], row["reason"]))
+        preview = self.text(panel, "Select an excluded suggestion to inspect it.", height=10, readonly=True)
+        def selected(event=None):
+            if tree.selection():
+                row = rows[int(tree.selection()[0])]
+                self.app._set_text(preview, f"Reason: {row['reason']}\n\nExcluded model suggestion:\n" +
+                                   json.dumps(row.get("entry"), ensure_ascii=False, indent=2) +
+                                   "\n\nAnalyzed source passage:\n" + row["passage"])
+        tree.bind("<<TreeviewSelect>>", selected)
+        ttk.Button(footer, text="Close", command=dialog.destroy).pack(side="right")
 
     def one_selected(self):
         index = self.app.selected()
@@ -103,7 +142,7 @@ class QualityWindows:
                   "Large paragraphs are bounded by the context budget. Neighboring translated text is not\n"
                   "used, so parallel workers cannot introduce timing-dependent context.\n\n"
                   "The source-under-four-characters rule still applies, including forced retranslation.\n"
-                  "Guidance and context increase the model's input size; allow enough context tokens in LM Studio.",
+                  "Guidance and context increase the model's input size; allow enough context tokens in your selected provider.",
                   wraplength=900).pack(anchor="w", pady=20)
         entries = [dict(e) for e in current.glossary]
         category_choices = dict(zip(GLOSSARY_CATEGORY_LABELS, GLOSSARY_CATEGORIES))

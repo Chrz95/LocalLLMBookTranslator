@@ -13,10 +13,12 @@ from tkinter import font as tkfont
 
 import settings_manager
 from extractors import load_book
-from lmstudio import LMStudioClient, TRANSLATION_PROMPT, launch_lm_studio
+from lmstudio import TRANSLATION_PROMPT
 from settings_manager import Settings, PromptStore, load_settings, save_settings
-from translator import Job, TranslationEngine, parse_chunk_selection, saved_books, should_skip
+from translator import Job, TranslationEngine, matching_saved_book, parse_chunk_selection, saved_books, should_skip
 from quality_gui import QualityWindows
+from novel_analysis import exclusion_count
+from providers import create_client, provider_label
 
 
 def queue_view(rows: list[dict], status: str = "All", review: str = "All",
@@ -53,6 +55,7 @@ class TranslatorGUI:
         self.statuses: dict[int, str] = {}
         self.details: dict[int, str] = {}
         self.check_details: dict[int, str] = {}
+        self.analysis_excluded = 0
         self.previews: dict[int, str] = {}
         self.bookmarks: dict[int, str] = {}
         self.queue_sort = "#0"
@@ -68,10 +71,17 @@ class TranslatorGUI:
         self.values = {name: tk.StringVar(value=str(getattr(settings, name)))
                        for name in ("model", "input_lang", "output_lang", "max_workers",
                                     "retries", "timeout", "api_key")}
-        self.start_lm_studio = tk.BooleanVar(value=settings.start_lm_studio)
+        self.start_lm_studio = tk.BooleanVar(value=False)
         self.lmstudio_path = settings.lmstudio_path
         self.proofread = tk.BooleanVar(value=settings.proofread)
         self.analyze_novel = tk.BooleanVar(value=settings.analyze_novel)
+        self.active_provider = settings.provider
+        self.provider = tk.StringVar(value=provider_label(settings.provider))
+        self.server_urls = {"lmstudio":settings.lmstudio_url, "ollama":settings.ollama_url}
+        self.server_url = tk.StringVar(value=self.server_urls[settings.provider])
+        self.provider_models = {settings.provider:settings.model}
+        self.provider_keys = {settings.provider:settings.api_key}
+        self.discovery_generation = 0
         self.use_custom_prompt = tk.BooleanVar(value=settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
         prompt_path = data_directory / "prompts.json"
@@ -90,7 +100,7 @@ class TranslatorGUI:
         self.saved_choices = {}
         self.source = tk.StringVar(value=settings_manager.last_input_file)
         self.summary = tk.StringVar(value="Choose a book and a local model to begin.")
-        self.connection = tk.StringVar(value="LM Studio · connecting")
+        self.connection = tk.StringVar(value=f"{provider_label(settings.provider)} · connecting")
         self.model_help = tk.StringVar(value="Looking for your local models…")
         self.model_selection = tk.StringVar(value=settings.model)
         self.model_choices: dict[str, str] = {}
@@ -99,7 +109,7 @@ class TranslatorGUI:
         self._refresh_prompt_choices()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(100, self._poll)
-        self.root.after(200, self.start_local_studio)
+        self.root.after(200, self.refresh_models)
         self.root.after(250, self.refresh_saved_books)
 
     def _style(self) -> None:
@@ -231,9 +241,19 @@ class TranslatorGUI:
         self.open_saved_button.grid(row=7, column=0, sticky="ew")
         model_heading = ttk.Frame(parent, style="Card.TFrame")
         model_heading.grid(row=8, column=0, sticky="ew", pady=(20, 5))
-        ttk.Label(model_heading, text="LM Studio model", style="Card.TLabel").pack(side="left")
+        model_heading.columnconfigure(0, weight=1)
+        ttk.Label(model_heading, text="AI provider", style="Card.TLabel").grid(row=0, column=0, sticky="w")
+        self.provider_combo = ttk.Combobox(model_heading, textvariable=self.provider, values=("LM Studio", "Ollama"), state="readonly")
+        self.provider_combo.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(5, 10))
+        self.provider_combo.bind("<<ComboboxSelected>>", self._provider_selected)
+        ttk.Label(model_heading, text="Server URL", style="Card.TLabel").grid(row=2, column=0, sticky="w")
+        self.server_entry = ttk.Entry(model_heading, textvariable=self.server_url)
+        self.server_entry.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(5, 10))
+        self.server_entry.bind("<Return>", self._server_changed)
+        self.server_entry.bind("<FocusOut>", self._server_changed)
+        ttk.Label(model_heading, text="Model", style="Card.TLabel").grid(row=4, column=0, sticky="w")
         self.refresh_button = ttk.Button(model_heading, text="Refresh", command=self.refresh_models)
-        self.refresh_button.pack(side="right")
+        self.refresh_button.grid(row=4, column=1, sticky="e")
         self.model_combo = ttk.Combobox(parent, textvariable=self.model_selection, width=25,
                                         height=12, state="normal")
         self.model_combo.grid(row=9, column=0, sticky="ew")
@@ -242,9 +262,9 @@ class TranslatorGUI:
         launch_row.grid(row=23, column=0, sticky="ew", pady=(18, 0))
         self.launch_option = ttk.Checkbutton(launch_row, text="Start LM Studio on app launch",
                                              variable=self.start_lm_studio, command=self.save_launch_preferences)
-        self.launch_option.pack(anchor="w")
+        self.launch_option.pack_forget()
         self.launch_path_button = ttk.Button(launch_row, text="Set LM Studio path…", command=self.choose_studio_path)
-        self.launch_path_button.pack(fill="x", pady=(6, 0))
+        self.launch_path_button.pack_forget()
         ttk.Label(parent, textvariable=self.model_help, style="Muted.TLabel", wraplength=275).grid(
             row=10, column=0, sticky="w", pady=(7, 15))
         fields = ttk.Frame(parent, style="Card.TFrame")
@@ -430,7 +450,7 @@ class TranslatorGUI:
     def save_launch_preferences(self) -> None:
         try:
             settings = load_settings(self.settings_path)
-            settings = replace(settings, start_lm_studio=self.start_lm_studio.get(), lmstudio_path=self.lmstudio_path)
+            settings = replace(settings, start_lm_studio=False, lmstudio_path=self.lmstudio_path)
             settings_manager.last_input_file = self.source.get()
             save_settings(self.settings_path, settings, require_model=False)
         except (OSError, ValueError, TypeError) as exc:
@@ -443,6 +463,61 @@ class TranslatorGUI:
         except (OSError, ValueError, TypeError) as exc:
             messagebox.showerror("Cannot save analysis option", str(exc), parent=self.root)
 
+    def _capture_provider(self) -> None:
+        self.server_urls[self.active_provider] = self.server_url.get().strip()
+        selection = self.model_selection.get().strip()
+        self.provider_models[self.active_provider] = self.model_choices.get(selection, selection)
+        self.provider_keys[self.active_provider] = self.values["api_key"].get().strip()
+
+    def _provider_controls(self) -> None:
+        self.provider_combo.configure(state="disabled" if self.busy else "readonly")
+        self.server_entry.configure(state="disabled" if self.busy else "normal")
+        state = "normal" if not self.busy and self.active_provider == "lmstudio" else "disabled"
+        self.launch_option.configure(state=state)
+        self.launch_path_button.configure(state=state)
+
+    def _persist_provider(self) -> None:
+        settings = replace(load_settings(self.settings_path), provider=self.active_provider,
+                           model=self.provider_models.get(self.active_provider, ""),
+                           lmstudio_url=self.server_urls["lmstudio"], ollama_url=self.server_urls["ollama"])
+        save_settings(self.settings_path, settings, require_model=False)
+
+    def _provider_selected(self, event=None) -> None:
+        if self.busy:
+            return
+        chosen = {"LM Studio":"lmstudio", "Ollama":"ollama"}[self.provider.get()]
+        if chosen == self.active_provider:
+            return
+        self._capture_provider()
+        self.active_provider = chosen
+        self.server_url.set(self.server_urls[chosen])
+        self.model_choices.clear()
+        self.model_combo.configure(values=())
+        self.model_selection.set(self.provider_models.get(chosen, ""))
+        self.values["model"].set(self.provider_models.get(chosen, ""))
+        self.values["api_key"].set(self.provider_keys.get(chosen, ""))
+        self.discovery_generation += 1
+        self.models_loading = False
+        self._provider_controls()
+        try:
+            self._persist_provider()
+        except (OSError, ValueError, TypeError) as exc:
+            self.model_help.set(f"Provider changed; settings could not be saved: {exc}")
+        self.refresh_models()
+
+    def _server_changed(self, event=None) -> None:
+        if self.busy or self.server_url.get().strip() == self.server_urls[self.active_provider]:
+            return
+        self._capture_provider()
+        self.discovery_generation += 1
+        self.models_loading = False
+        try:
+            self._persist_provider()
+        except (OSError, ValueError, TypeError) as exc:
+            self.model_help.set(str(exc))
+            return
+        self.refresh_models()
+
     def choose_studio_path(self) -> None:
         path = filedialog.askopenfilename(parent=self.root, title="Choose LM Studio executable (or select a file inside its macOS .app)")
         if path:
@@ -452,36 +527,34 @@ class TranslatorGUI:
             self.save_launch_preferences()
 
     def start_local_studio(self) -> None:
-        if not self.start_lm_studio.get():
-            self.refresh_models()
-            return
-        path, api_key = self.lmstudio_path, self.values["api_key"].get().strip()
-        self.connection.set("LM Studio · starting")
-        self.model_help.set("Starting LM Studio and its local server…")
-        def worker():
-            try:
-                message = launch_lm_studio(path, api_key)
-            except Exception as exc:
-                logging.getLogger(__name__).exception("LM Studio launch failed")
-                message = f"Could not start LM Studio: {exc}"
-            self.events.put({"type": "studio_started", "detail": message})
-        threading.Thread(target=worker, daemon=True, name="studio-launcher").start()
+        """Compatibility entry point: connect without launching a process."""
+        self.refresh_models()
 
     def refresh_models(self) -> None:
         if self.models_loading or self.busy:
             return
         self.models_loading = True
         self.refresh_button.configure(state="disabled")
-        self.connection.set("LM Studio · connecting")
+        provider = self.active_provider
+        generation = self.discovery_generation
+        self.connection.set(f"{provider_label(provider)} · connecting")
         self.model_help.set("Looking for your local models…")
         # Snapshot Tk variables here, never in the worker thread.
-        client = LMStudioClient(Settings(api_key=self.values["api_key"].get().strip()))
+        try:
+            self._capture_provider()
+            client = create_client(Settings(provider=provider, lmstudio_url=self.server_urls["lmstudio"],
+                                   ollama_url=self.server_urls["ollama"], api_key=self.values["api_key"].get().strip()))
+        except ValueError as exc:
+            self.models_loading = False
+            self.refresh_button.configure(state="normal")
+            self.model_help.set(str(exc))
+            return
         def worker():
             try:
-                self.events.put({"type": "models", "models": client.list_models()})
+                self.events.put({"type": "models", "models": client.list_models(), "provider":provider, "generation":generation})
             except Exception as exc:
                 logging.getLogger(__name__).warning("Model discovery failed: %s", exc)
-                self.events.put({"type": "models", "error": str(exc)})
+                self.events.put({"type": "models", "error": str(exc), "provider":provider, "generation":generation})
         threading.Thread(target=worker, daemon=True, name="model-discovery").start()
 
     def _model_selected(self, event=None) -> None:
@@ -489,10 +562,13 @@ class TranslatorGUI:
         self.values["model"].set(self.model_choices.get(selection, selection))
 
     def _models_received(self, event: dict) -> None:
+        if (event.get("provider", self.active_provider) != self.active_provider or
+                event.get("generation", self.discovery_generation) != self.discovery_generation):
+            return
         self.models_loading = False
         self.refresh_button.configure(state="disabled" if self.busy else "normal")
         if "error" in event:
-            self.connection.set("LM Studio · unavailable")
+            self.connection.set(f"{provider_label(self.active_provider)} · unavailable")
             self.model_help.set(event["error"] + " Start the local server, then Refresh. You can also enter a model ID.")
             return
         models = event["models"]
@@ -513,9 +589,12 @@ class TranslatorGUI:
             elif identifier:
                 self.model_selection.set(identifier)
             self._model_selected()
-        self.connection.set(f"LM Studio · {len(models)} models")
-        self.model_help.set("Choose a model or type its ID. Downloaded models need auto-loading enabled or loading in LM Studio."
-                            if models else "No language models found. Download a model in LM Studio, then Refresh.")
+        name = provider_label(self.active_provider)
+        self.connection.set(f"{name} · {len(models)} models")
+        self.model_help.set(("Choose a local model or type its exact name. Ollama loads downloaded models on request."
+                             if self.active_provider == "ollama" else
+                             "Choose a model or type its ID. Enable auto-loading or load the model in LM Studio.")
+                            if models else f"No local models found. Download a model in {name}, then Refresh.")
 
     def _controls(self, busy: bool) -> None:
         self.busy = busy
@@ -524,6 +603,7 @@ class TranslatorGUI:
                        self.open_saved_button, self.launch_option, self.launch_path_button, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         self.saved_combo.configure(state="disabled" if busy else "readonly")
+        self._provider_controls()
         self._prompt_controls()
         for name, button in self.buttons.items():
             enabled = (not busy if name == "Start / load" else
@@ -540,14 +620,16 @@ class TranslatorGUI:
 
     def get_settings(self, validate: bool = True) -> Settings:
         self._model_selected()
+        self._capture_provider()
         settings = Settings(**{name: value.get().strip() for name, value in self.values.items()
                                if name not in ("max_workers", "retries", "timeout")},
                             max_workers=int(self.values["max_workers"].get()),
                             retries=int(self.values["retries"].get()),
                             timeout=float(self.values["timeout"].get()),
                             proofread=self.proofread.get(), analyze_novel=self.analyze_novel.get(), custom_prompt=self.custom_prompt,
+                            provider=self.active_provider, lmstudio_url=self.server_urls["lmstudio"], ollama_url=self.server_urls["ollama"],
                             use_custom_prompt=self.use_custom_prompt.get(),
-                            start_lm_studio=self.start_lm_studio.get(), lmstudio_path=self.lmstudio_path)
+                            start_lm_studio=False, lmstudio_path=self.lmstudio_path)
         if validate:
             settings.validate()
         return settings
@@ -588,6 +670,17 @@ class TranslatorGUI:
         self._load_book(False)
 
     def _restore_settings(self, settings: Settings) -> None:
+        self._capture_provider()
+        if self.active_provider != settings.provider:
+            self.discovery_generation += 1
+            self.models_loading = False
+            self.model_choices.clear()
+            self.model_combo.configure(values=())
+        self.active_provider = settings.provider
+        self.provider.set(provider_label(settings.provider))
+        self.server_urls.update(lmstudio=settings.lmstudio_url, ollama=settings.ollama_url)
+        self.server_url.set(self.server_urls[settings.provider])
+        self.values["api_key"].set(settings.api_key)
         for name, variable in self.values.items():
             if name != "api_key":
                 variable.set(str(getattr(settings, name)))
@@ -596,6 +689,7 @@ class TranslatorGUI:
         self.analyze_novel.set(settings.analyze_novel)
         self.use_custom_prompt.set(settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
+        self._provider_controls()
         if not settings.use_custom_prompt:
             self._refresh_prompt_choices(identifier=PromptStore.DEFAULT_ID)
         else:
@@ -615,29 +709,31 @@ class TranslatorGUI:
             messagebox.showerror("Cannot open book", str(exc), parent=self.root)
             return
         self.summary.set("Opening book and finding saved translations…")
+        opened_directory = self.job.directory if self.job else None
+        provider_keys = dict(self.provider_keys)
         def action():
             book = load_book(filename)
             chosen = settings
             match = saved
-            if not run and match is None:
-                matches = [entry for entry in saved_books(self.data_directory / "jobs")
-                           if entry.digest == book.digest]
-                match = next((entry for entry in matches if (entry.settings.model == settings.model or entry.last_model == settings.model)
-                              and entry.settings.input_lang == settings.input_lang
-                              and entry.settings.output_lang == settings.output_lang),
-                             matches[0] if matches else None)
+            if match is None:
+                match = matching_saved_book(saved_books(self.data_directory / "jobs"), book.digest,
+                                            settings, opened_directory, restore_languages=not run)
             if match:
                 if book.digest != match.digest:
                     raise ValueError("Saved source is damaged or changed; open the original file.")
-                chosen = replace(match.settings, api_key=settings.api_key,
+                chosen = replace(match.settings, api_key=provider_keys.get(match.settings.provider, ""),
                                  analyze_novel=settings.analyze_novel,
-                                 start_lm_studio=settings.start_lm_studio, lmstudio_path=settings.lmstudio_path)
+                                 lmstudio_url=settings.lmstudio_url, ollama_url=settings.ollama_url,
+                                 start_lm_studio=False, lmstudio_path=settings.lmstudio_path)
             chosen.validate()
             job = Job(book, chosen, self.data_directory / "jobs")
             if match and job.directory != match.directory:
                 raise ValueError("Saved book configuration does not match its translation folder.")
-            if match and match.last_model:
-                job.configure_translation(replace(chosen, model=match.last_model))
+            if match:
+                provider = settings.provider if settings.model else match.last_provider or chosen.provider
+                model = settings.model or match.last_model or chosen.model
+                job.configure_translation(replace(settings if run else chosen, provider=provider, model=model,
+                                                  api_key=provider_keys.get(provider, "")))
             engine = TranslationEngine(job, self.events.put)
             self.events.put({"type": "loaded", "job": job, "engine": engine,
                              "restore": bool(match), "source": filename, "run": run})
@@ -1336,6 +1432,11 @@ class TranslatorGUI:
 
     def _loaded(self, event: dict) -> None:
         self.job, self.engine = event["job"], event["engine"]
+        try:
+            self.analysis_excluded = exclusion_count(self.job.directory)
+        except (OSError, ValueError, TypeError) as exc:
+            self.analysis_excluded = 0
+            logging.getLogger(__name__).warning("Cannot load glossary exclusion count: %s", exc)
         if event.get("restore"):
             self._restore_settings(self.job.settings)
         self.source.set(event.get("source", str(self.job.book.path)))
@@ -1384,6 +1485,8 @@ class TranslatorGUI:
     def _handle(self, event: dict) -> None:
         kind = event["type"]
         if kind == "studio_started":
+            if self.active_provider != "lmstudio":
+                return
             self.model_help.set(event["detail"])
             self.refresh_models()
             self.root.after(4000, self.refresh_models)
@@ -1398,6 +1501,8 @@ class TranslatorGUI:
         elif kind == "loaded":
             self._loaded(event)
         elif kind == "analysis":
+            if "excluded_count" in event:
+                self.analysis_excluded = event["excluded_count"]
             self.summary.set(event["detail"])
             if event.get("ready"):
                 self.progress.configure(maximum=len(self.statuses), value=sum(
@@ -1432,6 +1537,8 @@ class TranslatorGUI:
             self._update_counts("Cancelled. " if event["cancelled"] else "Run finished. ")
         elif kind == "idle":
             self._controls(False)
+            if not self.model_choices and not self.models_loading:
+                self.refresh_models()
 
     def _update_counts(self, prefix: str = "") -> None:
         counts = Counter(self.statuses.values())
@@ -1440,7 +1547,8 @@ class TranslatorGUI:
             self.count_vars[name].set(str(counts[name]))
         done = sum(counts[name] for name in ("Completed", "Resumed", "Retranslated", "Skipped"))
         self.summary.set(f"{prefix}{done:,} of {len(self.statuses):,} chunks ready" +
-                         (f" · {counts['Error']} need attention" if counts["Error"] else ""))
+                         (f" · {counts['Error']} need attention" if counts["Error"] else "") +
+                         (f" · {self.analysis_excluded:,} glossary exclusions" if getattr(self, "analysis_excluded", 0) else ""))
         self.progress.configure(value=sum(counts[name] for name in
                                           ("Completed", "Resumed", "Retranslated", "Skipped")))
 

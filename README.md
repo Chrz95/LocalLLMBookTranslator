@@ -1,12 +1,12 @@
 # Offline Literary Translator
 
-A complete Python/Tkinter desktop application using LM Studio on your own
-computer. It imports EPUB, PDF, DOCX and UTF-8 TXT. EPUB inputs export as EPUB;
-other inputs export as UTF-8 TXT. No hosted inference service is used.
+A complete Python/Tkinter desktop application using LM Studio or Ollama on your
+own computer. It imports EPUB, PDF, DOCX and UTF-8 TXT. EPUB inputs export as EPUB;
+other inputs export as UTF-8 TXT. No hosted inference service is required.
 
 ## Quick start
 
-Requires Python 3.10 or newer, Tkinter, and LM Studio with a model loaded.
+Requires Python 3.10 or newer, Tkinter, and LM Studio or Ollama with a local model available.
 
 ```bash
 python -m venv .venv
@@ -30,13 +30,15 @@ python main.py
 
 Tkinter is normally bundled with the Python installers for Windows and macOS.
 On Debian/Ubuntu, install it with `sudo apt install python3-tk` if necessary.
-Enable LM Studio's local server on port 1234. The model dropdown automatically
-discovers your models on startup; use **Refresh** after downloading or loading
-a model. Select one from the list, or type an exact model identifier manually. The app calls
-`http://localhost:1234/v1/chat/completions` with `model` and two messages: the
-specified literary prompt as the system message and the source chunk as the user
-message. An optional server API key can be entered in the GUI; it is not saved.
-The model and Python dependencies must already be downloaded for offline use.
+Choose **AI provider** in the sidebar. Start LM Studio's local server (default
+port 1234) or run the Ollama application/server (default port 11434). The **Server
+URL** field accepts the selected server's base URL, without an API path. Use
+**Refresh** to discover its models, then select a local language model or type
+its exact identifier. Ollama uses the native `/api/chat` endpoint with streaming
+disabled; LM Studio uses `/v1/chat/completions`. Both receive the same literary
+system prompt and source text. Optional server API keys stay in memory and are
+kept separate when switching providers. The model and Python dependencies must
+already be downloaded for offline use.
 
 1. Choose a book in the setup sidebar, or select one under Saved books. Opening
    recognizes existing work and displays cached chunks without contacting the model.
@@ -55,7 +57,7 @@ The model and Python dependencies must already be downloaded for offline use.
 Cancellation cannot abort a request already executing inside LM Studio. Closing
 while a job is active waits for requests to return or reach their timeout. Start
 with one or two workers; more workers may exceed the local model's capacity.
-Language/model changes take effect when starting a new job. Retranslation uses
+Language changes require a separate translation job; provider/model changes apply to future requests in the opened job. Retranslation uses
 the loaded job's settings. Retries are additional attempts after the first one.
 
 ## Automatically start LM Studio
@@ -100,10 +102,13 @@ literary_translator/
   extractors.py           EPUB, PDF, DOCX and TXT readers; EPUB writer
   settings_manager.py     Validated settings and atomic file writes
   gui.py                  Tkinter UI with thread-safe event queue
-  lmstudio.py             Local HTTP client and exact translation prompt
+  lmstudio.py             Shared literary prompts and LM Studio HTTP client
+  ollama.py               Native Ollama chat and model discovery
+  providers.py            Provider selection and cache identity
   quality.py              Book guidance and bounded source context
   quality_gui.py          Guidance, revision, comparison and history dialogs
   novel_analysis.py       Full-source pretranslation terminology analysis
+  analysis_parser.py      Safe normalization and validation of model glossary JSON
   benchmark.py            Local model accuracy benchmark and HTML review report
   benchmark_suite.json    Authored German-source accuracy probes
   requirements.txt        pypdf dependency (other runtime modules use stdlib)
@@ -118,6 +123,10 @@ literary_translator/
   tests/test_quality.py
   tests/test_novel_analysis.py
   tests/test_novel_analysis_gui.py
+  tests/test_analysis_parser.py
+  tests/test_analysis_exclusions.py
+  tests/test_providers.py
+  tests/test_provider_gui.py
   tests/test_benchmark.py
   tests/test_replacement.py
   tests/test_launch_and_model_switch.py
@@ -636,8 +645,8 @@ and their model names stay hidden until **Reveal models**. Accept either candida
 explicitly or close without changing the saved translation. Repeat on several
 representative passages (dialogue, narration, idioms) to compare models for your
 language pair. This is a manual comparison workflow, not an automatic quality score.
-Both models must be accessible in LM Studio; automatic model loading depends on
-its configuration. Comparison and revision use the currently selected prompt.
+Both models must be accessible through the selected provider; model loading
+depends on its configuration. Comparison and revision use the currently selected prompt.
 
 Proposals are retained in `proposals/` for inspection. Acceptance verifies that
 the book, source chunk and saved translation still match the proposal. A stale
@@ -746,17 +755,19 @@ tested with a controlled HTTP server. Real model testing could not run in the
 development environment because no LM Studio server was reachable there.
 
 
-## Analyze the novel before translation (enabled by default)
+## Analyze the novel before translation (disabled by default)
 
-The sidebar's **Analyze novel before translation** checkbox defaults to on,
-including when loading older settings that lack this option. Its value is saved
+The sidebar's **Analyze novel before translation** checkbox defaults to off.
+Enable it explicitly when you want a full glossary prepass. Older installations
+without the new preference marker migrate the former default to off once; later
+explicit choices remain saved. Its value is saved
 immediately and is used when opening a saved book. It does not change book
 identity, chunk IDs, existing translations, prompts or EPUB structure.
 
-Before translating any pending source or forcing a selected retranslation,
-the application visits the **entire extracted novel**, not just an opening
+When this option is enabled, before translating pending source or forcing a
+selected retranslation, the application visits the **entire extracted novel**, not just an opening
 sample. Source fragments are grouped in reading order into analysis passages
-of at most 4,000 characters. Analysis uses the selected local LM Studio model
+of at most 4,000 characters. Analysis uses the selected provider and local model
 with a dedicated terminology prompt; your chosen literary translation prompt
 is still used for the subsequent translation. This pass adds inference time
 before the first translation; the progress bar and status show its progress.
@@ -820,14 +831,16 @@ To deliberately scan again, choose **Quality tools… → Reanalyze whole novel 
 refresh AI glossary**. This reruns analysis and can rediscover deleted terms,
 but preserves all existing choices and leaves saved translations untouched.
 Manual reanalysis works even when automatic analysis is disabled.
-If the model times out, returns invalid JSON or invents unsupported quotations,
-analysis stops before translation. The app's configured retries apply. Select
+If the model times out or returns an unreadable response, the response-level
+analysis must succeed before translation. Unsupported individual suggestions
+are excluded and saved for review while valid entries continue. Network failures use the configured
+retries; an invalid model response gets one automatic correction attempt. Select
 a capable local model, correct the problem and retry, or turn the checkbox off
 to proceed with the current glossary. Turning it off does not remove guidance.
 
-The command-line equivalent is enabled automatically. Use
-`python main.py --input book.epub --output translated.epub --model MODEL_ID --no-novel-analysis`
-to disable it for a headless run, replacing MODEL_ID with your actual model ID.
+Headless analysis is also off by default. Add `--novel-analysis` to enable it.
+The older `--no-novel-analysis` spelling remains accepted. Replace model IDs
+in command examples with the exact identifiers from your selected provider.
 The separate benchmark runner does not automatically analyze its probe suite;
 pass a saved book's `quality.json` with `--profile` to test that guidance.
 
@@ -837,3 +850,161 @@ and deletion, manual reanalysis, skips, EPUB preservation, settings migration
 and headless GUI-controller behavior. Inference responses are controlled test
 responses. No live LM Studio model or graphical display was available for this
 release's development checks; included screenshots predate these new controls.
+
+### Fix for “Novel analysis returned an invalid glossary entry”
+
+The original parser required exactly five string fields in every entry, so
+extra model metadata, missing notes, or null optional values could stop the
+whole analysis. The parser now accepts common field-name variants, ordinary
+category labels, missing/null notes, lists of textual notes, extra metadata,
+and JSON code fences. Unknown categories and ambiguous or non-text target
+renderings still require correction. If no category is supplied, the term is
+classified as **Other special terms** rather than inventing a classification.
+Valid model quotations are retained. When evidence is absent or inaccurate,
+the application extracts a minimal quotation directly from the source passage.
+
+Malformed output is sent back to the model once, together with the source and
+the specific validation error. The corrected response is validated again.
+Invalid individual entries are excluded with recorded reasons rather than
+blocking valid suggestions. Source/target pairs are not guessed. Response-level
+JSON/schema failures still get one correction attempt and stop the scan if the
+response remains unreadable; they cannot overwrite translations or the glossary. Transport failures remain eligible for the
+normal retry policy. Previously completed valid analysis passages remain usable.
+
+Rejected responses are saved locally in the book job's `analysis/errors/`
+directory, with the passage number, source text, model ID, validation reason
+and complete response. The application's `translator.log` records the exact
+diagnostic path. These files can contain book excerpts; attach the newest one
+when reporting another analysis failure. Credentials are not included. No
+translation-resume markers are added by these diagnostics.
+
+Close the application before updating. Extract the new application files into
+your existing application folder and retain your `data/` folder. This release
+archive excludes saved books, local preferences, logs and benchmark results so
+extracting it over the installation does not overwrite those files. Retry the
+translation normally; there is no need to delete chunk files or reanalyze all
+previously completed passages just to install this parser fix.
+
+### Fix for “Evidence must quote this passage and contain the source term”
+
+The model may paraphrase its evidence, add ellipses or quotation marks, cite the
+wrong sentence, or describe the term instead of quoting it. This no longer
+blocks an otherwise valid glossary entry: the app verifies that the source term
+is present and extracts its actual text span from the passage. The recovered
+quotation preserves the book's spelling, Unicode characters and whitespace.
+Case folding and canonical Unicode/whitespace matching allow equivalent forms
+without changing the underlying novel or the proposed target translation.
+Malformed or conflicting evidence fields are handled the same way. Valid
+quotations already supplied by the model are kept.
+
+Recovered evidence supports only the term's presence in the book. It does not
+prove the AI's interpretation, category, or proposed translation. Those remain
+editable suggestions requiring human review. A source term absent from the
+passage is excluded, recorded for review and never used for translation. Incorrect
+quotations alone no longer require an extra model call or a full reanalysis.
+
+
+### Fix for “Source term does not occur in the analyzed passage”
+
+A model may repeat a name from an earlier passage, propose a dictionary/base
+form absent from this passage, or invent a candidate. This no longer causes
+one glossary entry to stop the entire novel. Each candidate is checked
+individually: valid entries are retained, and entries that fail source grounding
+or required-field validation are excluded from translation guidance. No
+source terms, target renderings or supporting facts are guessed to make them fit.
+
+Excluded suggestions are saved under the book job's `analysis/review/`, with
+passage and entry numbers, the original candidate and reason, model ID and
+source passage. Open **Quality tools… → Review excluded glossary suggestions**
+to inspect them. The window is read-only; verified entries remain editable in
+**Book glossary**. It also includes earlier scans/models, so its historical row
+count can exceed the exclusion count for the latest completed scan.
+
+The status line retains an exclusion count after translation starts. A completed
+analysis report distinguishes `completed_with_exclusions` from `completed` and
+records how many candidates were excluded. If every candidate in a passage is
+invalid, that passage contributes no glossary terms, records all exclusions,
+and translation continues using the existing glossary plus valid suggestions
+from other passages. This means terminology coverage may be incomplete; review
+these warnings for books where terminology consistency matters.
+
+Passage caches retain their exclusions so cancellation/reopening does not erase
+the warning. Reanalyzing with a better model can produce better suggestions.
+A successful reanalysis clears obsolete review records for the same passage and
+model; existing user glossary choices and translated chunks stay untouched.
+Unparseable JSON, an invalid top-level response, connection failures and corrupt
+cache files remain errors rather than being mistaken for an empty clean analysis.
+This update does not change how translation output itself is validated.
+
+Install over the application files while retaining `data/`, then retry normally.
+Previously valid analysis passages and all existing translations can be reused.
+
+
+## Switch between Ollama and LM Studio
+
+1. In the setup sidebar, choose **AI provider → LM Studio** or **Ollama**.
+2. Confirm **Server URL**, then click **Refresh** and select a model. The field
+   takes a base URL such as `http://localhost:11434`, without `/api/chat` or `/v1`.
+3. Open your book, start/resume translation, or select chunks and click
+   **Retranslate selected**. Existing chunks stay saved until explicitly
+   retranslated. Provider changes are disabled while a job is active; cancel
+   or finish the run first.
+
+The selected provider and both server URLs persist. Model selections and API
+keys are retained separately for each provider during the application session;
+keys are never saved. An inactive provider's discovery response cannot replace
+another provider's dropdown. Model comparisons use two models from the currently
+selected provider; switch providers to generate another set of proposals.
+Proofreading, revisions, optional novel analysis and paragraph mappings all use
+the selected provider, with the same prompts and validation.
+
+Opening/starting the same book with the same languages reuses compatible saved
+work in the GUI. The currently opened job is preferred when switching models
+or providers. Book identity retains the original model/provider, while the last
+runtime provider/model are saved separately. Existing LM Studio job folder
+names remain unchanged. New standalone Ollama jobs have separate identities so
+identical model names on two providers do not collide. A language-pair change
+still creates a separate job. CLI commands create jobs for their selected
+provider/model; open an existing job in the GUI to change its runtime provider
+without changing its directory.
+
+Proofreading caches include provider/server identity. Optional analysis caches
+also distinguish providers and custom server URLs. Old LM Studio caches remain
+usable with the default LM Studio address. Provider/model changes never rewrite
+EPUB markup, metadata, assets or chunk IDs.
+
+**Start LM Studio on app launch** applies only when LM Studio is selected at
+startup with the default loopback address/port. Ollama must already be running;
+selecting it does not launch LM Studio. Ollama loads an installed model when a
+request needs it. The app does not download models or change server settings.
+Known cloud-tagged/remote model entries are filtered out; choose downloaded
+local models and use Ollama's local-only configuration if needed. A tags list
+may include an embedding-only model when the server omits capability metadata;
+select a model that supports chat.
+
+Headless examples (replace model IDs with installed models):
+
+```bash
+python main.py --provider ollama --model your-model:latest --input book.epub --output translated.epub
+python main.py --provider lmstudio --model your-model-id --input book.epub --output translated.epub
+```
+
+Use `--server-url http://localhost:11434` to override the selected provider's
+server base URL. Add `--novel-analysis` only when the prepass is wanted.
+The benchmark also supports both providers:
+
+```bash
+python benchmark.py --provider ollama --list-models
+python benchmark.py --provider ollama --models your-model:latest --to-lang English
+```
+
+`benchmark.py --endpoint` overrides the full chat endpoint when necessary;
+its default follows `--provider`. Benchmark API keys use `OLLAMA_API_KEY` or
+`LMSTUDIO_API_KEY` for the selected provider. The report records that provider.
+
+Native Ollama API references: [chat](https://docs.ollama.com/api/chat),
+[installed models](https://docs.ollama.com/api/tags), and
+[running models](https://docs.ollama.com/api/ps). The integration is dependency-free
+and uses the application's existing HTTP transport with environment proxies
+bypassed. Automated checks use controlled local HTTP servers; live model quality
+and graphical rendering were not tested in this development environment.

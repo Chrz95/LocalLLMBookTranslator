@@ -12,7 +12,8 @@ from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
-from lmstudio import APIError, ENDPOINT, LMStudioClient
+from lmstudio import APIError, LMStudioClient
+from providers import create_client, provider_label
 from quality import QualityProfile
 from settings_manager import Settings, atomic_write
 from translator import should_skip
@@ -131,7 +132,7 @@ def report_html(results: dict) -> str:
             'sources need review; short/punctuation sources intentionally skip inference.</p>'
             '<p>This report has no automatic literary-quality score. Timings include optional checking. '
             'Check results are model judgments, not verified findings. The app prompt and '
-            'server generation settings affect results; keep server settings consistent across runs.</p>'
+            'provider server generation settings affect results; keep server settings consistent across runs.</p>'
             + "".join(cards) + '</main></html>')
 
 
@@ -141,7 +142,7 @@ def save_results(directory: Path, results: dict) -> None:
 
 
 def run_benchmark(suite: dict, settings: Settings, models: list[str], directory: Path,
-                  endpoint: str = ENDPOINT, profile: QualityProfile | None = None,
+                  endpoint: str | None = None, profile: QualityProfile | None = None,
                   check_model: str = "", modes: tuple[str, ...] = ("plain", "context")) -> dict:
     settings.validate(require_model=False)
     profile = profile or QualityProfile()
@@ -150,13 +151,14 @@ def run_benchmark(suite: dict, settings: Settings, models: list[str], directory:
                "source_language": settings.input_lang, "target_language": settings.output_lang,
                "status": "running", "suite": suite, "models": models, "check_model": check_model, "runs": [],
                "quality_profile": asdict(profile),
-               "effective_prompt": LMStudioClient(settings).translation_prompt(),
-               "generation_settings": "Inherited from LM Studio; record server settings separately."}
-    checker = LMStudioClient(replace(settings, model=check_model), endpoint) if check_model else None
+               "effective_prompt": create_client(settings).translation_prompt(),
+               "provider": settings.provider,
+               "generation_settings": f"Inherited from {provider_label(settings.provider)}; record server settings separately."}
+    checker = create_client(replace(settings, model=check_model), endpoint) if check_model else None
     save_results(directory, results)
     try:
         for model in models:
-            client = LMStudioClient(replace(settings, model=model), endpoint)
+            client = create_client(replace(settings, model=model), endpoint)
             for case in suite["cases"]:
                 for mode in modes:
                     context = reference_context(case, profile) if mode == "context" else None
@@ -181,7 +183,8 @@ def main() -> int:
     parser.add_argument("--models", nargs="+", help="Exact local model IDs; no implicit model choice")
     parser.add_argument("--list-models", action="store_true")
     parser.add_argument("--to-lang", default="English")
-    parser.add_argument("--endpoint", default=ENDPOINT)
+    parser.add_argument("--endpoint", help="Override the selected provider chat endpoint")
+    parser.add_argument("--provider", choices=("lmstudio", "ollama"), default="lmstudio")
     parser.add_argument("--timeout", type=float, default=180)
     parser.add_argument("--profile", type=Path, help="Optional existing book quality.json")
     parser.add_argument("--prompt-file", type=Path, help="Optional custom translation prompt")
@@ -199,17 +202,18 @@ def main() -> int:
         suite = load_suite(args.suite)
         prompt = args.prompt_file.read_text(encoding="utf-8") if args.prompt_file else ""
         settings = Settings(input_lang=suite["source_language"], output_lang=args.to_lang,
-                            timeout=args.timeout, api_key=os.environ.get("LMSTUDIO_API_KEY", ""),
+                            timeout=args.timeout, provider=args.provider,
+                            api_key=os.environ.get("OLLAMA_API_KEY" if args.provider == "ollama" else "LMSTUDIO_API_KEY", ""),
                             custom_prompt=prompt, use_custom_prompt=bool(args.prompt_file))
         settings.validate(require_model=False)
         if args.list_models:
-            for model in LMStudioClient(settings, args.endpoint).list_models():
+            for model in create_client(settings, args.endpoint).list_models():
                 print(f"{model.identifier}\t{model.name}\t{model.state}")
             return 0
         if not args.models or any(not model.strip() for model in args.models):
             parser.error("Select --models using the IDs from --list-models.")
         # Fail early rather than writing dozens of connection-failure entries.
-        LMStudioClient(settings, args.endpoint).list_models()
+        create_client(settings, args.endpoint).list_models()
         profile = QualityProfile.load(args.profile) if args.profile else QualityProfile()
         directory = args.output_dir / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") +
                                        "_" + secrets.token_hex(4))

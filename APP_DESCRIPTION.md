@@ -3,7 +3,7 @@
 **Your books. Your model. An entirely local workflow.**
 
 Literary Translator is a Python desktop application for translating EPUB, PDF,
-DOCX and TXT books with models served locally by LM Studio. Its side-by-side
+DOCX and TXT books with models served locally by LM Studio or Ollama. Its side-by-side
 workspace brings translation, review and editing together so you can work
 through a book at your own pace.
 
@@ -13,14 +13,14 @@ extracted as text and export to TXT; PDF extraction requires a text layer.
 
 ## What you can do
 
-- Discover installed LM Studio models and switch models for selected chunks.
+- Choose LM Studio or Ollama, discover its local models, and switch providers/models for selected chunks.
 - Translate in parallel, pause, resume or cancel, with saved chunk files providing resume state.
 - Reopen recognized books and continue previous translations, even after renaming the input file.
 - Compare original and translated text, edit any translated chunk, and save blank edits.
 - Retranslate specific chunks or ranges using the default literary prompt or a saved custom prompt.
 - Create, edit, delete and select your own prompt templates.
 - Optionally proofread translations and inspect reported issues.
-- Analyze the whole novel before translation, enabled by default, to build an
+- Analyze the whole novel before translation, disabled by default, to build an
   editable glossary of character names, titles, geography, magical abilities,
   factions, invented languages, recurring metaphors and other special terms.
 - Sort the queue and combine status, review, bookmark and text filters.

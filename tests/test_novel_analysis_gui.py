@@ -17,6 +17,11 @@ class NovelAnalysisGUITests(unittest.TestCase):
         app.values = {key: tk.StringVar(master, value=value) for key, value in {
             "model": "test", "input_lang": "German", "output_lang": "English",
             "max_workers": "2", "retries": "0", "timeout": "180", "api_key": ""}.items()}
+        app.active_provider = "lmstudio"
+        app.server_urls = {"lmstudio":"http://localhost:1234", "ollama":"http://localhost:11434"}
+        app.server_url = tk.StringVar(master, value="http://localhost:1234")
+        app.model_selection = tk.StringVar(master, value="test")
+        app.model_choices, app.provider_models, app.provider_keys = {}, {}, {}
         app.analyze_novel = tk.BooleanVar(master, value=True)
         app.proofread = tk.BooleanVar(master, value=False)
         app.use_custom_prompt = tk.BooleanVar(master, value=False)
@@ -39,6 +44,25 @@ class NovelAnalysisGUITests(unittest.TestCase):
         app.progress.configure.assert_called_with(maximum=5, value=1)
         app._handle({"type":"analysis", "detail":"Ready", "ready":True})
         app.progress.configure.assert_called_with(maximum=3, value=2)
+
+    def test_glossary_exclusion_warning_survives_translation_counter_updates(self):
+        app = TranslatorGUI.__new__(TranslatorGUI)
+        app.summary, app.progress = Mock(), Mock()
+        app.statuses = {0:"Completed", 1:"Resumed"}
+        app.count_vars = {name:Mock() for name in ("Pending", "Completed", "Resumed", "Retranslated", "Error", "Retry", "Skipped")}
+        app._handle({"type":"analysis", "detail":"One excluded", "total":1, "completed":1, "excluded_count":1})
+        self.assertEqual(app.analysis_excluded, 1)
+        app._update_counts("Run finished. ")
+        self.assertIn("2 of 2 chunks ready", app.summary.set.call_args.args[0])
+        self.assertIn("1 glossary exclusions", app.summary.set.call_args.args[0])
+
+    def test_clean_analysis_clears_previous_glossary_exclusion_count(self):
+        app = TranslatorGUI.__new__(TranslatorGUI)
+        app.summary, app.progress = Mock(), Mock()
+        app.statuses = {0:"Pending"}
+        app.analysis_excluded = 3
+        app._handle({"type":"analysis", "detail":"Ready", "ready":True, "excluded_count":0})
+        self.assertEqual(app.analysis_excluded, 0)
 
 
 if __name__ == "__main__":

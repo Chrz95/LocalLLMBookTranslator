@@ -109,9 +109,11 @@ def parse_models(payload: dict, native: bool) -> list[LocalModel]:
 
 
 class LMStudioClient:
-    def __init__(self, settings: Settings, endpoint: str = ENDPOINT):
+    service_name = "LM Studio"
+
+    def __init__(self, settings: Settings, endpoint: str | None = None):
         self.settings = settings
-        self.endpoint = endpoint
+        self.endpoint = endpoint or settings.lmstudio_url.strip().rstrip("/") + "/v1/chat/completions"
 
     def complete(self, system: str, user: str) -> str:
         payload = {"model": self.settings.model, "messages": [
@@ -144,20 +146,20 @@ class LMStudioClient:
             ) as response:
                 body = response.read(16 * 1024 * 1024 + 1)
             if len(body) > 16 * 1024 * 1024:
-                raise APIError("LM Studio response exceeded 16 MiB.")
+                raise APIError(f"{self.service_name} response exceeded 16 MiB.")
             result = json.loads(body)
             if not isinstance(result, dict):
-                raise APIError("LM Studio returned an invalid JSON object.")
+                raise APIError(f"{self.service_name} returned an invalid JSON object.")
             return result
         except HTTPError as exc:
-            message = ("LM Studio requires a valid API key." if exc.code in (401, 403)
-                       else f"LM Studio HTTP {exc.code}.")
+            message = (f"{self.service_name} requires a valid API key." if exc.code in (401, 403)
+                       else f"{self.service_name} HTTP {exc.code}. Check the server and selected model.")
             raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
                            status_code=exc.code) from exc
         except (URLError, TimeoutError, OSError) as exc:
-            raise APIError(f"Cannot reach LM Studio: {exc}") from exc
+            raise APIError(f"Cannot reach {self.service_name}: {exc}") from exc
         except ValueError as exc:
-            raise APIError("LM Studio returned malformed JSON.") from exc
+            raise APIError(f"{self.service_name} returned malformed JSON.") from exc
 
     def list_models(self) -> list[LocalModel]:
         """Discover installed models; fall back for older LM Studio releases."""

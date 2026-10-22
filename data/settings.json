@@ -1,14 +1,19 @@
 {
-  "model": "qwen/qwen2.5-vl-7b",
+  "model": "translategemma:4b",
   "input_lang": "German",
   "output_lang": "English",
   "max_workers": 3,
   "retries": 2,
   "timeout": 180.0,
   "proofread": false,
-  "custom_prompt": "Translate the provided text from German to English. ",
+  "custom_prompt": "Polish this German-to-English fantasy translation into natural, immersive English prose. Preserve the original meaning, characterization, narrative voice, names, events, dialogue, and paragraph structure. Do not add, omit, or invent details. Return only the edited translation.",
   "use_custom_prompt": true,
-  "start_lm_studio": true,
+  "start_lm_studio": false,
   "lmstudio_path": "",
-  "last_input_file": "D:\\Files\\Software\\Development\\Python\\Personal\\Offline-Literary-Translator\\data\\books\\00d88f8a5ab97f3c3773249e2772f55b7b1d2ac5a84e8fc85ceb6c055fd21c43.epub"
+  "analyze_novel": false,
+  "analysis_preference_version": 2,
+  "provider": "ollama",
+  "lmstudio_url": "http://localhost:1234",
+  "ollama_url": "http://localhost:11434",
+  "last_input_file": "D:/Files/Έγγραφα/Βιβλία/Μυθιστορήματα/Peter Freund/Laura und das Geheimniss von Avente (581)/Laura und das Geheimniss von Av - Peter Freund.epub"
 }

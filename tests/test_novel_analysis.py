@@ -26,7 +26,7 @@ class NovelAnalysisTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.settings = Settings(model="local-test", retries=0)
+        self.settings = Settings(analyze_novel=True, model="local-test", retries=0)
 
     def engine(self, text="Mara sees the silver sea.\nMara returns to the silver sea.\n", emit=None):
         source = self.root / "novel.txt"
@@ -37,13 +37,15 @@ class NovelAnalysisTests(unittest.TestCase):
                                if system == ANALYSIS_PROMPT else "Translation")
         return TranslationEngine(job, emit=emit, client=client)
 
-    def test_default_and_legacy_preferences_are_enabled_and_persist_false(self):
-        self.assertTrue(Settings().analyze_novel)
+    def test_default_and_legacy_preferences_are_disabled_and_explicit_choice_persists(self):
+        self.assertFalse(Settings().analyze_novel)
         path = self.root / "settings.json"
-        path.write_text('{"model":"test"}')
-        self.assertTrue(load_settings(path).analyze_novel)
+        path.write_text('{"model":"test","analyze_novel":true}')
+        self.assertFalse(load_settings(path).analyze_novel)
         save_settings(path, replace(self.settings, analyze_novel=False))
         self.assertFalse(load_settings(path).analyze_novel)
+        save_settings(path, replace(self.settings, analyze_novel=True))
+        self.assertTrue(load_settings(path).analyze_novel)
         with self.assertRaises(ValueError):
             replace(self.settings, analyze_novel="yes").validate()
 
@@ -126,16 +128,17 @@ class NovelAnalysisTests(unittest.TestCase):
         self.assertEqual(len(analyses), len(source_batches(engine.job.chunks)) - 1)
         self.assertEqual(resumed.job.quality_profile().glossary[0]["source"], "Mara")
 
-    def test_invalid_analysis_blocks_translation_and_retains_existing_glossary(self):
+    def test_unsupported_suggestion_is_excluded_without_blocking_translation(self):
         engine = self.engine()
         original = QualityProfile(glossary=[{"source":"sea", "target":"sea"}])
         original.save(engine.job.directory / "quality.json")
-        engine.client.complete.return_value = json.dumps({"terms": [term("InventedName")]})
-        engine.client.complete.side_effect = None
-        with self.assertRaises(APIError):
-            engine.run()
+        engine.client.complete.side_effect = lambda system, user: json.dumps({"terms": [term("InventedName")]}) if system == ANALYSIS_PROMPT else "Translation"
+        engine.run()
         self.assertEqual(engine.job.quality_profile(), original)
-        self.assertFalse(list(engine.job.chunks_dir.glob("*.txt")))
+        self.assertTrue(all(engine.job.read_translation(c.index) == "Translation" for c in engine.job.chunks))
+        report = json.loads((engine.job.directory / "analysis/report.json").read_text())
+        self.assertEqual(report["excluded_count"], 1)
+        self.assertEqual(report["outcome"], "completed_with_exclusions")
         self.assertFalse((engine.job.directory / ".running").exists())
 
     def test_reanalysis_preserves_manual_choices_and_uses_current_model(self):
@@ -156,9 +159,11 @@ class NovelAnalysisTests(unittest.TestCase):
         self.assertIn("Li\nMara", passages[0])
 
     def test_grounding_and_category_validation_reject_unsupported_suggestions(self):
-        for value in (term("Unknown"), dict(term(), category="invalid"), dict(term(), evidence="Another passage")):
+        for value in (term("Unknown"), dict(term(), category="invalid")):
             with self.assertRaises(APIError):
                 validate_terms({"terms":[value]}, "Mara returns.")
+        recovered = validate_terms({"terms":[dict(term(), evidence="Another passage")]}, "Mara returns.")
+        self.assertEqual(recovered[0]["evidence"], "Mara")
         self.assertEqual(validate_terms({"terms": []}, "Ordinary source."), [])
         self.assertEqual(QualityProfile(glossary=[term()]).guidance("Mara returns.")["glossary"][0]["category"], "character")
         self.assertNotIn("evidence", QualityProfile(glossary=[term()]).guidance("Mara returns.")["glossary"][0])

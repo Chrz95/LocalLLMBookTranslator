@@ -47409,3 +47409,471 @@ ModuleNotFoundError: No module named 'pypdf'
 2026-10-09 17:46:23,168 INFO translator: Job finished; cancelled=True
 2026-10-09 20:02:12,128 INFO translator: Starting job 0f6c930266994018fb9067dbfe038753e93b43ed6dcf5f4b32f5248721e9d215 with 3586 chunks and 3 workers
 2026-10-09 20:45:05,180 INFO translator: Job finished; cancelled=False
+2026-10-19 13:17:50,727 WARNING gui: Model discovery failed: Cannot reach LM Studio: timed out
+2026-10-19 17:49:06,091 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-19 17:49:35,673 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 493, in operation
+    lock.mkdir()
+    ~~~~~~~~~~^^
+  File "C:\Program Files\Python315\Lib\pathlib\__init__.py", line 1210, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'D:\\Files\\Software\\Development\\Python\\Personal\\Offline-Literary-Translator\\data\\jobs\\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\\.running'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 512, in run
+    with self.operation():
+         ~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python315\Lib\contextlib.py", line 203, in __enter__
+    return next(self.gen)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 495, in operation
+    raise RuntimeError(
+    ...<2 lines>...
+    ) from exc
+RuntimeError: Job is locked: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\.running. If a prior process crashed, close all translator instances and remove this .running directory.
+2026-10-19 17:50:02,122 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-19 17:57:37,254 INFO translator: Job finished; cancelled=False
+2026-10-19 17:57:37,255 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 194, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+                                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 110, in analyze_passage
+    return validate_terms(json.loads(raw, object_pairs_hook=unique), passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 72, in validate_terms
+    raise APIError("Novel analysis returned an invalid glossary entry.")
+lmstudio.APIError: Novel analysis returned an invalid glossary entry.
+2026-10-19 22:36:56,769 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-19 22:36:58,835 INFO translator: Job finished; cancelled=False
+2026-10-19 22:36:58,836 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 142, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 495, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 604, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 533, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 466, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 613, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 194, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+                                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 96, in analyze_passage
+    raw = client.complete(ANALYSIS_PROMPT, json.dumps({
+        "source_language": client.settings.input_lang, "target_language": client.settings.output_lang,
+        "passage": passage, "known_terms": list(reversed(known)),
+    }, ensure_ascii=False))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 121, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 155, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-19 22:38:29,512 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-19 22:42:39,083 INFO translator: Job finished; cancelled=False
+2026-10-19 22:42:39,084 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 110, in analyze_passage
+    return validate_terms(json.loads(raw, object_pairs_hook=unique), passage)
+                          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 374, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Illegal trailing comma before end of array: line 26 column 164 (char 4334)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 194, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+                                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 112, in analyze_passage
+    raise APIError("Novel analysis returned invalid JSON; translation has not begun.") from exc
+lmstudio.APIError: Novel analysis returned invalid JSON; translation has not begun.
+2026-10-22 12:24:47,044 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 12:24:50,643 INFO translator: Job finished; cancelled=False
+2026-10-22 12:24:50,643 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 142, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 495, in open
+    response = meth(req, response)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 604, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 533, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 466, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 613, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 194, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+                                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 96, in analyze_passage
+    raw = client.complete(ANALYSIS_PROMPT, json.dumps({
+        "source_language": client.settings.input_lang, "target_language": client.settings.output_lang,
+        "passage": passage, "known_terms": list(reversed(known)),
+    }, ensure_ascii=False))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 121, in complete
+    result = self._json_request(self.endpoint, payload)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 155, in _json_request
+    raise APIError(message, exc.code in (408, 409, 429) or exc.code >= 500,
+                   status_code=exc.code) from exc
+lmstudio.APIError: LM Studio HTTP 400.
+2026-10-22 12:25:01,280 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 12:30:11,303 INFO translator: Job finished; cancelled=False
+2026-10-22 12:30:11,304 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 194, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 174, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(self.engine.client, passage, terms), analyzing=True)
+                                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 110, in analyze_passage
+    return validate_terms(json.loads(raw, object_pairs_hook=unique), passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 72, in validate_terms
+    raise APIError("Novel analysis returned an invalid glossary entry.")
+lmstudio.APIError: Novel analysis returned an invalid glossary entry.
+2026-10-22 12:44:37,481 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 12:48:56,293 WARNING translator: Novel analysis passage 1: Novel analysis returned invalid JSON: Illegal trailing comma before end of array: line 25 column 147 (char 3862). Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000001_00b315bb69484b58a06775842f6de869.json
+2026-10-22 12:54:22,276 WARNING translator: Novel analysis passage 12: Novel analysis entry 1: Evidence must quote this passage and contain the source term.. Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000012_b9175939112e49cb9d1be2c55ceaf10c.json
+2026-10-22 12:55:50,583 WARNING translator: Novel analysis passage 12: Novel analysis entry 1: Evidence must quote this passage and contain the source term.. Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000012_f004b6eab989407cb15abc1d613f31b6.json
+2026-10-22 12:55:50,584 INFO translator: Job finished; cancelled=False
+2026-10-22 12:55:50,584 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 104, in validate_terms
+    entry = normalize_entry(value, passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 90, in normalize_entry
+    raise APIError("Evidence must quote this passage and contain the source term.")
+lmstudio.APIError: Evidence must quote this passage and contain the source term.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 79, in request_terms
+    return parse_terms(raw, payload["passage"])
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 132, in parse_terms
+    return validate_terms(data, passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 106, in validate_terms
+    raise APIError(f"Novel analysis entry {number}: {exc}") from exc
+lmstudio.APIError: Novel analysis entry 1: Evidence must quote this passage and contain the source term.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 188, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 155, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+        self.engine.client, passage, terms,
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt)),
+        analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 155, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+                                                  ~~~~~~~~~~~~~~~^
+        self.engine.client, passage, terms,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 71, in analyze_passage
+    return request_terms(client, payload, on_invalid)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 84, in request_terms
+    raise APIError(f"{exc} Automatic correction also failed; translation has not begun.",
+                   retryable=False) from exc
+lmstudio.APIError: Novel analysis entry 1: Evidence must quote this passage and contain the source term. Automatic correction also failed; translation has not begun.
+2026-10-22 13:02:23,700 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 13:04:34,108 WARNING translator: Novel analysis passage 12: Novel analysis entry 15: Source term does not occur in the analyzed passage.. Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000012_59451ae6839146c680dde45c143e22c2.json
+2026-10-22 13:07:27,886 WARNING translator: Novel analysis passage 12: Novel analysis entry 15: Source term does not occur in the analyzed passage.. Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000012_75c18f9ad12f4cc48a7240d62c0b8365.json
+2026-10-22 13:07:27,886 INFO translator: Job finished; cancelled=False
+2026-10-22 13:07:27,887 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 140, in validate_terms
+    entry = normalize_entry(value, passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 125, in normalize_entry
+    raise APIError("Source term does not occur in the analyzed passage.")
+lmstudio.APIError: Source term does not occur in the analyzed passage.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 79, in request_terms
+    return parse_terms(raw, payload["passage"])
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 168, in parse_terms
+    return validate_terms(data, passage)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 142, in validate_terms
+    raise APIError(f"Novel analysis entry {number}: {exc}") from exc
+lmstudio.APIError: Novel analysis entry 15: Source term does not occur in the analyzed passage.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 558, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 645, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 188, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 155, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+        self.engine.client, passage, terms,
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt)),
+        analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 155, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+                                                  ~~~~~~~~~~~~~~~^
+        self.engine.client, passage, terms,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 71, in analyze_passage
+    return request_terms(client, payload, on_invalid)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 84, in request_terms
+    raise APIError(f"{exc} Automatic correction also failed; translation has not begun.",
+                   retryable=False) from exc
+lmstudio.APIError: Novel analysis entry 15: Source term does not occur in the analyzed passage. Automatic correction also failed; translation has not begun.
+2026-10-22 13:17:51,705 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 13:20:10,519 WARNING translator: Novel analysis passage 12: 1 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000012_2d5752f9efb59faf398614733d32a64c64c3efd7176dffe49d0cae03735a02f7.json
+2026-10-22 13:21:17,479 WARNING translator: Novel analysis passage 13: 27 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000013_0451855b893b4a7cc9681354acb9eb6d71d94d4dd99dc6be7150d76203e9d687.json
+2026-10-22 13:25:21,255 WARNING translator: Novel analysis passage 14: 28 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000014_cd0744e2cbf147abab547859443c5762a3b0ded50958157cb5bd05956b70151a.json
+2026-10-22 13:26:34,599 WARNING translator: Novel analysis passage 16: 17 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000016_9a664e1ef51e9e7a627e263e8ad18086ccf39893686628b98abbf7bd526fd166.json
+2026-10-22 13:28:45,222 WARNING translator: Novel analysis passage 17: 6 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000017_ced8b1431797eb7e1e9498c78f40f95ac987502f3cfc68b7d85ecabd05155dd9.json
+2026-10-22 13:36:45,238 WARNING translator: Novel analysis passage 49: 6 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000049_68d3f7bf028dc7a46fdfb4c9b8c523359ba985c55a2c5458d52fb216bad4a7be.json
+2026-10-22 13:39:12,773 WARNING translator: Novel analysis passage 57: 3 suggestions excluded; review: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\review\000057_c29d4bead54aefbb7d02fa4e3a7b6a3d7e8419b06efd0e79812991ffcfb6c19d.json
+2026-10-22 13:41:40,489 WARNING translator: Novel analysis passage 68: Novel analysis returned invalid JSON: Expecting ',' delimiter: line 1 column 788 (char 787). Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000068_074dce7667eb4ab28b756338e5e4c80f.json
+2026-10-22 13:42:07,147 WARNING translator: Novel analysis passage 68: Novel analysis returned invalid JSON: Expecting ',' delimiter: line 1 column 788 (char 787). Diagnostic: D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\data\jobs\68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81\analysis\errors\000068_e06bcd56d3454f80b7387060ca474bd1.json
+2026-10-22 13:42:07,147 INFO translator: Job finished; cancelled=False
+2026-10-22 13:42:07,148 ERROR gui: Background operation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 168, in parse_terms
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 374, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 788 (char 787)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 80, in request_terms
+    return parse_terms(raw, payload["passage"], on_rejected=on_rejected)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\analysis_parser.py", line 170, in parse_terms
+    raise APIError(f"Novel analysis returned invalid JSON: {exc}") from exc
+lmstudio.APIError: Novel analysis returned invalid JSON: Expecting ',' delimiter: line 1 column 788 (char 787)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 560, in worker
+    action()
+    ~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\gui.py", line 647, in action
+    engine.run()
+    ~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 517, in run
+    self._prepare_translation(self.job.chunks)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 378, in _prepare_translation
+    NovelAnalyzer(self).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 239, in run
+    suggestions, was_cached = self.passage_terms(number, passage, signature, terms, force)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 189, in passage_terms
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+        self.engine.client, passage, terms,
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt),
+        on_rejected=rejected.append),
+        analyzing=True)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 730, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 189, in <lambda>
+    suggestions = self.engine._request(0, lambda: analyze_passage(
+                                                  ~~~~~~~~~~~~~~~^
+        self.engine.client, passage, terms,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        on_invalid=lambda raw, error, attempt: self.record_invalid(number, passage, raw, error, attempt),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        on_rejected=rejected.append),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 72, in analyze_passage
+    return request_terms(client, payload, on_invalid, on_rejected)
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\novel_analysis.py", line 85, in request_terms
+    raise APIError(f"{exc} Automatic correction also failed; translation has not begun.",
+                   retryable=False) from exc
+lmstudio.APIError: Novel analysis returned invalid JSON: Expecting ',' delimiter: line 1 column 788 (char 787) Automatic correction also failed; translation has not begun.
+2026-10-22 21:01:52,280 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 21:03:54,253 INFO translator: Job finished; cancelled=True
+2026-10-22 21:04:23,599 INFO translator: Retranslating 1 selected chunks
+2026-10-22 21:04:37,588 INFO translator: Retranslating 1 selected chunks
+2026-10-22 21:15:00,645 INFO translator: Retranslating 1 selected chunks
+2026-10-22 21:15:18,008 INFO translator: Retranslating 1 selected chunks
+2026-10-22 21:15:36,421 INFO translator: Retranslating 1 selected chunks
+2026-10-22 21:18:17,838 INFO translator: Retranslating 86 selected chunks

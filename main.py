@@ -21,6 +21,7 @@ def main() -> int:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--timeout", type=float, default=180)
     parser.add_argument("--proofread", action="store_true")
+    parser.add_argument("--no-refinement", action="store_true", help="Disable the default source-aware refinement pass")
     parser.add_argument("--novel-analysis", action=argparse.BooleanOptionalAction, default=False,
                         help="Enable optional glossary analysis before translation (default: off)")
     parser.add_argument("--retranslate", type=int, metavar="INDEX")
@@ -42,7 +43,7 @@ def main() -> int:
             settings = Settings(model=args.model, input_lang=args.from_lang,
                                 output_lang=args.to_lang, max_workers=args.workers,
                                 retries=args.retries, timeout=args.timeout,
-                                proofread=args.proofread, analyze_novel=args.novel_analysis, provider=args.provider)
+                                proofread=args.proofread, refine_translations=not args.no_refinement, analyze_novel=args.novel_analysis, provider=args.provider)
             if args.server_url:
                 field = "ollama_url" if args.provider == "ollama" else "lmstudio_url"
                 settings = replace(settings, **{field: args.server_url})

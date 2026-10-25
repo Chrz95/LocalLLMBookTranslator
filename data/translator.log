@@ -47877,3 +47877,453 @@ lmstudio.APIError: Novel analysis returned invalid JSON: Expecting ',' delimiter
 2026-10-22 21:15:18,008 INFO translator: Retranslating 1 selected chunks
 2026-10-22 21:15:36,421 INFO translator: Retranslating 1 selected chunks
 2026-10-22 21:18:17,838 INFO translator: Retranslating 86 selected chunks
+2026-10-22 21:20:18,957 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 21:27:33,139 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 21:33:20,333 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 144, in _json_request
+    with build_opener(ProxyHandler({})).open(
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        request, timeout=timeout or self.settings.timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as response:
+    ^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 489, in open
+    response = self._open(req, data)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 506, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 466, in _call_chain
+    result = func(*args)
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 1364, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\urllib\request.py", line 1339, in do_open
+    r = h.getresponse()
+  File "C:\Program Files\Python315\Lib\http\client.py", line 1490, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python315\Lib\http\client.py", line 350, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python315\Lib\http\client.py", line 306, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\socket.py", line 738, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 202, in translate_segments
+    raw = self.complete(self.translation_prompt() + "\n\n" + CONTEXT_RULE + "\n\n" + rule,
+                        json.dumps({"target_segments": {str(k): v for k, v in segments.items()},
+                                    "reference": context}, ensure_ascii=False))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\ollama.py", line 45, in complete
+    result = self._json_request(self.endpoint, {"model": self.settings.model, "stream": False,
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 160, in _json_request
+    raise APIError(f"Cannot reach {self.service_name}: {exc}") from exc
+lmstudio.APIError: Cannot reach Ollama: timed out
+2026-10-22 21:39:27,956 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:02:21,530 INFO translator: Job finished; cancelled=True
+2026-10-22 22:03:14,150 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:03:26,475 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:03:40,423 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:03:57,362 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:04:07,561 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:04:27,578 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:05:47,315 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:06:05,475 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:06:18,198 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:06:36,312 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:07:01,037 INFO translator: Retranslating 3 selected chunks
+2026-10-22 22:07:55,609 INFO translator: Starting job 68834aee1736bad07d1c089b4d028acee705754a5504ea342aa097a865d4ea81 with 4258 chunks and 3 workers
+2026-10-22 22:08:59,680 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 361, in decode
+    raise JSONDecodeError("Extra data", s, end)
+json.decoder.JSONDecodeError: Extra data: line 1 column 1107 (char 1106)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:11:27,108 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 374, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 297 (char 296)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:15:12,967 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 361, in decode
+    raise JSONDecodeError("Extra data", s, end)
+json.decoder.JSONDecodeError: Extra data: line 1 column 940 (char 939)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:21:59,989 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 220, in translate_segments
+    raise ValueError("Segment IDs or values do not match the request")
+ValueError: Segment IDs or values do not match the request
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:40:03,009 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 361, in decode
+    raise JSONDecodeError("Extra data", s, end)
+json.decoder.JSONDecodeError: Extra data: line 1 column 338 (char 337)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:40:27,561 ERROR translator: Paragraph translation failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 215, in translate_segments
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 374, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 174 (char 173)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 584, in _process_group
+    translations = self._request(chunks[0].index,
+        lambda: self.client.translate_segments(targets, reference))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 754, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 585, in <lambda>
+    lambda: self.client.translate_segments(targets, reference))
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\lmstudio.py", line 223, in translate_segments
+    raise APIError("Invalid paragraph translation mapping; original chunk files were retained.") from exc
+lmstudio.APIError: Invalid paragraph translation mapping; original chunk files were retained.
+2026-10-22 22:49:22,929 INFO translator: Job finished; cancelled=True
+2026-10-22 22:58:13,581 INFO translator: Retranslating 1 selected chunks
+2026-10-22 22:58:34,841 ERROR translator: Chunk 121 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 50, in parse_refinements
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 797, in _process
+    translation = self._refine_translations([chunk], {index: translation}, self.reference(index))[index]
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in _refine_translations
+    results = self._request(min(targets), lambda: parse_refinements(
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 756, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in <lambda>
+    results = self._request(min(targets), lambda: parse_refinements(
+                                                  ~~~~~~~~~~~~~~~~~^
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 64, in parse_refinements
+    raise APIError(f"Invalid refinement response: {exc}. Existing chunk files were retained.") from exc
+lmstudio.APIError: Invalid refinement response: Expecting value: line 1 column 1 (char 0). Existing chunk files were retained.
+2026-10-22 22:58:48,866 INFO translator: Retranslating 1 selected chunks
+2026-10-22 22:59:04,493 ERROR translator: Chunk 121 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 50, in parse_refinements
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 797, in _process
+    translation = self._refine_translations([chunk], {index: translation}, self.reference(index))[index]
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in _refine_translations
+    results = self._request(min(targets), lambda: parse_refinements(
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 756, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in <lambda>
+    results = self._request(min(targets), lambda: parse_refinements(
+                                                  ~~~~~~~~~~~~~~~~~^
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 64, in parse_refinements
+    raise APIError(f"Invalid refinement response: {exc}. Existing chunk files were retained.") from exc
+lmstudio.APIError: Invalid refinement response: Expecting value: line 1 column 1 (char 0). Existing chunk files were retained.
+2026-10-22 23:10:29,316 INFO translator: Retranslating 1 selected chunks
+2026-10-22 23:10:48,138 ERROR translator: Chunk 273 failed
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 50, in parse_refinements
+    data = json.loads(raw, object_pairs_hook=unique)
+  File "C:\Program Files\Python315\Lib\json\__init__.py", line 386, in loads
+    return cls(**kw).decode(s)
+           ~~~~~~~~~~~~~~~~^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python315\Lib\json\decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 797, in _process
+    translation = self._refine_translations([chunk], {index: translation}, self.reference(index))[index]
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in _refine_translations
+    results = self._request(min(targets), lambda: parse_refinements(
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\translator.py", line 756, in _request
+    result = action()
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 90, in <lambda>
+    results = self._request(min(targets), lambda: parse_refinements(
+                                                  ~~~~~~~~~~~~~~~~~^
+        self.client.complete(REFINEMENT_PROMPT, json.dumps(payload, ensure_ascii=False)), set(targets)))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Files\Software\Development\Python\Personal\Offline-Literary-Translator\refinement.py", line 64, in parse_refinements
+    raise APIError(f"Invalid refinement response: {exc}. Existing chunk files were retained.") from exc
+lmstudio.APIError: Invalid refinement response: Expecting value: line 1 column 1 (char 0). Existing chunk files were retained.

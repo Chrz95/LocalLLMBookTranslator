@@ -54,7 +54,7 @@ class QualityWindows:
                               ("Reanalyze whole novel / refresh AI glossary", self.analyze),
                               ("Review excluded glossary suggestions", self.excluded),
                               ("Review empty translations", self.empty),
-                              ("Check selected chunks for lost meaning", self.check_selected),
+                              ("Check selected chunks for lost meaning", self.check_selected), ("Refine selected translations (applies corrections)", self.refine_selected),
                               ("Propose revision for selected chunk", lambda: self.proposals(False)),
                               ("Compare two models on selected chunk", lambda: self.proposals(True)),
                               ("View / restore selected chunk's history", self.history)):
@@ -490,3 +490,15 @@ class QualityWindows:
         tree.bind("<<TreeviewSelect>>", selected)
         ttk.Button(footer, text="Restore selected version", command=restore, style="Primary.TButton").pack(side="right")
         ttk.Button(footer, text="Close", command=dialog.destroy).pack(side="right", padx=8)
+
+    def refine_selected(self):
+        indices = [int(index) for index in self.app.tree.selection()]
+        if not indices:
+            messagebox.showinfo("Select chunks", "Select translated chunks in the queue first.", parent=self.app.root)
+            return
+        try:
+            engine = self.current_engine()
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showerror("Cannot refine translations", str(exc), parent=self.app.root)
+            return
+        self.app._background(lambda: engine.refine_chunks(indices))

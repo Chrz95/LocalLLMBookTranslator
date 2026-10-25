@@ -1,5 +1,7 @@
 # Offline Literary Translator
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Q1J229F1AG)
+
 A complete Python/Tkinter desktop application using LM Studio or Ollama on your
 own computer. It imports EPUB, PDF, DOCX and UTF-8 TXT. EPUB inputs export as EPUB;
 other inputs export as UTF-8 TXT. No hosted inference service is required.

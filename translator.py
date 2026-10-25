@@ -21,6 +21,7 @@ from settings_manager import Settings, atomic_write
 from quality import QualityProfile, build_context
 from novel_analysis import NovelAnalyzer
 from providers import client_identity, create_client, provider_label
+from refinement import RefinementMixin
 
 MAX_CHARS = 4000
 CHUNK_VERSION = "lossless-text-nodes-v1"
@@ -353,7 +354,7 @@ class Cancelled(Exception):
     """Cooperative cancellation; already committed chunks are retained."""
 
 
-class TranslationEngine:
+class TranslationEngine(RefinementMixin):
     def __init__(self, job: Job, emit: Callable[[dict], None] | None = None,
                  client: LMStudioClient | None = None):
         self.job = job
@@ -583,6 +584,7 @@ class TranslationEngine:
                 self.event(chunk.index, "Pending", "Translating paragraph in context")
             translations = self._request(chunks[0].index,
                 lambda: self.client.translate_segments(targets, reference))
+            translations = self._refine_translations(chunks, translations, reference)
             for index, value in translations.items():
                 self._validate_edit(index, value)
             for chunk in chunks:
@@ -596,7 +598,7 @@ class TranslationEngine:
                 saved.add(chunk.index)
                 self.emit({"type": "check", "index": chunk.index, "check": "", "detail": ""})
                 self.event(chunk.index, "Retranslated" if force else "Completed",
-                           "Empty translation returned by model" if not value else "Paragraph translated in context",
+                           "Empty translation returned by model" if not value else ("Paragraph translated and refined" if self.job.settings.refine_translations else "Paragraph translated in context"),
                            preview=value)
                 if self.job.settings.proofread and value:
                     self._check(chunk, value)
@@ -607,7 +609,7 @@ class TranslationEngine:
             if not isinstance(exc, Cancelled):
                 self.log.exception("Paragraph translation failed")
 
-    def _parallel(self, chunks: list[Chunk] | None = None, force: bool = False) -> None:
+    def _parallel(self, chunks: list[Chunk] | None = None, force: bool = False, processor: Callable | None = None) -> None:
         selected = self.job.chunks if chunks is None else chunks
         pending = iter(self._work_items(selected, force))
         futures = set()
@@ -622,7 +624,7 @@ class TranslationEngine:
                     if group is None:
                         exhausted = True
                     else:
-                        futures.add(pool.submit(self._process_group, group, force))
+                        futures.add(pool.submit(processor or self._process_group, group, force))
                 if self._cancel.is_set():
                     for group in pending:
                         for chunk in group:
@@ -792,6 +794,7 @@ class TranslationEngine:
                 self.event(index, "Pending", "Retranslating" if force else "Translating")
                 translation = self._request(index, lambda: self.client.translate(chunk.text, context=self.reference(index))
                     if isinstance(self.client, LMStudioClient) else self.client.translate(chunk.text))
+                translation = self._refine_translations([chunk], {index: translation}, self.reference(index))[index]
                 self._validate_edit(index, translation)
                 if force:
                     self._write_edit(index, translation)
@@ -800,8 +803,8 @@ class TranslationEngine:
                 self.job.check_path(index).unlink(missing_ok=True)
                 self.emit({"type": "check", "index": index, "check": "", "detail": ""})
                 status = "Retranslated" if force else "Completed"
-            self.event(index, status, "Empty translation returned by model" if not translation.strip()
-                       and status != "Resumed" else "", preview=translation)
+            self.event(index, status, ("Translation refined" if status != "Resumed" and self.job.settings.refine_translations and translation.strip() else ("Empty translation returned by model" if not translation.strip()
+                       and status != "Resumed" else "")), preview=translation)
             if self.job.settings.proofread and translation.strip():
                 self._check(chunk, translation)
         except Cancelled:

@@ -74,6 +74,7 @@ class TranslatorGUI:
         self.start_lm_studio = tk.BooleanVar(value=False)
         self.lmstudio_path = settings.lmstudio_path
         self.proofread = tk.BooleanVar(value=settings.proofread)
+        self.refine_translations = tk.BooleanVar(value=settings.refine_translations)
         self.analyze_novel = tk.BooleanVar(value=settings.analyze_novel)
         self.active_provider = settings.provider
         self.provider = tk.StringVar(value=provider_label(settings.provider))
@@ -298,6 +299,9 @@ class TranslatorGUI:
         self.analysis_option = ttk.Checkbutton(checks, text="Analyze novel before translation",
                                               variable=self.analyze_novel, command=self.save_analysis_preference)
         self.analysis_option.pack(anchor="w", pady=(0, 8))
+        self.refine_option = ttk.Checkbutton(checks, text="Refine translated text",
+            variable=self.refine_translations, command=self.save_refinement_preference)
+        self.refine_option.pack(anchor="w", pady=(0, 8))
         self.check_option = ttk.Checkbutton(checks, text="Proofread after translation", variable=self.proofread)
         self.check_option.pack(anchor="w")
         ttk.Separator(parent).grid(row=17, column=0, sticky="ew", pady=8)
@@ -599,7 +603,7 @@ class TranslatorGUI:
     def _controls(self, busy: bool) -> None:
         self.busy = busy
         self.refresh_button.configure(state="disabled" if busy or self.models_loading else "normal")
-        for widget in [self.browse, self.source_entry, self.check_option, self.analysis_option, self.open_button,
+        for widget in [self.browse, self.refine_option, self.source_entry, self.check_option, self.analysis_option, self.open_button,
                        self.open_saved_button, self.launch_option, self.launch_path_button, *self.option_widgets]:
             widget.configure(state="disabled" if busy else "normal")
         self.saved_combo.configure(state="disabled" if busy else "readonly")
@@ -626,7 +630,7 @@ class TranslatorGUI:
                             max_workers=int(self.values["max_workers"].get()),
                             retries=int(self.values["retries"].get()),
                             timeout=float(self.values["timeout"].get()),
-                            proofread=self.proofread.get(), analyze_novel=self.analyze_novel.get(), custom_prompt=self.custom_prompt,
+                            proofread=self.proofread.get(), refine_translations=self.refine_translations.get(), analyze_novel=self.analyze_novel.get(), custom_prompt=self.custom_prompt,
                             provider=self.active_provider, lmstudio_url=self.server_urls["lmstudio"], ollama_url=self.server_urls["ollama"],
                             use_custom_prompt=self.use_custom_prompt.get(),
                             start_lm_studio=False, lmstudio_path=self.lmstudio_path)
@@ -686,6 +690,7 @@ class TranslatorGUI:
                 variable.set(str(getattr(settings, name)))
         self.model_selection.set(settings.model)
         self.proofread.set(settings.proofread)
+        self.refine_translations.set(settings.refine_translations)
         self.analyze_novel.set(settings.analyze_novel)
         self.use_custom_prompt.set(settings.use_custom_prompt)
         self.custom_prompt = settings.custom_prompt
@@ -722,7 +727,7 @@ class TranslatorGUI:
                 if book.digest != match.digest:
                     raise ValueError("Saved source is damaged or changed; open the original file.")
                 chosen = replace(match.settings, api_key=provider_keys.get(match.settings.provider, ""),
-                                 analyze_novel=settings.analyze_novel,
+                                 analyze_novel=settings.analyze_novel, refine_translations=settings.refine_translations,
                                  lmstudio_url=settings.lmstudio_url, ollama_url=settings.ollama_url,
                                  start_lm_studio=False, lmstudio_path=settings.lmstudio_path)
             chosen.validate()
@@ -1595,3 +1600,10 @@ class TranslatorGUI:
             self.summary.set("Closing after active requests stop; saved chunks are retained.")
         else:
             self.root.destroy()
+
+    def save_refinement_preference(self) -> None:
+        try:
+            settings = replace(load_settings(self.settings_path), refine_translations=self.refine_translations.get())
+            save_settings(self.settings_path, settings, require_model=False)
+        except (OSError, ValueError, TypeError) as exc:
+            messagebox.showerror("Cannot save refinement option", str(exc), parent=self.root)

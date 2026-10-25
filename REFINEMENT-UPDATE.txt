@@ -1,0 +1,70 @@
+TRANSLATION REFINEMENT UPDATE
+
+Install
+1. Close the translator.
+2. Extract this ZIP into the existing application folder, beside main.py and gui.py.
+3. Windows: double-click Install-Refinement.bat.
+   macOS/Linux: run python3 install_refinement.py
+4. Start the translator normally.
+
+Fix for "Invalid refinement response: Expecting value"
+This version accepts JSON in Markdown fences, JSON preceded by commentary or
+complete thinking tags, and common equivalent chunk mappings. Optional issue
+notes do not have to be present. Chunk IDs and translation text types are still
+validated, including duplicate/conflicting IDs and ambiguous multiple answers.
+If the response is still unusable, the app makes one automatic format-correction
+request even when transport retries are set to zero. It never saves unstructured
+prose or explanation-only output as a translated chunk. Both raw responses and
+validation details are retained in refinements/<index>.json for diagnosis.
+Close the app, extract this updated ZIP again and rerun Install-Refinement.bat
+to update an existing refinement installation; the installer backs up the old code.
+
+Refine translated text
+The new sidebar option is enabled by default, including for older settings.
+You can turn it off; your choice saves immediately, even without a selected model.
+
+After translation, the selected LM Studio or Ollama model compares the draft
+with the source and corrects errors before the final chunk is saved. It checks
+meaning, omissions, additions, mistranslations, accidentally untranslated words,
+names and glossary consistency, pronouns, tense, agreement, spelling and punctuation.
+Source context, approved glossary, character notes and style guidance are supplied.
+The editor is instructed to retain sound wording and preserve narrative voice,
+intentional foreign words, expressive spelling, ambiguity, paragraph boundaries
+and formatting. Refinement is an AI judgment, not a guarantee of correctness.
+
+This normally adds one model request per translated chunk or paragraph group;
+an unusable response can add one format-correction request. Network retries are
+separate from that single format correction. Requests
+use the existing worker limit, retries and pause/cancel controls. Progress details
+show Refining. Optional proofreading runs on the final refined translation.
+
+Existing saved chunks
+Resume still skips existing chunk files, including manually saved blank text.
+To refine saved text without translating again, select chunks, open Quality tools,
+and choose Refine selected translations (applies corrections). This explicit
+command works even when the automatic option is off. It uses the currently
+selected provider and model. Blank translations and short sources make no request.
+
+History and failure handling
+Changed drafts and prior saved translations remain available in chunk history.
+Each refinement also records its draft, proposed final text and issues in the
+book job's refinements/<index>.json. These reports never control resume.
+An invalid or failed refinement does not overwrite an existing translated chunk.
+For a new chunk, a failed refinement leaves the final chunk missing and retains
+the draft in its refinement report. Retrying translation processes that chunk again.
+Incomplete or unclear source may produce an empty translation without explanation.
+
+Preservation and recovery
+The installer updates only the needed source code and adds refinement.py.
+It preserves the rest of your application, provider support, startup preferences,
+novel analysis preference, prompts, books, translations, bookmarks and glossary.
+Original source files are backed up to refinement_backup_* before writing.
+Unsupported source layouts stop before any application source file is changed.
+Running the installer again is safe. No new Python packages are required.
+
+Headless translation uses refinement by default; pass --no-refinement to turn it off.
+The separate model benchmark compares the base translation requests and does not
+automatically run this additional editor pass.
+
+To update another installation:
+python install_refinement.py "/path/to/Offline-Literary-Translator"

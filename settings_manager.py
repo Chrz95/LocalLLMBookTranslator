@@ -32,7 +32,10 @@ class Settings:
     lmstudio_url: str = "http://localhost:1234"
     ollama_url: str = "http://localhost:11434"
 
+    refine_translations: bool = True
     def validate(self, require_model: bool = True) -> None:
+        if type(self.refine_translations) is not bool:
+            raise ValueError("Translation refinement preference must be a boolean.")
         for name in ("model", "input_lang", "output_lang"):
             value = getattr(self, name)
             if name == "model" and not require_model and value == "":
